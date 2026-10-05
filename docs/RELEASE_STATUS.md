@@ -6,26 +6,20 @@ Checked 6 October 2026.
 
 ## Implemented workflow
 
-Record permitted fictional audio or upload supported audio/video. The hosted worker prepares timestamped transcription, supported notes, quizzes and flashcards. Lesson questions return captured quotations and timestamps or abstain/refer when unsupported. Private classes can share permitted lessons while practice remains personal.
+Record permitted fictional/anonymized audio or upload supported audio/video up to two hours and 500 MiB. The hosted worker prepares timestamped transcription, supported notes, quizzes and flashcards. A private selectable-text PDF resource can instead produce study material with genuine physical-page citations, within the documented extraction bounds. Lesson questions return supported source passages or abstain/refer when unsupported. Private classes can share permitted material while practice remains personal.
 
-Each signed-in workspace receives one complete prepared fictional demo. Deletion is remembered, demo activity is excluded from actual student Insights and it includes prepared playback, practice and cited lesson answers. Upload and recording offer Auto, Urdu, Arabic and English as a main spoken-language hint, separately from interface language.
+Each signed-in workspace receives one complete prepared fictional demo. Deletion is remembered and demo activity is excluded from actual student Insights. Spoken-language selection is separate from the new Auto/Arabic/Urdu/English study-material selection. Arabic and Urdu text has bidirectional-aware layout; the interface is not fully translated. Source quotations remain exact, including when generated explanations change language.
 
-Teacher review is optional. The listening-first question handoff is not an approval or authenticated correction backend. Chat generation failure can use a visibly labelled exact-passage fallback with existing scope/referral/version boundaries.
+Teacher review is optional. The source-first question handoff is not an approval or authenticated correction backend. Chat generation failure can use a visibly labelled exact-passage fallback with existing scope/referral/version boundaries. Personal note edits stay separate from captured source and generated quiz answers.
+
+Full-screen quiz, flashcards and lesson tests use supported saved material. Mixed lesson-test formats have real availability caps, raised previews and pausable motion. Written recall is self-checked separately from automatic marks. These are lesson exercises, not official syllabus exams.
 
 ## Verification
 
-The code release `e58cd309` was deployed successfully. Public health/example returned HTTP 200. Production build/TypeScript and 130 units passed; 27 focused hosted assertions passed, including a new fictional mixed-language upload. Actual desktop and 390px views were inspected. Earlier one-hour, recording, privacy, sharing and source-replay evidence is separately scoped in [QA.md](QA.md).
+The V29 Arabic/PDF source deployed successfully. The hosted health and fictional example returned HTTP 200; the final PDF journey passed 24 assertions. See [QA.md](QA.md) for the dated build, local and actual hosted checks. An authored fictional one-hour upload completed the full hosted student workflow in the prior release. Arabic and PDF checks are separately scoped; none proves native classroom accuracy or future service availability.
 
-A previously published anonymous clone installed/built without keys and passed its unit/API/example checks. That earlier clone check is not described as a new clone of every subsequent change. The curated release excludes private research, raw reports, credentials and real recordings.
+A previously published anonymous clone installed/built without keys and passed its unit/API/example checks. That earlier clone check is not described as a new clone of every subsequent change. The curated release excludes private research, raw reports, credentials, student identifiers and real recordings.
 
 ## Remaining evidence gaps
 
-Native code-switch fidelity, simultaneous upload capacity, physical screen-lock recording, clean first-click email confirmation, a complete hosted backup-switch rehearsal and measured learner benefit remain unproven. External service availability and every future model response are not guaranteed. [DEPLOYMENT.md](../DEPLOYMENT.md) explains setup and operational checks. No final contest submission is claimed.
-
-## Reliability revision prepared — 6 October 2026
-
-Manual transcription adapters, a service-only durable quota queue and two-section lossless processing are implemented. Groq remains primary. The actual short backup checks and Urdu limitation are documented in [QA.md](QA.md). This revision's hosted deployment and full-hour performance are recorded separately after deployment; no new speed target is claimed here.
-
-## UI and private-note revision prepared — 6 October 2026
-
-Full-screen quiz/flashcards/mock exams, three saved-material note views, private editable notes, anchored profile dismissal and dark upload/settings contrast are implemented. Topic suggestions resolve their validated note citation directly, supporting English topic headings over Urdu passages without treating the heading as evidence. Local production verification and final hosted results are recorded in [QA.md](QA.md); deployment is recorded separately after rollout.
+Native code-switch fidelity and translation quality, simultaneous upload capacity, physical screen-lock recording, clean first-click email confirmation, a complete hosted backup-switch rehearsal, two-hour hosted performance and measured learner benefit remain unproven. Scanned/image-only or locked PDFs are unsupported. External services and every future model response are not guaranteed. [DEPLOYMENT.md](../DEPLOYMENT.md) explains setup and operational checks. No final contest submission is claimed.

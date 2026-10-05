@@ -7,6 +7,7 @@ process.env.DARSLOOP_DATA_DIR=mkdtempSync(path.join(os.tmpdir(),"darsloop-pipeli
 const s=await import("../src/lib/store");
 const {chunkPlan,timedSegments,processLesson}=await import("../src/lib/processing");
 import { ProviderError } from "../src/lib/provider-error";
+import type { Segment } from "../src/lib/types";
 import { demoArtifacts } from "../src/lib/demo";
 afterAll(()=>{s.db().close();rmSync(process.env.DARSLOOP_DATA_DIR!,{recursive:true,force:true});});
 describe("durable processing with injected mock providers",()=>{
@@ -18,13 +19,13 @@ describe("durable processing with injected mock providers",()=>{
     expect(()=>timedSegments({segments:[{start:0,end:9999,text:"Bad times"}]},chunks[0],1200,1)).toThrow("invalid times");
   });
   it("resumes generation from saved transcript without retranscribing after a provider failure",async()=>{
-    const owner=s.createSession();s.seedDemo(owner.userId);const base=s.listLessons(owner.userId)[0],l={...base,id:randomUUID(),demo:false,status:"queued" as const,segments:[],artifacts:null,noteOptions:{enabled:false,detail:"detailed" as const}};s.insertLesson(l);s.enqueue(l.id);
+    const owner=s.createSession();s.seedDemo(owner.userId);const base=s.listLessons(owner.userId)[0],l={...base,id:randomUUID(),demo:false,status:"queued" as const,segments:[],artifacts:null,noteOptions:{enabled:false,detail:"detailed" as const,language:"ur" as const}};s.insertLesson(l);s.enqueue(l.id);
     const transcript=base.segments.map(x=>({start:x.start,end:x.end,text:x.text}));
     const providers={audioChunk:vi.fn(async()=>Buffer.from("mock-wav")),transcribe:vi.fn(async()=>({segments:transcript})),createArtifacts:vi.fn(async()=>{throw new Error("Mock quota outage");})};
     const job=s.claimJob()!;await expect(processLesson(job,providers)).rejects.toThrow("Mock quota outage");s.failJob(job.id,job.lease,"Mock quota outage");
     expect(s.rawLesson(l.id)?.transcriptionComplete).toBe(true);expect(s.rawLesson(l.id)?.segments).toHaveLength(8);
     s.enqueue(l.id);const retry=s.claimJob()!;
-    const successful={...providers,createArtifacts:vi.fn(async(segments)=>demoArtifacts(segments))};await processLesson(retry,successful);
+    const successful={...providers,createArtifacts:vi.fn(async(segments)=>demoArtifacts(segments as Segment[]))};await processLesson(retry,successful);
     expect(providers.transcribe).toHaveBeenCalledTimes(1);expect(s.rawLesson(l.id)?.status).toBe("ready");expect(s.rawLesson(l.id)?.artifacts?.practice).toHaveLength(4);
     expect(successful.createArtifacts).toHaveBeenCalledWith(s.rawLesson(l.id)?.segments,l.noteOptions);
     expect(s.publicLesson(s.rawLesson(l.id)!).noteOptions).toEqual(l.noteOptions);
@@ -35,8 +36,23 @@ describe("durable processing with injected mock providers",()=>{
     const l={...base,id:randomUUID(),demo:false,status:"queued" as const,artifacts:null,segments:[],transcriptionComplete:false};s.insertLesson(l);s.enqueue(l.id);
     const providers={audioChunk:vi.fn(async()=>Buffer.from("mock")),transcribe:vi.fn(async()=>({segments:base.segments.map(x=>({start:x.start,end:x.end,text:x.text}))})),createArtifacts:vi.fn(async()=>{throw new ProviderError("quota","AI limit reached");})};
     const active=s.claimJob()!;await expect(processLesson(active,providers)).rejects.toMatchObject({code:"quota"});s.deferJob(active.id,active.lease,Date.now()+5000,"Waiting for capacity");expect(s.rawLesson(l.id)?.status).toBe("queued");expect(s.rawLesson(l.id)?.nextAttemptAt).toBeTruthy();s.db().prepare("UPDATE jobs SET available_at=0 WHERE id=?").run(active.id);expect(s.rawLesson(l.id)?.segments.length).toBe(8);
-    s.enqueue(l.id);await processLesson(s.claimJob()!,{...providers,createArtifacts:async segments=>demoArtifacts(segments)});
+    s.enqueue(l.id);await processLesson(s.claimJob()!,{...providers,createArtifacts:async segments=>demoArtifacts(segments as Segment[])});
     expect(providers.transcribe).toHaveBeenCalledTimes(1);expect(s.rawLesson(l.id)?.error).toBeNull();expect(s.rawLesson(l.id)?.artifacts?.practice.length).toBeGreaterThan(0);
+  });
+  it("keeps usable prepared material notices separate from failure and retry state",async()=>{
+    const owner=s.createSession();s.seedDemo(owner.userId);const base=s.listLessons(owner.userId)[0];
+    const l={...base,id:randomUUID(),demo:false,status:"queued" as const,artifacts:null,transcriptionComplete:true};s.queueLesson(l,true);
+    const artifacts={...demoArtifacts(base.segments),warnings:["Some study items used a different language and were left out."]};
+    const transcribe=vi.fn(async()=>({segments:[]}));await processLesson(s.claimJob()!,{transcribe,audioChunk:async()=>Buffer.from("unused"),createArtifacts:async()=>artifacts});
+    expect(transcribe).not.toHaveBeenCalled();expect(s.rawLesson(l.id)).toMatchObject({status:"ready",stage:"Ready to study",error:null,artifacts});
+  });
+  it("retains completed original speech after a wrong-language preparation failure",async()=>{
+    const owner=s.createSession();s.seedDemo(owner.userId);const base=s.listLessons(owner.userId)[0];
+    const l={...base,id:randomUUID(),demo:false,status:"queued" as const,segments:[],artifacts:null,transcriptionComplete:false,noteOptions:{enabled:true,detail:"standard" as const,language:"ar" as const}};s.queueLesson(l,true);
+    const providers={audioChunk:vi.fn(async()=>Buffer.from("fictional")),transcribe:vi.fn(async()=>({segments:base.segments.map(x=>({start:x.start,end:x.end,text:x.text}))})),createArtifacts:vi.fn(async()=>{throw new ProviderError("material_language","Study material used a different language.");})};
+    const job=s.claimJob()!;await processLesson(job,providers);
+    expect(providers.createArtifacts).toHaveBeenCalledTimes(1);expect(s.rawLesson(l.id)?.transcriptionComplete).toBe(true);expect(s.rawLesson(l.id)?.segments.map(x=>x.text)).toEqual(base.segments.map(x=>x.text));expect(s.rawLesson(l.id)?.artifacts).toBeNull();
+    expect(s.rawLesson(l.id)?.status).toBe("ready");expect(s.rawLesson(l.id)?.error).toBe("Study material used a different language.");expect(s.db().prepare("SELECT status FROM jobs WHERE id=?").get(job.id)).toEqual({status:"done"});
   });
 
 });
@@ -47,4 +63,8 @@ it("drains parallel sections, fails on any chunk, and resumes only a contiguous 
  const providers={concurrency:2,audioChunk:async(_a:string,_b:string,start:number)=>Buffer.from(String(start)),transcribe:vi.fn(async(bytes:Buffer)=>{active++;maxActive=Math.max(maxActive,active);await new Promise(r=>setTimeout(r,10));active--;settled++;if(bytes.toString()==="592")throw new ProviderError("transcription_failed","second chunk failed");return {segments:[{start:10,end:15,text:"A captured clear first section."}]};}),createArtifacts:vi.fn(async()=>({overview:"",notes:[],terms:[],practice:[]}))};
  const first=s.claimJob()!;await expect(processLesson(first,providers)).rejects.toThrow("second chunk failed");expect(maxActive).toBe(2);expect(settled).toBe(2);expect(active).toBe(0);expect(providers.createArtifacts).not.toHaveBeenCalled();expect(s.rawLesson(l.id)?.processedChunks).toBe(1);expect(s.rawLesson(l.id)?.transcriptionComplete).not.toBe(true);
  s.failJob(first.id,first.lease,"second chunk failed");s.enqueue(l.id);await processLesson(s.claimJob()!,{...providers,transcribe:async()=>({segments:[{start:20,end:25,text:"A captured clear second section."}]})});expect(s.rawLesson(l.id)).toMatchObject({status:"ready",processedChunks:2,transcriptionComplete:true});expect(s.rawLesson(l.id)?.segments.map(x=>x.start)).toEqual([10,612]);
+});
+it("covers the actual 91-minute upload and two-hour boundary without shortening cores",()=>{
+ for(const [duration,count] of [[5471.637333,10],[7200,12]] as const){const chunks=chunkPlan(duration);expect(chunks).toHaveLength(count);expect(chunks[0].coreStart).toBe(0);expect(chunks.at(-1)!.coreEnd).toBe(duration);expect(chunks.at(-1)!.end).toBe(duration);for(let i=0;i<chunks.length;i++){const chunk=chunks[i];expect(chunk.start).toBe(Math.max(0,chunk.coreStart-8));expect(chunk.end).toBe(Math.min(duration,chunk.coreEnd+8));if(i)expect(chunk.coreStart).toBe(chunks[i-1].coreEnd);}}
+ expect(()=>chunkPlan(7200.01)).toThrow("Invalid recording duration");
 });

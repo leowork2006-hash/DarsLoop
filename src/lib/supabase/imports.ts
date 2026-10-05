@@ -1,3 +1,4 @@
+import { MAX_PDF_BYTES } from "../pdf-options";
 import type { SpokenLanguage } from "../spoken-language";
 import { open } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -7,7 +8,7 @@ import type { Lesson, StudyNoteOptions } from "../types";
 
 export const IMPORT_BUCKET="lesson-imports";
 export class ImportFailure extends Error {constructor(public status:number,message:string){super(message);}}
-type Manifest={id:string;ownerId:string;createdAt:string;bytes:number;parts:number;title:string;course:string;noteOptions:StudyNoteOptions;spokenLanguage?:SpokenLanguage};
+type Manifest={id:string;ownerId:string;createdAt:string;bytes:number;parts:number;title:string;course:string;noteOptions:StudyNoteOptions;spokenLanguage?:SpokenLanguage;sourceKind?:"audio"|"pdf"};
 let bucketReady:Promise<void>|undefined;
 async function ensureBucket(){
   bucketReady??=(async()=>{
@@ -21,7 +22,7 @@ async function ensureBucket(){
 const prefix=(owner:string,id:string)=>`${owner}/${id}`;
 function validId(id:string){if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id))throw new Error("Import not found");}
 export async function createImport(ownerId:string,values:Omit<Manifest,"id"|"ownerId"|"createdAt"|"parts">){
-  if(!Number.isSafeInteger(values.bytes)||values.bytes<1||values.bytes>MAX_IMPORT_BYTES)throw new Error("Invalid file size");
+  if(!Number.isSafeInteger(values.bytes)||values.bytes<1||values.bytes>(values.sourceKind==="pdf"?MAX_PDF_BYTES:MAX_IMPORT_BYTES))throw new Error("Invalid file size");
   await ensureBucket();
   const manifest:Manifest={...values,id:randomUUID(),ownerId,createdAt:new Date().toISOString(),parts:Math.ceil(values.bytes/IMPORT_PART_BYTES)};
   const r=await adminClient().storage.from(IMPORT_BUCKET).upload(`${prefix(ownerId,manifest.id)}/manifest`,Buffer.from(JSON.stringify(manifest)),{contentType:"application/json",upsert:false});
@@ -33,6 +34,7 @@ export async function readImport(owner:string,id:string){
   if(r.error||!r.data||r.data.size>4096)throw new ImportFailure(404,"This upload was not found. Choose your file again.");
   const m=JSON.parse(await r.data.text()) as Manifest;
   if(m.id!==id||m.ownerId!==owner||!Number.isFinite(Date.parse(m.createdAt))||Date.now()-Date.parse(m.createdAt)>86400_000||m.parts!==Math.ceil(m.bytes/IMPORT_PART_BYTES))throw new ImportFailure(410,"This upload has expired. Choose your file again.");
+  if(m.sourceKind!==undefined&&m.sourceKind!=="audio"&&m.sourceKind!=="pdf"||m.sourceKind==="pdf"&&m.bytes>MAX_PDF_BYTES)throw new ImportFailure(400,"Choose a PDF of 8 MB or smaller.");
   importPartSize(m.bytes,0);return m;
 }
 export async function signImportParts(owner:string,id:string,start:number){

@@ -1,17 +1,18 @@
 import { z } from "zod";
 import type { StudyNoteOptions } from "./types";
+import { studyMaterialLanguages } from "./study-material-language";
 
-export const studyNoteOptionsSchema=z.strictObject({enabled:z.boolean(),detail:z.enum(["short","standard","detailed"])});
-export const DEFAULT_NOTE_OPTIONS:StudyNoteOptions={enabled:true,detail:"standard"};
+export const studyNoteOptionsSchema=z.strictObject({enabled:z.boolean(),detail:z.enum(["short","standard","detailed"]),language:z.enum(studyMaterialLanguages).default("auto")});
+export const DEFAULT_NOTE_OPTIONS:StudyNoteOptions={enabled:true,detail:"standard",language:"auto"};
 
 export function resolveNoteOptions(options?:StudyNoteOptions):StudyNoteOptions {
   return studyNoteOptionsSchema.parse(options??DEFAULT_NOTE_OPTIONS);
 }
 
 export function parseNoteOptions(form:Pick<FormData,"getAll">):StudyNoteOptions {
-  const enabled=form.getAll("notesEnabled"),detail=form.getAll("noteDetail");
-  if(enabled.length>1||detail.length>1||enabled.length&&enabled[0]!=="true"&&enabled[0]!=="false"||detail.length&&!["short","standard","detailed"].includes(detail[0] as string))throw new Error("Choose a valid note option.");
-  return {enabled:enabled.length?enabled[0]==="true":true,detail:detail.length?detail[0] as StudyNoteOptions["detail"]:"standard"};
+  const enabled=form.getAll("notesEnabled"),detail=form.getAll("noteDetail"),language=form.getAll("studyLanguage");
+  if(enabled.length>1||detail.length>1||language.length>1||enabled.length&&enabled[0]!=="true"&&enabled[0]!=="false"||detail.length&&!["short","standard","detailed"].includes(detail[0] as string)||language.length&&!studyMaterialLanguages.includes(language[0] as typeof studyMaterialLanguages[number]))throw new Error("Choose a valid note option.");
+  return studyNoteOptionsSchema.parse({enabled:enabled.length?enabled[0]==="true":true,detail:detail.length?detail[0]:"standard",language:language.length?language[0]:"auto"});
 }
 
 export const NOTE_DETAIL_LIMITS={

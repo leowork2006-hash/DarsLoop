@@ -8,12 +8,15 @@ import { prepareImportedAudio, mediaMime, inspectAudio, boundedMediaDuration } f
 import { readImportForm } from "../src/lib/import-form";
 const run=promisify(execFile);
 describe("streamed media imports",()=>{
-  it("allows encoder frame padding at one hour while rejecting longer recordings",()=>{
+  it("accepts long classes and encoder padding while reporting invalid or over-limit duration",()=>{
     expect(boundedMediaDuration(3600)).toBe(3600);
-    expect(boundedMediaDuration(3600.048)).toBe(3600);
-    expect(boundedMediaDuration(3600.24)).toBe(3600);
+    expect(boundedMediaDuration(3600.048)).toBe(3600.048);
+    expect(boundedMediaDuration(3600.24)).toBe(3600.24);
     expect(boundedMediaDuration(3599.9)).toBe(3599.9);
-    for(const value of [3600.251,3601,NaN,0,-1])expect(()=>boundedMediaDuration(value)).toThrow("one hour");
+    expect(boundedMediaDuration(5471.637333)).toBe(5471.637333);
+    expect(boundedMediaDuration(7200.24)).toBe(7200);
+    for(const value of [7200.251,7201])expect(()=>boundedMediaDuration(value)).toThrow("120 minutes");
+    for(const value of [NaN,0,-1])expect(()=>boundedMediaDuration(value)).toThrow("duration could not be read");
   });
   it("distinguishes raw AAC and FLAC from MP3",()=>{
     expect(mediaMime(Buffer.from([0xff,0xf1,0x50,0x80]))).toBe("audio/aac");

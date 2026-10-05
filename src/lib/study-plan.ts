@@ -1,7 +1,8 @@
+import { sourcePassages, validSourcePassage, isPdfPage, sourceLabel } from "./source-passages";
 import { evidenceValid, safePractice } from "./evidence";
-import { formatTime, type Citation, type Lesson, type PracticeItem, type Review, type Segment } from "./types";
+import { formatTime, type Citation, type Lesson, type PracticeItem, type Review, type StudyPassage } from "./types";
 
-export type StudyPlanSource = { segmentId: string; quote: string; start: number; end: number };
+export type StudyPlanSource = { segmentId: string; quote: string; start?: number; end?: number;page?:number };
 export type StudyPlanTopicStatus = "read_only" | "untried" | "in_progress" | "due" | "practised";
 export type StudyPlanTopic = {
   id: string;
@@ -25,6 +26,7 @@ export type StudyPlanUnit = {
   course: string;
   createdAt: string;
   duration: number;
+  sourceKind?:"audio"|"pdf";sourcePageCount?:number;
   topics: StudyPlanTopic[];
   clearPassages: number;
   unclearPassages: number;
@@ -49,14 +51,14 @@ export type StudyPlan = {
 type PlanOptions = { course?: string | null; includeDemo?: boolean; now?: number };
 type TopicDraft = Omit<StudyPlanTopic, "practiceCount" | "triedCount" | "dueCount" | "missedCount" | "nextDueAt" | "status">;
 
-function sourceList(evidence: Citation[], segments: Map<string, Segment>): StudyPlanSource[] {
+function sourceList(evidence: Citation[], segments: Map<string, StudyPassage>): StudyPlanSource[] {
   const seen = new Set<string>();
-  return evidence.flatMap(citation => {
+  return evidence.flatMap<StudyPlanSource>(citation => {
     const segment = segments.get(citation.segmentId);
     if (!segment || seen.has(segment.id)) return [];
     seen.add(segment.id);
-    return [{ segmentId: segment.id, quote: citation.quote, start: segment.start, end: segment.end }];
-  }).sort((a, b) => a.start - b.start);
+    return [{ segmentId: segment.id, quote: citation.quote, ...(isPdfPage(segment)?{page:segment.page}:{start:segment.start,end:segment.end}) }];
+  }).sort((a, b) => (a.page??a.start??0) - (b.page??b.start??0));
 }
 
 function safeReview(review: Review, lesson: Lesson, validItems: Set<string>): boolean {
@@ -87,12 +89,11 @@ function addProgress(draft: TopicDraft, reviews: Map<string, Review>, now: numbe
 }
 
 function lessonTopics(lesson: Lesson, reviews: Review[], now: number): StudyPlanTopic[] {
-  const segments = new Map(lesson.segments.map(segment => [segment.id, segment]));
-  const clear = lesson.segments.filter(segment => !segment.flags.length && segment.text.trim()
-    && Number.isFinite(segment.start) && Number.isFinite(segment.end) && segment.start >= 0 && segment.end > segment.start);
+  const segments = new Map(sourcePassages(lesson).map(segment => [segment.id, segment]));
+  const clear = sourcePassages(lesson).filter(segment => !segment.flags.length && segment.text.trim()&&validSourcePassage(segment));
   const notes = lesson.noteOptions?.enabled === false ? []
-    : (lesson.artifacts?.notes ?? []).filter(note => note.heading.trim() && note.text.trim() && evidenceValid(note.evidence, lesson.segments));
-  const practice = lesson.artifacts ? safePractice(lesson.artifacts).filter(item => evidenceValid(item.evidence, lesson.segments)) : [];
+    : (lesson.artifacts?.notes ?? []).filter(note => note.heading.trim() && note.text.trim() && evidenceValid(note.evidence, sourcePassages(lesson)));
+  const practice = lesson.artifacts ? safePractice(lesson.artifacts).filter(item => evidenceValid(item.evidence, sourcePassages(lesson))) : [];
   const drafts: TopicDraft[] = notes.map((note, index) => ({
     id: `${lesson.id}:${lesson.version}:note:${index}`, lessonId: lesson.id, lessonVersion: lesson.version,
     title: note.heading.trim(), description: note.text.trim(), kind: "note",
@@ -112,7 +113,7 @@ function lessonTopics(lesson: Lesson, reviews: Review[], now: number): StudyPlan
     const segment = segments.get(segmentId)!;
     drafts.push({
       id: `${lesson.id}:${lesson.version}:practice:${segmentId}`, lessonId: lesson.id, lessonVersion: lesson.version,
-      title: `Practice from ${formatTime(segment.start)}`, description: segment.text, kind: "practice",
+      title: `Practice from ${sourceLabel(segment)}`, description: segment.text, kind: "practice",
       sources: sourceList(items.flatMap(item => item.evidence), segments), practiceItemIds: items.map(item => item.id),
     });
   }
@@ -121,8 +122,8 @@ function lessonTopics(lesson: Lesson, reviews: Review[], now: number): StudyPlan
     const first = clear[0];
     drafts.push({
       id: `${lesson.id}:${lesson.version}:transcript`, lessonId: lesson.id, lessonVersion: lesson.version,
-      title: `Listen from ${formatTime(first.start)}`, description: first.text, kind: "transcript",
-      sources: [{ segmentId: first.id, quote: first.text, start: first.start, end: first.end }], practiceItemIds: [],
+      title: `${isPdfPage(first)?"Read":"Listen"} from ${sourceLabel(first)}`, description: first.text, kind: "transcript",
+      sources: sourceList([{segmentId:first.id,quote:first.text}],segments), practiceItemIds: [],
     });
   }
   const validItems = new Set(practice.map(item => item.id));
@@ -132,7 +133,7 @@ function lessonTopics(lesson: Lesson, reviews: Review[], now: number): StudyPlan
     const current = saved.get(review.itemId);
     if (!current || review.attempts > current.attempts) saved.set(review.itemId, review);
   }
-  return drafts.sort((a, b) => (a.sources[0]?.start ?? 0) - (b.sources[0]?.start ?? 0))
+  return drafts.sort((a, b) => (a.sources[0]?.page??a.sources[0]?.start ?? 0) - (b.sources[0]?.page??b.sources[0]?.start ?? 0))
     .map(draft => addProgress(draft, saved, now));
 }
 
@@ -144,10 +145,10 @@ export function getStudyPlan(lessons: Lesson[], reviews: Review[], options: Plan
   const visible = eligible.filter(lesson => !options.course || lesson.course === options.course)
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || a.id.localeCompare(b.id));
   const units = visible.map(lesson => ({
-    lessonId: lesson.id, title: lesson.title, course: lesson.course, createdAt: lesson.createdAt, duration: lesson.duration,
+    lessonId: lesson.id, title: lesson.title, course: lesson.course, createdAt: lesson.createdAt, duration: lesson.duration,sourceKind:lesson.sourceKind,sourcePageCount:lesson.sourcePageCount,
     topics: lessonTopics(lesson, reviews, now),
-    clearPassages: lesson.segments.filter(segment => !segment.flags.length && segment.text.trim()).length,
-    unclearPassages: lesson.segments.filter(segment => segment.flags.length > 0).length,
+    clearPassages: sourcePassages(lesson).filter(segment => !segment.flags.length && segment.text.trim()).length,
+    unclearPassages: sourcePassages(lesson).filter(segment => segment.flags.length > 0).length,
   }));
   const topics = units.flatMap(unit => unit.topics);
   const summary: StudyPlanSummary = {

@@ -9,6 +9,7 @@ import {
 import { getStudyPlan, type StudyPlanTopic, type StudyPlanUnit } from "@/lib/study-plan";
 import { formatTime, type Lesson, type PracticeItem, type Workspace } from "@/lib/types";
 import { ExamWeek } from "./learning-tools";
+import { pdfSourceUrl, sourceLabel } from "@/lib/source-passages";
 import { Modal } from "./modal";
 
 type Filter = "all" | "to_try" | "due";
@@ -44,8 +45,8 @@ function TopicRow({ topic, isNext, onOpen, onListen }: {
       <span className={`plan-ref-topic-status ${topic.status}`}>{statusText(topic)}</span>
       <ChevronRight size={17} aria-hidden="true"/>
     </button>
-    <button className="plan-ref-topic-listen" onClick={onListen} aria-label={`Listen to source at ${formatTime(topic.sources[0]?.start ?? 0)}`}>
-      <Play size={11} weight="fill" aria-hidden="true"/> {formatTime(topic.sources[0]?.start ?? 0)}
+    <button className="plan-ref-topic-listen" onClick={onListen} aria-label={`Open source at ${sourceLabel(topic.sources[0])}`}>
+      <Play size={11} weight="fill" aria-hidden="true"/> {sourceLabel(topic.sources[0])}
     </button>
   </li>;
 }
@@ -91,10 +92,11 @@ export function StudyPlanPage({ workspace, initialCourse, onUpload, onOpenLesson
   const quizItem = selected ? itemFor(selected, "quiz") : undefined;
   const flashcardItem = selected ? itemFor(selected, "flashcard") : undefined;
   const sourceTime = selected?.sources[0]?.start ?? 0;
+  function openSource(lesson:Lesson,topic:StudyPlanTopic){if(lesson.sourceKind==="pdf"){window.open(pdfSourceUrl(lesson,topic.sources[0]?.page),"_blank","noopener,noreferrer");}else onOpenSource(lesson,topic.sources[0]?.start??0);}
   const openHow = () => { setHowStep(0); setShowHow(true); };
   const howSteps = [
-    { tag: "01 / Your lesson", title: "Start with the recording", body: "Each topic comes from a prepared class lesson. The original audio stays one tap away." },
-    { tag: "02 / The source", title: "Check what was said", body: "Open the passage behind a topic. AI notes can miss words, so replay important details." },
+    { tag: "01 / Your lesson", title: "Start with your source", body: "Each topic comes from a prepared lesson or PDF. The original source stays one tap away." },
+    { tag: "02 / The source", title: "Check what was said", body: "Open the passage behind a topic. AI notes can miss words, so check important details in the original source." },
     { tag: "03 / Your next step", title: "Try it, then revisit", body: "A saved answer sets a review date. The plan shows your activity, not a mastery score." },
   ];
 
@@ -119,14 +121,14 @@ export function StudyPlanPage({ workspace, initialCourse, onUpload, onOpenLesson
     <section className="plan-how" aria-label="How the study plan works">
       <div className="plan-ref-banner-copy">
         <span className="plan-ref-kicker">GET THE MOST FROM YOUR PLAN</span>
-        <h2>From class audio to a clear next step.</h2>
+        <h2>From your sources to a clear next step.</h2>
         <p>Follow a topic, check its source, then practise.</p>
         <button onClick={openHow}>See how it works <ArrowRight size={15}/></button>
       </div>
       {firstTopic && <div className="plan-ref-banner-preview" aria-hidden="true">
         <span className="plan-ref-preview-label">FROM YOUR LESSON</span>
         <div className="plan-ref-preview-row"><span className="plan-ref-preview-pin"/><b dir="auto">{firstTopic.title}</b></div>
-        <div className="plan-ref-preview-row"><span className="plan-ref-preview-pin"/><span>Original audio · {formatTime(firstTopic.sources[0]?.start ?? 0)}</span></div>
+        <div className="plan-ref-preview-row"><span className="plan-ref-preview-pin"/><span>Original source · {sourceLabel(firstTopic.sources[0])}</span></div>
       </div>}
     </section>
 
@@ -154,24 +156,24 @@ export function StudyPlanPage({ workspace, initialCourse, onUpload, onOpenLesson
             <div className="plan-ref-unit-header">
               <button className="plan-ref-unit-toggle" aria-expanded={expanded} aria-controls={`plan-unit-${unit.lessonId}`} onClick={() => setExpandedId(expanded ? false : unit.lessonId)}>
                 <span className="plan-ref-unit-chevron"><ChevronDown size={17}/></span>
-                <span className="plan-ref-unit-title"><span className="plan-ref-unit-kicker"><AudioLines size={13}/>{unit.course} · {formatTime(unit.duration)} audio</span><strong dir="auto">{unit.title}</strong><small>{unit.topics.length} {unit.topics.length === 1 ? "topic" : "topics"}{unit.unclearPassages ? ` · ${unit.unclearPassages} unclear ${unit.unclearPassages === 1 ? "passage" : "passages"}` : ""}</small></span>
+                <span className="plan-ref-unit-title"><span className="plan-ref-unit-kicker"><AudioLines size={13}/>{unit.course} · {unit.sourceKind==="pdf"?`${unit.sourcePageCount} PDF pages`:`${formatTime(unit.duration)} audio`}</span><strong dir="auto">{unit.title}</strong><small>{unit.topics.length} {unit.topics.length === 1 ? "topic" : "topics"}{unit.unclearPassages ? ` · ${unit.unclearPassages} unclear ${unit.unclearPassages === 1 ? "passage" : "passages"}` : ""}</small></span>
               </button>
               <button className="plan-ref-open-lesson" onClick={() => { if (unitLesson) onOpenLesson(unitLesson); }}>Open lesson <ArrowRight size={14}/></button>
             </div>
             <div className="plan-ref-unit-content" id={`plan-unit-${unit.lessonId}`} hidden={!expanded}>
               {unitNext && <button className="plan-ref-checkpoint" onClick={() => setSelectedId(unitNext.id)}>
                 <span className="plan-ref-checkpoint-icon"><Clock3 size={17}/></span>
-                <span><strong>{unitNext.status === "due" ? "Revisit this passage" : unitNext.practiceCount ? "See what you know" : "Begin with the recording"}</strong><small>{unitNext.practiceCount ? `${unitNext.practiceCount} ${unitNext.practiceCount === 1 ? "question" : "questions"} from this passage` : `Original audio · ${formatTime(unitNext.sources[0]?.start ?? 0)}`}</small></span>
+                <span><strong>{unitNext.status === "due" ? "Revisit this passage" : unitNext.practiceCount ? "See what you know" : "Begin with the recording"}</strong><small>{unitNext.practiceCount ? `${unitNext.practiceCount} ${unitNext.practiceCount === 1 ? "question" : "questions"} from this passage` : `Original source · ${sourceLabel(unitNext.sources[0])}`}</small></span>
                 <b>Continue <ArrowRight size={14}/></b>
               </button>}
-              <ol className="plan-ref-topic-list">{unit.topics.map(topic => <TopicRow key={topic.id} topic={topic} isNext={topic.id === plan.next?.topicId} onOpen={() => setSelectedId(topic.id)} onListen={() => { if (unitLesson) onOpenSource(unitLesson, topic.sources[0]?.start ?? 0); }}/>)}</ol>
+              <ol className="plan-ref-topic-list">{unit.topics.map(topic => <TopicRow key={topic.id} topic={topic} isNext={topic.id === plan.next?.topicId} onOpen={() => setSelectedId(topic.id)} onListen={() => { if (unitLesson) openSource(unitLesson,topic); }}/>)}</ol>
               <div className="plan-ref-unit-source"><Headphones size={13}/> Source: <button onClick={() => { if (unitLesson) onOpenLesson(unitLesson); }} dir="auto">{unit.title}</button></div>
             </div>
           </article>;
         }) : <div className="plan-empty">
           <span className="plan-ref-empty-icon"><BookOpen size={28} strokeWidth={1.5}/></span>
           <h2>{!all.units.length ? pendingCount ? "Your lesson is being prepared" : "Start with a class recording" : filter === "due" ? "Nothing to revisit yet" : filter === "to_try" ? "No topics to try here" : "No lessons in this course"}</h2>
-          <p>{!all.units.length ? pendingCount ? "Your topics will appear when the lesson is ready." : "Add permitted class audio to build your study plan." : filter === "due" ? "Practise a question and it will return when it is due." : "Choose All to see your lesson topics."}</p>
+          <p>{!all.units.length ? pendingCount ? "Your topics will appear when the lesson is ready." : "Add permitted class audio or a PDF source to build your study plan." : filter === "due" ? "Practise a question and it will return when it is due." : "Choose All to see your lesson topics."}</p>
           <button onClick={!all.units.length ? onUpload : () => { setFilter("all"); setCourse(""); }}>
             {!all.units.length ? "Add a lesson" : "Show all topics"} <ArrowRight size={15}/>
           </button>
@@ -181,7 +183,7 @@ export function StudyPlanPage({ workspace, initialCourse, onUpload, onOpenLesson
       <aside className="plan-ref-side">
         <div className="plan-ref-next">
           <span className="plan-ref-kicker">YOUR NEXT STEP</span>
-          {sideTopic && sideLesson ? <><h2 dir="auto">{sideTopic.title}</h2><p>{sideTopic.status === "due" ? "A question is ready to revisit." : sideTopic.practiceCount ? "Try a question from this passage." : "Start with the original audio."}</p><span className="plan-ref-next-source"><Headphones size={14}/><span dir="auto">{sideLesson.title}</span><bdi>{formatTime(sideTopic.sources[0]?.start ?? 0)}</bdi></span><button onClick={() => setSelectedId(sideTopic.id)}>Start here <ArrowRight size={15}/></button></> : <><h2>{all.units.length ? "Nothing in this view." : "Your lessons, in order."}</h2><p>{all.units.length ? "Show all topics to choose what to study." : "Add a recording to begin."}</p><button onClick={all.units.length ? () => { setFilter("all"); setCourse(""); } : onUpload}>{all.units.length ? "See all topics" : "Add a lesson"} <ArrowRight size={15}/></button></>}
+          {sideTopic && sideLesson ? <><h2 dir="auto">{sideTopic.title}</h2><p>{sideTopic.status === "due" ? "A question is ready to revisit." : sideTopic.practiceCount ? "Try a question from this passage." : "Start with the original source."}</p><span className="plan-ref-next-source"><Headphones size={14}/><span dir="auto">{sideLesson.title}</span><bdi>{sourceLabel(sideTopic.sources[0])}</bdi></span><button onClick={() => setSelectedId(sideTopic.id)}>Start here <ArrowRight size={15}/></button></> : <><h2>{all.units.length ? "Nothing in this view." : "Your lessons, in order."}</h2><p>{all.units.length ? "Show all topics to choose what to study." : "Add a recording or PDF to begin."}</p><button onClick={all.units.length ? () => { setFilter("all"); setCourse(""); } : onUpload}>{all.units.length ? "See all topics" : "Add a lesson"} <ArrowRight size={15}/></button></>}
         </div>
         {!!all.units.length && <div className="plan-ref-activity">
           <h2>Your activity</h2>
@@ -195,24 +197,24 @@ export function StudyPlanPage({ workspace, initialCourse, onUpload, onOpenLesson
 
     <ExamWeek userId={workspace.userId} lessons={workspace.lessons} reviews={workspace.reviews} onOpen={onOpenLesson} onPractice={onOpenPractice}/>
     {selected && selectedLesson && <Modal title={selected.title} onClose={() => setSelectedId(null)} className="plan-ref-topic-modal">
-      <div className="plan-ref-modal-intro"><span className={`plan-ref-topic-status ${selected.status}`}>{statusText(selected)}</span><span><AudioLines size={13}/>{formatTime(sourceTime)} in original audio</span></div>
+      <div className="plan-ref-modal-intro"><span className={`plan-ref-topic-status ${selected.status}`}>{statusText(selected)}</span><span><AudioLines size={13}/>{sourceLabel(selected.sources[0])} in original source</span></div>
       {selected.kind === "note" && <p className="plan-ref-modal-note" dir="auto">{selected.description}</p>}
-      <button className="plan-ref-modal-source" onClick={() => { setSelectedId(null); onOpenSource(selectedLesson, sourceTime); }}>
-        <span><Play size={17} weight="fill"/></span><span><strong>Listen to the source</strong><small dir="auto">{selected.sources[0]?.quote || "Open the original recording"}</small></span><bdi>{formatTime(sourceTime)}</bdi>
+      <button className="plan-ref-modal-source" onClick={() => { setSelectedId(null); openSource(selectedLesson,selected); }}>
+        <span><Play size={17} weight="fill"/></span><span><strong>{selectedLesson.sourceKind==="pdf"?"Open the source page":"Listen to the source"}</strong><small dir="auto">{selected.sources[0]?.quote || "Open the original recording"}</small></span><bdi>{sourceLabel(selected.sources[0])}</bdi>
       </button>
       <div className="plan-ref-modal-actions">
-        <button onClick={() => { setSelectedId(null); selected.kind === "note" ? onOpenLesson(selectedLesson) : onOpenSource(selectedLesson, sourceTime); }}><BookOpen size={20}/><strong>{selected.kind === "note" ? "Read notes" : "Read transcript"}</strong><ArrowRight size={16}/></button>
+        <button onClick={() => { setSelectedId(null); selected.kind === "note" ? onOpenLesson(selectedLesson) : openSource(selectedLesson,selected); }}><BookOpen size={20}/><strong>{selected.kind === "note" ? "Read notes" : selectedLesson.sourceKind==="pdf"?"Read PDF pages":"Read transcript"}</strong><ArrowRight size={16}/></button>
         {flashcardItem && <button onClick={() => { setSelectedId(null); onOpenPractice(selectedLesson, flashcardItem.id); }}><Layers size={20}/><strong>Flashcards</strong><ArrowRight size={16}/></button>}
         {quizItem && <button onClick={() => { setSelectedId(null); onOpenPractice(selectedLesson, quizItem.id); }}><Check size={20}/><strong>Try a quiz</strong><ArrowRight size={16}/></button>}
         <button onClick={() => { setSelectedId(null); onAsk(selectedLesson); }}><MessageCircle size={20}/><strong>Ask about this lesson</strong><ArrowRight size={16}/></button>
       </div>
       {!quizItem && !flashcardItem && <p className="plan-ref-no-practice">No supported practice for this passage yet.</p>}
-      <p className="plan-ref-modal-safety">AI notes and transcripts can miss words. Check the recording for important details.</p>
+      <p className="plan-ref-modal-safety">AI notes and extracted text can miss words. Check the original source for important details.</p>
     </Modal>}
 
     {showHow && <Modal title="How your plan works" onClose={() => setShowHow(false)} className="plan-ref-how-modal">
       <div className="plan-ref-how-body"><span className="plan-ref-kicker">{howSteps[howStep].tag}</span><h3>{howSteps[howStep].title}</h3><p>{howSteps[howStep].body}</p>
-        <div className="plan-ref-how-card">{howStep === 0 ? <><AudioLines size={22}/><span><strong dir="auto">{plan.units[0]?.title || "Your class recording"}</strong><small>{plan.units[0] ? `${formatTime(plan.units[0].duration)} original audio` : "Add a lesson to begin"}</small></span></> : howStep === 1 ? <><BookOpen size={22}/><span><strong dir="auto">{firstTopic?.title || "A topic from your lesson"}</strong><small>{firstTopic ? `Source audio · ${formatTime(firstTopic.sources[0]?.start ?? 0)}` : "Linked to a passage"}</small></span></> : <><RotateCcw size={22}/><span><strong>{firstTopic?.practiceCount ? `${firstTopic.practiceCount} questions in this passage` : "Practise when supported"}</strong><small>Saved answers set review dates</small></span></>}</div>
+        <div className="plan-ref-how-card">{howStep === 0 ? <><AudioLines size={22}/><span><strong dir="auto">{plan.units[0]?.title || "Your class recording"}</strong><small>{plan.units[0] ? plan.units[0].sourceKind==="pdf"?`${plan.units[0].sourcePageCount} PDF pages`:`${formatTime(plan.units[0].duration)} original audio` : "Add a lesson to begin"}</small></span></> : howStep === 1 ? <><BookOpen size={22}/><span><strong dir="auto">{firstTopic?.title || "A topic from your lesson"}</strong><small>{firstTopic ? `Source · ${sourceLabel(firstTopic.sources[0])}` : "Linked to a passage"}</small></span></> : <><RotateCcw size={22}/><span><strong>{firstTopic?.practiceCount ? `${firstTopic.practiceCount} questions in this passage` : "Practise when supported"}</strong><small>Saved answers set review dates</small></span></>}</div>
       </div>
       <div className="plan-ref-how-footer"><div className="plan-ref-how-dots" aria-label={`Step ${howStep + 1} of 3`}>{howSteps.map((_, index) => <button key={index} onClick={() => setHowStep(index)} aria-label={`Show step ${index + 1}`} aria-current={index === howStep ? "step" : undefined}/>)}</div><div><button onClick={() => howStep ? setHowStep(howStep - 1) : setShowHow(false)}>{howStep ? "Back" : "Close"}</button><button onClick={() => howStep < 2 ? setHowStep(howStep + 1) : setShowHow(false)}>{howStep < 2 ? "Next" : "Done"}<ArrowRight size={15}/></button></div></div>
     </Modal>}

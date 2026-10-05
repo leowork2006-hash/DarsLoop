@@ -91,3 +91,11 @@ The actual quiz.bato.dev interface and StudyFetch Test setup were inspected on 6
 The actual StudyFetch test journey informed question-count rows, live previews, navigation and post-submission feedback. Official creation documentation: https://www.studyfetch.com/docs/docs/product-docs/6a63bfe5ee9569d818eecc3c . DarsLoop derives true/false, literal-word blanks and written recall from existing supported lesson questions/cards. Written recall uses a student self-check; no AI religious interpretation grade is supplied.
 
 Retrieval-format/feedback research informed this design, without claiming measured DarsLoop learning benefit: Smith & Karpicke (2014), Memory 22(7), 784–802, DOI 10.1080/09658211.2013.831454, https://learninglab.psych.purdue.edu/downloads/2014/2014_Smith_Karpicke_Memory.pdf ; feedback study https://pubmed.ncbi.nlm.nih.gov/18491500/ . These sources are credited, not redistributed.
+
+## Private PDF resources and study-material language — 6 October 2026
+
+- `unpdf` 1.8.1 (MIT), parser based on PDF.js: https://github.com/unjs/unpdf . PDF.js text extraction API: https://mozilla.github.io/pdf.js/examples/ . No OCR, external book corpus or public book fixture is bundled. Source passages retain physical page numbers and literal extracted quotes.
+- Native transcription and translated audio are separate API paths: https://console.groq.com/docs/speech-to-text . DarsLoop uses transcription and a separate generation-language choice. Language hints, extraction, audits and script checks do not establish native-speaker quality or complete word retention.
+- Supabase Free per-file global limit and private bucket caps: https://supabase.com/docs/guides/storage/uploads/file-limits . Prepared audio is capped at48,000,000bytes and private PDFs at8,000,000bytes, within that global cap. Actual media/API checks are scoped in docs/QA.md.
+
+One student’s private feedback motivated Arabic note choices, longer uploads and PDF resources. It is qualitative usability input, not a controlled student pilot or measured learning gain. Personal identity, class recordings, feedback screenshots and diagnostic data are excluded from this repository.

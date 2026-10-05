@@ -1,15 +1,16 @@
 import { z } from "zod";
-import type { Answer, Artifacts, Citation, Note, Segment, StudyNoteOptions } from "./types";
+import type { Answer, Artifacts, Citation, Note, StudyPassage, StudyNoteOptions } from "./types";
+import { isPdfPage, sourceCitations, validSourcePassage } from "./source-passages";
 import { resolveNoteOptions } from "./note-options";
-const citation=z.object({segmentId:z.string().max(100),quote:z.string().min(1).max(5000)});
+const citation=z.object({segmentId:z.string().max(100),quote:z.string().min(1).max(5000),page:z.number().int().positive().optional()});
 const citations=z.array(citation).min(1).max(6);
 const supported=z.object({heading:z.string().min(1).max(160),text:z.string().min(1).max(1800),evidence:citations});
-export const artifactSchema=z.object({overview:z.string().max(1500),notes:z.array(supported).max(40),terms:z.array(z.object({term:z.string().max(100),definition:z.string().max(600),evidence:citations})).max(30),practice:z.array(z.object({id:z.string().min(1).max(100),kind:z.enum(["quiz","flashcard"]),question:z.string().min(1).max(600),answer:z.string().min(1).max(1200),choices:z.array(z.string().max(600)).max(4),evidence:citations})).max(40)});
+export const artifactSchema=z.object({language:z.enum(["ar","ur","en"]).optional(),overview:z.string().max(1500),notes:z.array(supported).max(40),terms:z.array(z.object({term:z.string().max(100),definition:z.string().max(600),evidence:citations})).max(30),practice:z.array(z.object({id:z.string().min(1).max(100),kind:z.enum(["quiz","flashcard"]),question:z.string().min(1).max(600),answer:z.string().min(1).max(1200),choices:z.array(z.string().max(600)).max(4),evidence:citations})).max(40)});
 export const answerSchema=z.object({status:z.enum(["answered","partial","not_covered","unclear_audio","needs_teacher"]),blocks:z.array(z.object({text:z.string().min(1).max(1800),evidence:citations})).max(6),message:z.string().max(800)});
-export function evidenceValid(evidence:Citation[],segments:Segment[]) {
+export function evidenceValid(evidence:Citation[],segments:StudyPassage[]) {
   return evidence.length>0&&evidence.every(c=>{
     const s=segments.find(s=>s.id===c.segmentId);
-    return !!s&&!s.flags.length&&!instructionLike(s.text)&&c.quote.trim().length>=12&&s.text.includes(c.quote)&&Number.isFinite(s.start)&&Number.isFinite(s.end)&&s.start>=0&&s.end>s.start;
+    return !!s&&!s.flags.length&&!instructionLike(s.text)&&c.quote.trim().length>=12&&s.text.includes(c.quote)&&validSourcePassage(s)&&(isPdfPage(s)?c.page===undefined||c.page===s.page:c.page===undefined);
   });
 }
 export function safePractice(artifacts:Artifacts) {
@@ -23,8 +24,9 @@ export function safePractice(artifacts:Artifacts) {
     return !literal;
   });
 }
-export function validateArtifacts(input:unknown,segments:Segment[],options?:StudyNoteOptions):Artifacts {
+export function validateArtifacts(input:unknown,segments:StudyPassage[],options?:StudyNoteOptions):Artifacts {
   const a=artifactSchema.parse(input);
+  for(const collection of [a.notes,a.terms,a.practice])for(const item of collection)if(evidenceValid(item.evidence,segments))item.evidence=sourceCitations(item.evidence,segments);
   const noteOptions=resolveNoteOptions(options);
   const notes=noteOptions.enabled?a.notes.filter(n=>evidenceValid(n.evidence,segments)):[];
   const terms=a.terms.filter(t=>evidenceValid(t.evidence,segments));
@@ -38,16 +40,16 @@ export function validateArtifacts(input:unknown,segments:Segment[],options?:Stud
   // Overview must be derived from validated notes rather than an uncited model paragraph.
   return {...a,overview:notes.slice(0,3).map(n=>n.text).join(" "),notes,terms,practice:safePractice({...a,notes,terms,practice})};
 }
-export function validateAnswer(input:unknown,segments:Segment[],version:number):Answer {
+export function validateAnswer(input:unknown,segments:StudyPassage[],version:number):Answer {
   const a=answerSchema.parse(input);
-  const blocks=a.blocks.filter(b=>evidenceValid(b.evidence,segments));
+  const blocks=a.blocks.filter(b=>evidenceValid(b.evidence,segments)).map(b=>({...b,evidence:sourceCitations(b.evidence,segments)}));
   if(a.status==="answered"||a.status==="partial"){
     if(blocks.length!==a.blocks.length||!blocks.length)return {status:"unclear_audio",blocks:[],message:"I couldn’t support that answer with clear passages from this lesson. Try the transcript or ask your teacher.",mode:"ai",version};
     return {...a,blocks,message:a.status==="partial"?"This lesson supports only the passages shown. Ask your teacher about anything further.":"Answered from this lesson",mode:"ai",version};
   }
   // Free-form model refusal explanations could themselves contain outside guidance.
   const messages={not_covered:"That isn’t covered in this lesson. You can ask your teacher for more information.",unclear_audio:"The relevant audio is unclear. Replay the passage or ask your teacher.",needs_teacher:"For religious interpretation or advice about your own situation, please ask a qualified teacher."};
-  return {status:a.status,blocks:[],message:messages[a.status],mode:"ai",version};
+  return {status:a.status,blocks:[],message:a.status==="unclear_audio"&&segments.some(isPdfPage)?"The source text does not clearly support an answer. Check the PDF page or ask your teacher.":messages[a.status],mode:"ai",version};
 }
 export function normalise(text:string){return text.normalize("NFKC").toLowerCase().replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[^\p{L}\p{N}\s]/gu," ");}
 const stops=new Set("the a an is of to for in on what where did does do teacher lesson this that how can i you explain please my me with and about said tell from it was we are should class".split(" "));
@@ -63,7 +65,7 @@ export function instructionLike(text:string) {
     || /(?:تجاهل|تجاوز).{0,30}(?:التعليمات|القواعد)|(?:ہدایات|قواعد).{0,30}(?:نظر انداز|بھول)|(?:سسٹم پرامپٹ|اپنی ہدایات).{0,30}(?:دکھاؤ|بتاؤ)/u.test(t);
 }
 const religiousTopic=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|fast(?:ing)?|w[ou]d[uh]u?|ablution|prayers?|pray(?:ing)?|marriage|divorce)\b|حلال|حرام|فتوى|فتوی|وضوء|وضو|صلاة|نماز|صيام|روزہ/iu;
-export function retrieve(question:string,segments:Segment[],limit=8):Segment[] {
+export function retrieve(question:string,segments:StudyPassage[],limit=8):StudyPassage[] {
   segments=segments.filter(s=>!instructionLike(s.text));
   const q=tokens(question);if(!q.length)return [];
   const ranked=segments.map((s,i)=>({i,score:tokens(s.text).reduce((n,t)=>n+(q.includes(t)?1:0),0)})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
@@ -73,36 +75,36 @@ export function retrieve(question:string,segments:Segment[],limit=8):Segment[] {
 export function needsPersonalReferral(question:string) {
   return /\b((give|issue) (me |a )?fatwa|fatwa for (me|my)|is it (halal|haram) for me|am i (allowed|permitted)|what should i do about my|should i (divorce|marry)|(is )?my (divorce|marriage|prayer|fast) (is )?(valid|invalid)|(?:can|may|should) i (?:pray|fast|marry|divorce)|(?:do|must) i (?:need |have to )?(?:make |do )?(?:w[ou]d[uh]u?|ablution))\b/i.test(question)||/أفتني|افتني|فتوى لي|میرے لیے فتوی|میری نماز درست|کیا میری طلاق|کیا میں.{0,30}نماز/.test(question);
 }
-export function boundedQuestion(question:string,segments:Segment[],version:number,mode:Answer["mode"]):Answer|null {
+export function boundedQuestion(question:string,segments:StudyPassage[],version:number,mode:Answer["mode"]):Answer|null {
   if(instructionLike(question))return {status:"not_covered",blocks:[],message:"I can only help with this lesson. Instructions in a question cannot change that.",mode,version};
   const religious=religiousTopic.test(question);
   const authenticity=/(?:\b(?:hadith|hadeeth|narration|isnad|matn)\b|حديث|حدیث)/iu.test(question)&&/(?:\b(?:authentic(?:ity)?|grad(?:e|ing)|sahih|saheeh|hasan|hassan|weak|daif|fabricated|reliable|true|isnad|matn)\b|صحيح|صحیح|حسن|ضعيف|ضعیف|سند)/iu.test(question);
   if(authenticity)return {status:"needs_teacher",blocks:[],message:"I cannot grade a hadith. A source lookup can show a possible match; verify with your teacher. The publisher’s record stays separate from this lesson.",mode,version};
   if(!religious&&!needsPersonalReferral(question))return null;
   const reporting=/\b(?:(?:what|where|how) (?:did|does) (?:our |my |the |this )?teacher|did (?:our |my |the )?teacher|according to (?:our |my |the )?teacher|teacher (?:say|said|teach|explain)|in (?:this |the )?(?:class|lesson))\b|استاد نے|معلم|المعلم/iu.test(question);
-  if(!reporting||needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher for religious guidance. I cannot give a halal/haram ruling or advice about your own situation.",mode,version};
+  if(!(reporting||(segments.some(isPdfPage)&&/according to (?:this |the )?(?:pdf|source|book)|what does (?:this |the )?(?:pdf|source|book) (?:say|state)|in (?:this |the )?(?:pdf|source|book)/iu.test(question)))||needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher for religious guidance. I cannot give a halal/haram ruling or advice about your own situation.",mode,version};
   const meaningful=tokens(question).filter(t=>!["whether","ruling","teach","say","according"].includes(t));
   const matches=segments.filter(s=>evidenceValid([{segmentId:s.id,quote:s.text}],segments)&&meaningful.some(t=>tokens(s.text).includes(t))&&religiousTopic.test(s.text)).slice(0,2);
   if(!matches.length)return {status:"not_covered",blocks:[],message:"That is not covered by a clear passage in this lesson. Ask your teacher.",mode,version};
-  return {status:"answered",blocks:matches.map(s=>({text:s.text,evidence:[{segmentId:s.id,quote:s.text}]})),message:"These are your teacher’s captured words, not a ruling from DarsLoop. Ask your teacher about interpretation or your situation.",mode:"excerpt",version};
+  return {status:"answered",blocks:matches.map(s=>({text:s.text,evidence:sourceCitations([{segmentId:s.id,quote:s.text}],segments)})),message:segments.some(isPdfPage)?"This is a source excerpt. DarsLoop does not give religious rulings; ask a qualified teacher about interpretation.":"These are your teacher’s captured words, not a ruling from DarsLoop. Ask your teacher about interpretation or your situation.",mode:"excerpt",version};
 }
 /** A saved topic suggestion is a pointer to audited quotes, never extra evidence. */
-export function noteAnchors(question:string,segments:Segment[],notes:Note[]=[]) {
-  const topic=/^What did the teacher say about [“"](.{1,160})[”"]\?$/u.exec(question.trim())?.[1];
+export function noteAnchors(question:string,segments:StudyPassage[],notes:Note[]=[]) {
+  const topic=/^(?:What did the teacher say|What does the source say) about [“"](.{1,160})[”"]\?$/u.exec(question.trim())?.[1];
   if(!topic||instructionLike(question))return [];
   const note=notes.find(n=>normalise(n.heading).trim()===normalise(topic).trim()&&evidenceValid(n.evidence,segments));
   if(!note)return [];
   return segments.filter(s=>note.evidence.some(c=>c.segmentId===s.id));
 }
-export function excerptAnswer(question:string,segments:Segment[],version:number,notes:Note[]=[]):Answer {
+export function excerptAnswer(question:string,segments:StudyPassage[],version:number,notes:Note[]=[]):Answer {
   const bounded=boundedQuestion(question,segments,version,"excerpt");if(bounded)return bounded;
   if(needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher about applying religious teachings to your own situation.",mode:"excerpt",version};
   const anchors=noteAnchors(question,segments,notes);
   const related=(anchors.length?anchors:retrieve(question,segments).filter(s=>tokens(question).some(t=>tokens(s.text).includes(t)))).slice(0,2);
   if(!related.length)return {status:"not_covered",blocks:[],message:"I couldn’t find a supporting passage in this lesson. Try a more specific question or ask your teacher.",mode:"excerpt",version};
   const clear=related.filter(s=>!s.flags.length);
-  if(!clear.length)return {status:"unclear_audio",blocks:[],message:"The matching passage is marked unclear. Please replay it.",mode:"excerpt",version};
-  return {status:"answered",blocks:clear.map(s=>({text:s.text,evidence:[{segmentId:s.id,quote:s.text}]})),message:"These are the teacher’s captured words. Replay the audio to check the explanation.",mode:"excerpt",version};
+  if(!clear.length)return {status:"unclear_audio",blocks:[],message:segments.some(isPdfPage)?"The matching page is flagged. Check the original PDF.":"The matching passage is marked unclear. Please replay it.",mode:"excerpt",version};
+  return {status:"answered",blocks:clear.map(s=>({text:s.text,evidence:sourceCitations([{segmentId:s.id,quote:s.text}],segments)})),message:segments.some(isPdfPage)?"These are exact extracted source excerpts. Open the cited PDF page to check the wording and layout.":"These are the teacher’s captured words. Replay the audio to check the explanation.",mode:"excerpt",version};
 }
 export function segmentFlags(d:{avg_logprob?:number;no_speech_prob?:number;compression_ratio?:number},text:string) {
   const flags:string[]=[];

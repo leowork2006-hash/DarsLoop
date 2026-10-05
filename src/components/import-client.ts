@@ -20,12 +20,15 @@ function uploadPart(url:string,part:Blob,signal:AbortSignal,progress:(bytes:numb
   });
 }
 export async function uploadLesson(audio:File,options:Options,signal:AbortSignal,onProgress:(percent:number)=>void=()=>{}){
-  const signature=JSON.stringify(options);let session=sessions.get(audio);
+  // This selects the server parser only; the server verifies the actual bytes.
+  const sourceKind=/\.pdf$/i.test(audio.name)||audio.type==="application/pdf"?"pdf":"audio";
+  const signature=JSON.stringify({...options,sourceKind});let session=sessions.get(audio);
   if(!session||session.options!==signature){
-    const started=await api<{mode:"local"|"cloud";id:string;parts:number}>("/api/imports",{method:"POST",body:JSON.stringify({action:"start",bytes:audio.size,...options}),signal});
+    const started=await api<{mode:"local"|"cloud";id:string;parts:number}>("/api/imports",{method:"POST",body:JSON.stringify({action:"start",bytes:audio.size,...options,sourceKind}),signal});
     if(started.mode==="local"){
       const form=new FormData();form.set("audio",audio);form.set("title",options.title);form.set("course",options.course);
-      form.set("permitted",String(options.permitted));form.set("synthetic",String(options.synthetic));form.set("notesEnabled",String(options.noteOptions.enabled));form.set("noteDetail",options.noteOptions.detail);form.set("spokenLanguage",options.spokenLanguage||"auto");
+      form.set("permitted",String(options.permitted));form.set("synthetic",String(options.synthetic));form.set("notesEnabled",String(options.noteOptions.enabled));form.set("noteDetail",options.noteOptions.detail);form.set("spokenLanguage",options.spokenLanguage||"auto");form.set("studyLanguage",options.noteOptions.language||"auto");
+      form.set("sourceKind",sourceKind);
       const result=await api<Lesson>("/api/lessons",{method:"POST",body:form,signal});onProgress(100);return result;
     }
     session={id:started.id,parts:started.parts,options:signature};sessions.set(audio,session);

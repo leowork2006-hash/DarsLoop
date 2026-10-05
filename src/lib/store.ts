@@ -1,3 +1,4 @@
+import { sourcePassages } from "./source-passages";
 import { DatabaseSync } from "node:sqlite";
 import { randomUUID, createHash, randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
@@ -58,11 +59,13 @@ export function rawLesson(id:string):Lesson|null {const row=db().prepare("SELECT
 export function safeLesson(l:Lesson):Lesson {
   // Also guard older saved transcripts without rewriting their stored text/audio.
   const segments=l.segments.map(s=>instructionLike(s.text)?{...s,flags:[...new Set([...s.flags,"Instruction-like wording: excluded from AI study material; replay the audio"])]}:s);
-  if(!l.artifacts)return {...l,segments};
-  const notes=l.artifacts.notes.filter(n=>evidenceValid(n.evidence,segments));
-  const terms=l.artifacts.terms.filter(t=>evidenceValid(t.evidence,segments));
-  const a={...l.artifacts,notes,terms,overview:notes.slice(0,3).map(n=>n.text).join(" "),practice:l.artifacts.practice.filter(p=>evidenceValid(p.evidence,segments))};
-  return {...l,segments,artifacts:{...a,practice:l.demo?a.practice:safePractice(a)}};
+  const pdfPages=l.pdfPages?.map(p=>instructionLike(p.text)?{...p,flags:[...new Set([...p.flags,"Instruction-like wording: excluded from AI study material; check the PDF"])]}:p);
+  const passages=sourcePassages({...l,segments,pdfPages});
+  if(!l.artifacts)return {...l,segments,pdfPages};
+  const notes=l.artifacts.notes.filter(n=>evidenceValid(n.evidence,passages));
+  const terms=l.artifacts.terms.filter(t=>evidenceValid(t.evidence,passages));
+  const a={...l.artifacts,notes,terms,overview:notes.slice(0,3).map(n=>n.text).join(" "),practice:l.artifacts.practice.filter(p=>evidenceValid(p.evidence,passages))};
+  return {...l,segments,pdfPages,artifacts:{...a,practice:l.demo?a.practice:safePractice(a)}};
 }
 export function authorizedLesson(user:string,id:string):Lesson|null {
   const l=rawLesson(id); if(!l)return null;
@@ -74,7 +77,7 @@ export function listLessons(user:string):Lesson[] {
   const rows=db().prepare("SELECT DISTINCT l.payload FROM lessons l LEFT JOIN shares s ON s.lesson_id=l.id AND s.version=l.version LEFT JOIN memberships m ON m.group_id=s.group_id WHERE l.owner_id=? OR m.user_id=?").all(user,user) as {payload:string}[];
   return rows.map(r=>JSON.parse(r.payload) as Lesson).map(l=>({...l,shared:l.ownerId!==user})).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
 }
-export function publicLesson(l:Lesson) { const {sourceImport,...visible}=safeLesson(l);void sourceImport;return {...visible,audioPath:"",audioUrl:`/api/lessons/${l.id}/audio?v=${l.version}`}; }
+export function publicLesson(l:Lesson) { const {sourceImport,...visible}=safeLesson(l);void sourceImport;return {...visible,audioPath:"",...(l.sourceKind==="pdf"?{pdfUrl:`/api/lessons/${l.id}/pdf?v=${l.version}`}:{audioUrl:`/api/lessons/${l.id}/audio?v=${l.version}`})}; }
 export function updateLesson(l:Lesson,expectedVersion=l.version) {
   const result=db().prepare("UPDATE lessons SET version=?,payload=? WHERE id=? AND owner_id=? AND version=?").run(l.version,JSON.stringify(l),l.id,l.ownerId,expectedVersion);
   if(result.changes!==1)throw new Error("The lesson changed. Reload before trying again.");
@@ -85,10 +88,10 @@ export function queueLesson(l:Lesson,isNew=false) {
   try{if(isNew)insertLesson(l);else updateLesson(l);enqueue(l.id);db().exec("COMMIT");}
   catch(e){db().exec("ROLLBACK");throw e;}
 }
-export function claimJob() {
+export function claimJob(pdfOnly=false) {
   const lease=randomUUID();
   // Single atomic statement provides a fencing token across worker processes.
-  const row=db().prepare("UPDATE jobs SET status='running',lease=?,lease_until=?,attempts=attempts+1 WHERE id=(SELECT id FROM jobs WHERE available_at<=? AND attempts<3 AND (status='queued' OR (status='running' AND lease_until<?)) ORDER BY rowid LIMIT 1) RETURNING id,lesson_id,lease,attempts").get(lease,Date.now()+90_000,Date.now(),Date.now()) as {id:string;lesson_id:string;lease:string;attempts:number}|undefined;
+  const row=db().prepare("UPDATE jobs SET status='running',lease=?,lease_until=?,attempts=attempts+1 WHERE id=(SELECT id FROM jobs WHERE (?=0 OR lesson_id IN (SELECT id FROM lessons WHERE json_extract(payload,'$.sourceKind')='pdf')) AND available_at<=? AND attempts<3 AND (status='queued' OR (status='running' AND lease_until<?)) ORDER BY rowid LIMIT 1) RETURNING id,lesson_id,lease,attempts").get(lease,Date.now()+90_000,pdfOnly?1:0,Date.now(),Date.now()) as {id:string;lesson_id:string;lease:string;attempts:number}|undefined;
   return row||null;
 }
 export function heartbeat(jobId:string,lease:string) {const now=Date.now();return db().prepare("UPDATE jobs SET lease_until=? WHERE id=? AND lease=? AND status='running' AND lease_until>?").run(now+90_000,jobId,lease,now).changes===1;}

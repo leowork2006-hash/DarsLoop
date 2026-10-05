@@ -2,17 +2,21 @@ import type { SpokenLanguage } from "./spoken-language";
 import { mkdir, rm, readFile } from "node:fs/promises";
 import path from "node:path";
 import { dataDir, heartbeat, jobCommit, rawLesson, prepareAudio, storeAudio, removeCloudAudio, reserveAudio } from "./backend";
-import { audioChunk, prepareImportedAudio, MediaError } from "./media";
+import { audioChunk, prepareImportedAudio, MediaError, MAX_DURATION } from "./media";
 import { materializeImport, removeImport } from "./supabase/imports";
 import { adminClient } from "./supabase/admin";
 import { createArtifacts, POLICY_VERSION, ProviderError, transcribe } from "./ai";
 import { selectedProvider, transcribeDeepgram, transcribeSpeechmatics, type TranscriptionProvider } from "./transcription";
+import { extractPdf } from "./pdf";
+import { PdfError } from "./pdf-options";
+import { pdfBytes, pdfExists, storePdf, removePdf } from "./pdf-storage";
+import { sourcePassages } from "./source-passages";
 import { segmentFlags } from "./evidence";
 import { compareTranscriptions } from "./audio-guard";
 import { resolveNoteOptions } from "./note-options";
 import type { Segment } from "./types";
 export function chunkPlan(duration:number) {
-  if(!Number.isFinite(duration)||duration<=0||duration>5400)throw new Error("Invalid recording duration");
+  if(!Number.isFinite(duration)||duration<=0||duration>MAX_DURATION)throw new Error("Invalid recording duration");
   return Array.from({length:Math.ceil(duration/600)},(_,index)=>{
     const coreStart=index*600,coreEnd=Math.min(duration,coreStart+600);
     const start=Math.max(0,coreStart-8),end=Math.min(duration,coreEnd+8);
@@ -43,6 +47,27 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
   const timer=setInterval(()=>{void heartbeat(job.id,job.lease).then(ok=>{held=ok;}).catch(()=>{held=false;});},20_000);
   try {
     await mkdir(temp,{recursive:true,mode:0o700});
+    if(lesson.sourceKind==="pdf"){
+      if(lesson.sourceImport){
+        const parts=lesson.sourceImport.parts;
+        if(!await pdfExists(lesson)){
+          const source=path.join(temp,"source.pdf");await materializeImport(lesson,source);
+          const bytes=await readFile(source),parsed=await extractPdf(bytes,lesson.version);
+          if(!held||!await heartbeat(job.id,job.lease))throw new Error("Lease lost");
+          lesson=await storePdf({...lesson,pdfPages:parsed.pages,sourcePageCount:parsed.totalPages},bytes);importStored=true;
+          await jobCommit(job.id,job.lease,lesson);
+        }
+        lesson={...lesson,sourceImport:undefined};await jobCommit(job.id,job.lease,lesson);await removeImport(lesson.ownerId,lesson.id,parts);
+      }
+      if(!lesson.pdfPages?.length){const parsed=await extractPdf(await pdfBytes(lesson),lesson.version);lesson={...lesson,pdfPages:parsed.pages,sourcePageCount:parsed.totalPages};await jobCommit(job.id,job.lease,lesson);}
+      const noteOptions=resolveNoteOptions(lesson.noteOptions);
+      lesson={...lesson,noteOptions,status:"processing",nextAttemptAt:undefined,error:null,stage:noteOptions.enabled?"Making source-grounded notes & practice":"Making source-grounded practice"};await jobCommit(job.id,job.lease,lesson);
+      let artifacts;
+      try{artifacts=await providers.createArtifacts(sourcePassages(lesson),noteOptions);}
+      catch(error){if(!(error instanceof ProviderError)||error.code==="quota")throw error;await jobCommit(job.id,job.lease,{...lesson,status:"ready",stage:"PDF ready · study material paused",error:error.message},true);return;}
+      if(!held)throw new Error("Lease lost");
+      await jobCommit(job.id,job.lease,{...lesson,artifacts,status:"ready",stage:"Ready to study",error:null},true);return;
+    }
     let original:string;
     if(lesson.sourceImport){
       const sourceImport=lesson.sourceImport;
@@ -99,11 +124,11 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
       await jobCommit(job.id,job.lease,{...lesson,status:"ready",stage:"Transcript ready · study material paused",error:error.message},true);
       return;
     }
-    await jobCommit(job.id,job.lease,{...lesson,artifacts,status:"ready",stage:"Ready to study",error:artifacts.warnings?.join(" ")||null,providers:lesson.providers},true);
+    await jobCommit(job.id,job.lease,{...lesson,artifacts,status:"ready",stage:"Ready to study",error:null,providers:lesson.providers},true);
   }catch(error){
     // Diagnostic codes only: never log transcript text, file names or credentials.
     const rawCode=error instanceof Error&&"code" in error?String(error.code):"";
-    console.log(JSON.stringify({event:"lesson-processing-error",stage:lesson.stage,code:error instanceof ProviderError||error instanceof MediaError?error.code:/^[A-Z_0-9]+$/.test(rawCode)?rawCode:"internal",kind:error instanceof Error?error.constructor.name:"unknown"}));
+    console.log(JSON.stringify({event:"lesson-processing-error",stage:lesson.stage,code:error instanceof ProviderError||error instanceof MediaError||error instanceof PdfError?error.code:/^[A-Z_0-9]+$/.test(rawCode)?rawCode:"internal",kind:error instanceof Error?error.constructor.name:"unknown"}));
     throw error;
-  }finally{clearInterval(timer);await rm(temp,{recursive:true,force:true});if(importStored){try{if(!await rawLesson(job.lesson_id))await removeCloudAudio(lesson);}catch{/* Deletion can retry cleanup when the storage service recovers. */}}}
+  }finally{clearInterval(timer);await rm(temp,{recursive:true,force:true});if(importStored){try{if(!await rawLesson(job.lesson_id))await (lesson.sourceKind==="pdf"?removePdf(lesson):removeCloudAudio(lesson));}catch{/* Deletion can retry cleanup when the storage service recovers. */}}}
 }

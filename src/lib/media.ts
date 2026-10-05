@@ -4,12 +4,13 @@ import { readFile, stat, copyFile, unlink, open, chmod } from "node:fs/promises"
 import { MAX_IMPORT_BYTES, MAX_STORED_AUDIO_BYTES } from "./upload-options";
 const run=promisify(execFile);
 export const MAX_UPLOAD=MAX_IMPORT_BYTES;
-export const MAX_DURATION=60*60;
-// Encoders can report a few extra frames of padding for an exactly one-hour
+export const MAX_DURATION=2*60*60;
+// Encoders can report a few extra frames of padding for an exactly two-hour
 // recording. Keep its public timeline capped, without accepting extra minutes.
 export class MediaError extends Error { constructor(public code:string,message:string){super(message);} }
 export function boundedMediaDuration(value:number) {
-  if(!Number.isFinite(value)||value<=0||value>MAX_DURATION+0.25)throw new MediaError("media_duration","Choose a valid audio recording of up to one hour.");
+  if(!Number.isFinite(value)||value<=0)throw new MediaError("media_duration","The recording's duration could not be read. Choose a complete audio file.");
+  if(value>MAX_DURATION+0.25)throw new MediaError("media_duration",`This recording is ${Math.ceil(value/60)} minutes long. Upload a lesson of up to 120 minutes. Your original file has not been shortened.`);
   return Math.min(value,MAX_DURATION);
 }
 export function mediaMime(bytes:Buffer) {

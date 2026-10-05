@@ -92,7 +92,7 @@ export function updateExamPlan(items: PracticeItem[], plan: ExamPlan, format: Ex
 }
 
 /** Each canonical source item appears once. The format key stays stable across navigation and retries. */
-export function buildExam(items: PracticeItem[], requested: ExamPlan): ExamQuestion[] {
+export function buildExam(items: PracticeItem[], requested: ExamPlan,sourceKind?:"audio"|"pdf",language?:"ar"|"ur"|"en"): ExamQuestion[] {
   const pools = examPools(items), count = (value: number, max: number) => Math.max(0, Math.min(max, Math.trunc(Number.isFinite(value) ? value : 0)));
   const mcqCount = count(requested["multiple-choice"], pools.quiz.length);
   const tfCount = count(requested["true-false"], pools.quiz.length - mcqCount);
@@ -104,9 +104,9 @@ export function buildExam(items: PracticeItem[], requested: ExamPlan): ExamQuest
     ...pools.quiz.slice(0, mcqCount).map(source => question(source, "multiple-choice", { choices: source.choices })),
     ...pools.quiz.slice(mcqCount, mcqCount + tfCount).map((source, position) => {
       const candidate = position % 2 === 0 ? source.choices.find(choice => choice !== source.answer)! : source.answer;
-      return question(source, "true-false", { prompt: `Is this the teacher’s answer to “${source.question}”?`, choices: ["True", "False"], candidate });
+      return question(source, "true-false", { prompt: language==="ar"?`هل هذه إجابة ${sourceKind==="pdf"?"المصدر":"المعلم"} عن السؤال «${source.question}»؟`:language==="ur"?`کیا یہ ${sourceKind==="pdf"?"ماخذ":"استاد"} کا سوال “${source.question}” کا جواب ہے؟`:`Is this the ${sourceKind==="pdf"?"source-supported answer":"teacher’s answer"} to “${source.question}”?`, choices: language==="ar"?["صحيح","خطأ"]:language==="ur"?["درست","غلط"]:["True", "False"], candidate });
     }),
-    ...cloze.map(source => question(source, "fill-blank", { prompt: "Recall the missing word from the captured wording.", ...literalCloze(source)! })),
+    ...cloze.map(source => question(source, "fill-blank", { prompt: language==="ar"?"تذكر الكلمة الأصلية الناقصة من الاقتباس.":language==="ur"?"اقتباس میں خالی جگہ کا اصل لفظ یاد کریں۔":"Recall the missing word from the captured wording.", ...literalCloze(source)! })),
     ...written.map(source => question(source, "written")),
   ];
 }
@@ -116,7 +116,7 @@ export function examHasAnswer(question: ExamQuestion, answer: string | undefined
 export function automaticExamResult(question: ExamQuestion, answer: string | undefined): boolean | undefined {
   if (question.format === "written" || !examHasAnswer(question, answer)) return undefined;
   if (question.format === "fill-blank") return normalizeLiteralAnswer(answer!) === normalizeLiteralAnswer(question.missingWord!);
-  if (question.format === "true-false") return (answer === "True") === (question.candidate === question.source.answer);
+  if (question.format === "true-false") return (answer === question.choices[0]) === (question.candidate === question.source.answer);
   return answer === question.source.answer;
 }
 export function examReviewPayload(question: ExamQuestion, answer: string | undefined, version: number, remembered?: boolean) {
@@ -125,7 +125,7 @@ export function examReviewPayload(question: ExamQuestion, answer: string | undef
   if (question.format === "written") return typeof remembered === "boolean" ? { ...base, remembered } : null;
   if (question.format === "fill-blank") return { ...base, remembered: automaticExamResult(question, answer) === true };
   if (question.format === "true-false") {
-    const selected = answer === "True" ? question.candidate! : question.candidate === question.source.answer
+    const selected = answer === question.choices[0] ? question.candidate! : question.candidate === question.source.answer
       ? question.source.choices.find(choice => choice !== question.source.answer)! : question.source.answer;
     return { ...base, answer: selected };
   }

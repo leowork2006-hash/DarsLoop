@@ -1,18 +1,14 @@
+import { sourcePassages, validSourcePassage } from "./source-passages";
 import { artifactSchema, evidenceValid, safePractice } from "./evidence";
 import { boundedReviewActivity } from "./review-activity";
-import type { Lesson, PracticeItem, Review, ReviewActivity, Segment } from "./types";
+import type { Lesson, PracticeItem, Review, ReviewActivity } from "./types";
 
-function safeSegments(lesson: Lesson): Segment[] {
-  return Array.isArray(lesson.segments) ? lesson.segments.filter(segment => segment
-    && typeof segment.id === "string" && typeof segment.text === "string" && Array.isArray(segment.flags)
-    && Number.isFinite(segment.start) && Number.isFinite(segment.end) && segment.start >= 0 && segment.end > segment.start) : [];
-}
 
 export function availablePractice(lesson: Lesson): PracticeItem[] {
   if (lesson.status !== "ready") return [];
   const parsed = artifactSchema.safeParse(lesson.artifacts);
   if (!parsed.success) return [];
-  const segments = safeSegments(lesson), seen = new Set<string>();
+  const segments = sourcePassages(lesson).filter(validSourcePassage), seen = new Set<string>();
   return safePractice(parsed.data).filter(item => {
     if (seen.has(item.id) || !item.question.trim() || !item.answer.trim() || !evidenceValid(item.evidence, segments)) return false;
     seen.add(item.id);

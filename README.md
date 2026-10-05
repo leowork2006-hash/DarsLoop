@@ -1,6 +1,6 @@
 # DarsLoop
 
-Return to what your teacher taught. A student workspace for Islamic classes: recordings, timestamped transcripts, automatic notes, lesson questions, quizzes, flashcards and private class sharing.
+Return to what your teacher taught. A student workspace for Islamic classes: recordings, timestamped transcripts, PDF page resources, automatic notes, lesson questions, quizzes, flashcards and private class sharing.
 
 **Live app:** [DarsLoop](https://darsloop-production.up.railway.app) · [Try the fictional example without an account](https://darsloop-production.up.railway.app/example).
 
@@ -26,7 +26,7 @@ Download the repository ZIP (Code > Download ZIP), extract it and run these comm
 4. Ask about astronomy, which is outside the example. The app says it is not covered.
 5. Read the transcript, then try **Quiz**, **Flashcards**, **Catch me up** and **Teacher’s terms**.
 6. Sign in to find **Demo lesson · Listening & revision** in My lessons. This is a prepared fictional lesson with audio, notes and practice; it can be deleted and will not be added again to that account.
-7. In a configured authenticated workspace, upload permitted fictional audio, choose its main spoken language and Quick, Balanced or Detailed notes. This is the fresh AI path; it is separate from the prepared example.
+7. In a configured authenticated workspace, upload permitted fictional audio or an authored PDF, choose the main spoken language for audio and choose Auto, Arabic, Urdu or English study material with Quick, Balanced or Detailed notes. This is the fresh AI path; it is separate from the prepared example.
 
 Without AI keys, local questions use visibly labelled transcript search, and fresh audio waits for the worker connection. Prepared material is never presented as freshly generated output.
 
@@ -48,15 +48,17 @@ Install [FFmpeg and FFprobe](https://ffmpeg.org/download.html) and check `ffmpeg
 | FFMPEG_BIN / FFPROBE_BIN | Optional executable paths | Installed `ffmpeg` / `ffprobe` |
 | ESPEAK_BIN | Regenerating the fictional fixture only | Installed `espeak-ng` |
 
-Secrets stay server-side. Groq receives audio chunks; Google receives transcript passages and questions/embeddings. The association reference service receives read-only source queries. Use permitted fictional or irreversibly anonymized material in this contest build; never upload real student details. Provider terms apply; no billing has been enabled by this build.
+Secrets stay server-side. Groq receives audio chunks; Google receives extracted source passages (audio transcript or PDF page text), questions and embeddings. The association reference service receives read-only source queries. Use permitted fictional or irreversibly anonymized material in this contest build; never upload real student details. Provider terms apply; no billing has been enabled by this build.
 
 ## Imports and recording
 
-MP3, M4A, AAC, WAV, MP4, Ogg, WebM and FLAC: up to **500 MiB and one hour**. The app extracts audio from video and prepares a smaller audio copy when needed. Keep your original file. Stored private audio stays below the existing 24 MiB storage allowance; prepared copies are labelled in the player. Hosting request/time limits can be stricter than the app allowance.
+MP3, M4A, AAC, WAV, MP4, Ogg, WebM and FLAC: up to **500 MiB and two hours**. The app extracts audio from video and prepares a smaller audio copy when needed. Keep your original file. Stored private audio stays within a private 48 MB audio bucket limit (48,000,000 bytes); prepared copies are labelled in the player. Hosting request/time limits can be stricter than the app allowance.
 
 Recording saves recoverable chunks on the device, offers Pause/Stop, and automatically stops at one hour while the browser is executing. Stop saves and queues the selected study material. Wake lock is best effort; a web app cannot guarantee continued recording with a locked phone or suspended browser. Use the phone recorder and import the file when unattended recording is needed. Permission and fictional-data confirmations remain explicit.
 
-**Languages:** choose automatic detection or the main spoken language (Urdu, Arabic or English). This affects transcription, separately from the interface/guide language. The app requests transcription rather than English translation. Mixed-language words may be rendered in their original script or as transliteration, and can be misheard or omitted. Short synthetic Urdu tests showed improved script selection with Urdu selected; Arabic/English switches still exposed omissions. This is not native classroom accuracy proof. Original audio stays available; flags withhold detected questionable passages from generated material, but two recognizers can agree on the same mistake.
+**Languages:** choose automatic detection or the main spoken language (Urdu, Arabic or English). This affects transcription, separately from the interface/guide language. Study material has its own Auto / Arabic / Urdu / English choice; Auto follows the captured text. Generated prose can change language, while literal quotations remain in the source language. Arabic and Urdu source/material text use right-to-left layout. The interface is not fully translated. The app requests transcription rather than English translation. Mixed-language words may be rendered in their original script or as transliteration, and can be misheard or omitted. Short synthetic Urdu tests showed improved script selection with Urdu selected; Arabic/English switches still exposed omissions. This is not native classroom accuracy proof. Original audio stays available; flags withhold detected questionable passages from generated material, but two recognizers can agree on the same mistake.
+
+**PDF resources:** upload a permitted selectable-text PDF, up to **8 MB, 40 physical pages and 80,000 extracted characters**. All text-bearing pages are extracted; files beyond a bound are rejected rather than silently shortened. Private notes, practice and answers cite the original physical PDF page, never invented audio times or teacher speech. Open the source to check extraction and layout. Scanned/image-only, locked, damaged or overly complex PDFs are not supported; use an unlocked text PDF excerpt. DarsLoop does not perform OCR or infer missing book text. Religious rulings and hadith grading remain teacher referrals. PDFs need generation credentials, but never speech-to-text credentials.
 
 ## Cloud deployment
 
@@ -77,11 +79,11 @@ The API command starts an isolated temporary server and removes its fictional da
 
 ## Product boundaries
 
-Students receive automatic notes without mandatory teacher review. Evidence carries captured quotes and audio times. Uncertain/disagreed passages are visibly marked and excluded from generated study material, but not every transcription error is detected. No fatwas, personal religious decisions or AI hadith grading. Candidate external source matches are separate from the lesson and require teacher checking.
+Students receive automatic notes without mandatory teacher review. Evidence carries literal source quotes with audio times or PDF page numbers. Uncertain/disagreed passages are visibly marked and excluded from generated study material, but not every transcription error is detected. No fatwas, personal religious decisions or AI hadith grading. Candidate external source matches are separate from the lesson and require teacher checking.
 
 The implemented path is `processLesson` → timed/flagged segments → `createArtifacts` → literal-evidence validation → independent claim-support audit → available study material. There is no teacher approval prerequisite. The optional teacher-question handoff requires passage playback before download; it cannot approve or correct the transcript. Instruction-like passages are withheld before generation, auditing and embedding, and are rejected as evidence in old saved outputs. The original transcript/audio remains available. These are fallible controls, not a guarantee of accurate transcription or complete injection detection.
 
-Teacher review currently creates a listening-first question handoff, with no approve-all or authenticated correction/approval backend. The mock exam uses this lesson’s supported questions and cards, with chosen counts and an optional timer. Formats include multiple choice, teacher-answer matching True / False, literal-word blanks and written recall. Written recall is self-checked against the captured answer and is separate from the automatic score. It is practice, not an official curriculum exam. Exam week plans and progress are device-local suggestions based on practice, not a promise of mastery or passing. No public student competition/rank is inferred from private scores.
+Teacher review currently creates a source-first question handoff (playback for audio, page opening for PDF), with no approve-all or authenticated correction/approval backend. The mock exam uses this lesson’s supported questions and cards, with chosen counts and an optional timer. Formats include multiple choice, teacher-answer matching True / False, literal-word blanks and written recall. Written recall is self-checked against the captured answer and is separate from the automatic score. It is practice, not an official curriculum exam. Exam week plans and progress are device-local suggestions based on practice, not a promise of mastery or passing. No public student competition/rank is inferred from private scores.
 
 ## Project map and provenance
 
@@ -93,7 +95,7 @@ Original project code is [MIT](LICENSE). Dependencies, fonts, external source co
 
 ## Latest actual verification — 5 October 2026
 
-A fresh hosted fictional one-hour WAV above the old 24 MB source limit completed in 55.708 seconds upload plus 139.154 seconds processing. It produced 878 timestamped segments, six cited notes, two quizzes and two cards; supported chat, practice saves and privacy checks passed. These are synthetic English measurements, not a classroom-accuracy, concurrency or uptime guarantee. Latest build/TypeScript and 122 unit tests pass; scoped hosted/browser/safety results and remaining gates are in [docs/QA.md](docs/QA.md).
+The final V28 hosted fictional one-hour WAV completed in 55.112 seconds upload plus 121.374 seconds processing and passed 29 scoped assertions. Whole-container memory peaked at 841.5 MB under its 1000.0 MB limit, with zero OOM kills. These are synthetic sequential English measurements. They do not prove native classroom accuracy, concurrency or future uptime. V29 language/PDF verification is recorded separately in [docs/QA.md](docs/QA.md).
 
 Private audio replay streams requested ranges. Long-lesson search caches exact repeated wording while retaining original source references. Completed transcripts survive generation problems; available supported notes remain usable. If AI chat fails, a visibly labelled transcript-search response can return exact supported passages or abstain, with the same religious/scope boundaries. It does not invent an AI answer. Provider quotas can pause new work; the durable queue retains audio/checkpoints and schedules quota retries. Consumer Google AI plans do not raise this app's API-key allowance; see [DEPLOYMENT.md](DEPLOYMENT.md).
 

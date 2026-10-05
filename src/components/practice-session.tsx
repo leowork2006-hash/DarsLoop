@@ -3,12 +3,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, BookOpen, Cards, Check, CheckCircle, CheckSquare, ClipboardText, Headphones, ListChecks, Minus, Pause, Play, Plus, Textbox, Timer, WarningCircle, X } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, BookOpen, Cards, Check, CheckCircle, CheckSquare, ClipboardText, FilePdf, Headphones, ListChecks, Minus, Pause, Play, Plus, Textbox, Timer, WarningCircle, X } from "@phosphor-icons/react";
 import { formatTime, type Lesson, type PracticeItem, type Review } from "@/lib/types";
 import { exclusiveAudio, playAt } from "@/lib/audio-playback";
 import { exampleReview } from "@/lib/example-practice";
 import { automaticExamResult, buildExam, defaultExamPlan, examFormatLabels, examFormatLimit, examFormats, examHasAnswer, examPools, examReviewPayload, examSecondsLeft, mixedExamScore, sessionPractice, sessionScore, updateExamPlan, type ExamFormat, type ExamPlan, type ExamQuestion } from "@/lib/practice-session";
 import { api, message } from "./client-api";
+import { SourceLink } from "./source-evidence";
+import { citedPassage } from "@/lib/source-passages";
 import { Brand } from "./brand";
 import styles from "./practice-session.module.css";
 
@@ -19,7 +21,7 @@ function examDraft(lesson: Lesson, supported: PracticeItem[]) {
   try {
     const saved = JSON.parse(sessionStorage.getItem(`darsloop-exam-draft:${lesson.ownerId}:${lesson.id}:${lesson.version}`) ?? "null");
     if (!saved || typeof saved.plan !== "object" || !saved.plan) return fallback;
-    const attempt = buildExam(supported, saved.plan as ExamPlan);
+    const attempt = buildExam(supported, saved.plan as ExamPlan,lesson.sourceKind,lesson.artifacts?.language);
     return { plan: Object.fromEntries(examFormats.map(format => [format, attempt.filter(question => question.format === format).length])) as ExamPlan, minutes: [0, 1, 5, 10, 20].includes(saved.minutes) ? saved.minutes : 0 };
   } catch { return fallback; }
 }
@@ -46,11 +48,11 @@ function SourcePassage({ item, lesson, onListen }: { item: PracticeItem; lesson:
   return <div className={styles.sources}>
     <p className={styles.sourceLabel}><BookOpen size={15} /> From your lesson</p>
     {item.evidence.map((citation, index) => {
-      const segment = lesson.segments.find(part => part.id === citation.segmentId);
+      const segment = citedPassage(lesson,citation);
       if (!segment) return null;
       return <div className={styles.sourcePassage} key={`${citation.segmentId}-${index}`}>
         <blockquote dir="auto">{citation.quote}</blockquote>
-        <button type="button" className={styles.sourceTime} onClick={() => onListen(segment.start)} aria-label={`Listen to the supporting passage at ${formatTime(segment.start)}`}><Play size={12} weight="fill" /><bdi>{formatTime(segment.start)}</bdi><span>Listen to the explanation</span></button>
+        <SourceLink lesson={lesson} citation={citation} onPlay={onListen} className={styles.sourceTime}/>
       </div>;
     })}
   </div>;
@@ -208,7 +210,7 @@ export function PracticeSession({ lesson: initialLesson, items: requestedItems, 
   }
   submitRef.current = submitTest;
   function startExam() {
-    const attempt = buildExam(supported, examPlan);
+    const attempt = buildExam(supported, examPlan,lesson.sourceKind,lesson.artifacts?.language);
     if (!attempt.length) return;
     setExamItems(attempt); setItems(attempt.map(question => question.source)); setIndex(0); setStage("question");
     if (minutes) { setDeadline(Date.now() + minutes * 60_000); setSeconds(minutes * 60); }
@@ -249,7 +251,7 @@ export function PracticeSession({ lesson: initialLesson, items: requestedItems, 
         {!supported.length ? <div className={styles.empty}><BookOpen size={38} /><h3>No supported questions yet.</h3><p>Only clear points from this lesson become practice.</p><button type="button" className={styles.darkButton} onClick={onClose}>{returnLabel}<ArrowRight size={16} /></button></div> : stage === "setup" ? <main className={styles.setup}>
           <section className={styles.setupForm} aria-label="Mock exam settings">
             <div className={styles.setupHeading}><h3>How many questions?</h3><p>Choose how much of this lesson to practise.</p></div>
-            <div className={styles.setupMaterial}><Headphones size={20} /><div><span>Selected lesson</span><strong dir="auto">{lesson.title}</strong></div><CheckCircle size={18} /></div>
+            <div className={styles.setupMaterial}>{lesson.sourceKind==="pdf"?<FilePdf size={20}/>:<Headphones size={20} />}<div><span>Selected lesson</span><strong dir="auto">{lesson.title}</strong></div><CheckCircle size={18} /></div>
             <div className={styles.totalRow}><span>Total: <strong>{questionCount}</strong></span><span>{supported.length} prepared items</span></div>
             <div className={styles.formatRows}>{eligibleFormats.map((format, position) => <div className={styles.typeRow} data-format={format} key={format} style={{ animationDelay: `${position * 55}ms` }}><span className={styles.typeIcon}><ExamFormatIcon format={format} /></span><div className={styles.typeText}><h4>{examFormatLabels[format]}</h4><p>{format === "multiple-choice" ? "Choose the supported lesson answer." : format === "true-false" ? "Check a proposed answer against the lesson." : format === "fill-blank" ? "Recall one exact captured word." : "Write, then compare and self-check."}</p></div><div className={styles.stepper}><button type="button" aria-label={`Fewer ${examFormatLabels[format]} questions`} disabled={examPlan[format] <= 0} onClick={() => setExamPlan(plan => updateExamPlan(supported, plan, format, plan[format] - 1))}><Minus size={16} /></button><input type="number" min={0} max={examFormatLimit(supported, examPlan, format)} step={1} aria-label={`${examFormatLabels[format]} questions`} value={examPlan[format]} onChange={event => setExamPlan(plan => updateExamPlan(supported, plan, format, Number(event.target.value)))} /><button type="button" aria-label={`More ${examFormatLabels[format]} questions`} disabled={examPlan[format] >= examFormatLimit(supported, examPlan, format)} onClick={() => setExamPlan(plan => updateExamPlan(supported, plan, format, plan[format] + 1))}><Plus size={16} /></button></div></div>)}</div>
             <div className={styles.timeSetting}><Timer size={20} /><label htmlFor={`${titleId}-time`}>Time limit</label><select id={`${titleId}-time`} value={minutes} onChange={event => setMinutes(Number(event.target.value))}><option value={0}>No timer</option>{[1, 5, 10, 20].map(value => <option key={value} value={value}>{value} {value === 1 ? "minute" : "minutes"}</option>)}</select></div>
@@ -266,7 +268,7 @@ export function PracticeSession({ lesson: initialLesson, items: requestedItems, 
           </details>)}</section>
           <div className={styles.resultActions}><button type="button" className={styles.darkButton} onClick={() => { audio.current?.pause(); onClose(); }}>{returnLabel}<ArrowRight size={18} /></button></div>
         </main> : item && <main className={styles.questionLayout}>
-          <aside className={styles.questionAside}><span className={styles.kicker}>{isTest ? "YOUR MOCK EXAM" : allFlashcards ? "RECALL, THEN REVEAL" : "ONE POINT AT A TIME"}</span><h3>{isTest ? "See what you recall." : allFlashcards ? "Bring it to mind." : "A little practice.\nA clearer lesson."}</h3><div className={styles.lessonContext}><Headphones size={17} /><div><strong dir="auto">{lesson.title}</strong><small dir="auto">{lesson.course}</small></div></div><p className={styles.asideNote}>{isTest ? "Sources and supported answers appear at the end." : "Each answer leads back to your teacher’s words."}</p></aside>
+          <aside className={styles.questionAside}><span className={styles.kicker}>{isTest ? "YOUR MOCK EXAM" : allFlashcards ? "RECALL, THEN REVEAL" : "ONE POINT AT A TIME"}</span><h3>{isTest ? "See what you recall." : allFlashcards ? "Bring it to mind." : "A little practice.\nA clearer lesson."}</h3><div className={styles.lessonContext}>{lesson.sourceKind==="pdf"?<FilePdf size={17}/>:<Headphones size={17} />}<div><strong dir="auto">{lesson.title}</strong><small dir="auto">{lesson.course}</small></div></div><p className={styles.asideNote}>{isTest ? "Sources and supported answers appear at the end." : lesson.sourceKind==="pdf"?"Each answer leads back to an exact source excerpt.":"Each answer leads back to your teacher’s words."}</p></aside>
           <section className={styles.questionPanel} aria-label={allFlashcards ? "Study card" : "Practice question"}>
             <div className={styles.progressRow}><span>{allFlashcards ? "Card" : "Question"} <bdi>{index + 1} of {items.length}</bdi></span><span>{isTest ? `${score.answered} answered` : allFlashcards ? "Recall before revealing" : result ? "Explanation unlocked" : "Choose an answer"}</span></div><div className={styles.track} aria-hidden="true"><span style={{ width: `${(index + 1) / items.length * 100}%` }} /></div>
             {isTest && <nav className={styles.questionNav} aria-label="Question list">{examItems.map((question, position) => <button type="button" key={question.key} aria-label={`Question ${position + 1}, ${examHasAnswer(question, answers[question.key]) ? "answered" : "unanswered"}`} aria-current={position === index ? "step" : undefined} className={examHasAnswer(question, answers[question.key]) ? styles.navAnswered : ""} disabled={busy || expired || saveStarted} onClick={() => setIndex(position)}>{position + 1}</button>)}</nav>}
@@ -282,7 +284,7 @@ export function PracticeSession({ lesson: initialLesson, items: requestedItems, 
           </section>
         </main>}
       </div>
-      <div className={`${styles.audioShelf} ${listeningAt !== null ? styles.audioVisible : ""}`} inert={exitRequested}><span><Headphones size={17} /> Supporting original audio <bdi>{listeningAt !== null ? formatTime(listeningAt) : ""}</bdi></span><audio ref={audio} preload="none" controls aria-label="Supporting original audio" src={audioSource} onPlay={event => exclusiveAudio(event.currentTarget)} onError={() => { if (listeningAt !== null) setAudioError("The source audio is unavailable. Return to the lesson to retry playback."); }} /><button type="button" className={styles.iconButton} aria-label="Close source audio" onClick={() => { audio.current?.pause(); setListeningAt(null); }}><X size={17} /></button>{audioError && <p className={styles.audioError} role="alert">{audioError}</p>}</div>
+      {lesson.sourceKind!=="pdf"&&<div className={`${styles.audioShelf} ${listeningAt !== null ? styles.audioVisible : ""}`} inert={exitRequested}><span><Headphones size={17} /> Supporting original audio <bdi>{listeningAt !== null ? formatTime(listeningAt) : ""}</bdi></span><audio ref={audio} preload="none" controls aria-label="Supporting original audio" src={audioSource} onPlay={event => exclusiveAudio(event.currentTarget)} onError={() => { if (listeningAt !== null) setAudioError("The source audio is unavailable. Return to the lesson to retry playback."); }} /><button type="button" className={styles.iconButton} aria-label="Close source audio" onClick={() => { audio.current?.pause(); setListeningAt(null); }}><X size={17} /></button>{audioError && <p className={styles.audioError} role="alert">{audioError}</p>}</div>}
       {exitRequested && <div className={styles.exitOverlay}><div className={styles.exitCard} role="alertdialog" aria-labelledby={`${titleId}-exit`}><h3 id={`${titleId}-exit`}>Leave this attempt?</h3><p>{isTest ? "Choices that haven’t been submitted will be discarded." : "Your checked responses are saved. The current unchecked choice will be discarded."}</p><div><button type="button" className={styles.lightButton} autoFocus onClick={() => setExitRequested(false)}>Keep practising</button><button type="button" className={styles.darkButton} onClick={() => { audio.current?.pause(); onClose(); }}>Leave attempt <ArrowRight size={16} /></button></div></div></div>}
     </div>
   </dialog>, document.body);

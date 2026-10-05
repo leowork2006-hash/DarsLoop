@@ -28,6 +28,12 @@ Follow README.md to install FFmpeg/FFprobe, privately configure your own Groq/Go
 
 Public deployment uses authenticated Supabase accounts and private storage. Configure the migrations, host origin and auth delivery as described in DEPLOYMENT.md. Local SQLite mode is restricted to loopback and is not a public authentication alternative. Quotas and service availability depend on the connected accounts.
 
+## Test a PDF resource
+
+In Upload, select a permitted fictional or irreversibly anonymized text PDF and choose the study-material language. The source limit is 8 MB, 40 physical pages and 80,000 extracted characters. PDF notes, questions and practice link to original page numbers. Open PDF pages to compare extracted text with the private original document. No transcription provider or audio player is used. Scans and locked documents are unsupported; an explicit failure preserves the original upload.
+
+The interface remains partly English even when Arabic or Urdu study material is selected. Original source quotations are not translated. Script validation and claim-support auditing are fallible, and do not constitute native translation approval.
+
 ## Reproduce checks
 
 - `npm run typecheck`: TypeScript checks.

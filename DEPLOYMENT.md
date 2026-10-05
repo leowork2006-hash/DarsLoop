@@ -2,7 +2,7 @@
 
 ## Architecture
 
-One Docker service runs the Next.js web app and durable worker. Supabase stores private audio, lessons, job leases and checkpoints. FFmpeg prepares supported media; Groq performs hosted speech recognition and Gemini prepares/audits study material. No local Torch or Whisper model is installed. The public and signed-in examples use authored fictional fixtures.
+One Docker service runs the Next.js web app and durable worker. Supabase stores private audio/PDF sources, lessons, job leases and checkpoints. FFmpeg prepares supported media; Groq performs hosted speech recognition and Gemini prepares/audits study material. No local Torch or Whisper model is installed. The public and signed-in examples use authored fictional fixtures.
 
 ## Setup
 
@@ -15,7 +15,7 @@ One Docker service runs the Next.js web app and durable worker. Supabase stores 
 
 ## Upload and recording behavior
 
-The cloud interface sends sources directly to private storage in 4 MiB pieces; the host receives small metadata requests. Saved pieces can resume while the same file remains selected. Finalization checks sizes and is idempotent. The total source cap is 500 MiB and duration cap is one hour. Prepared stored audio stays below 24 MiB. Legacy multipart uploads still depend on the host request-body timeout.
+The cloud interface sends sources directly to private storage in 4 MiB pieces; the host receives small metadata requests. Saved pieces can resume while the same file remains selected. Finalization checks sizes and is idempotent. The total source cap is 500 MiB and duration cap is two hours. Prepared stored audio stays below 48 MB. Legacy multipart uploads still depend on the host request-body timeout.
 
 Do not describe this as Supabase TUS or page-reload resume. Interrupted unqueued imports expire and are swept while the worker runs. Queued failed imports preserve source data for retry/deletion. Browser recording is best effort under mobile suspension: keep the page open, or use the phone recorder and upload for screen-off capture.
 
@@ -64,3 +64,7 @@ The actual backup tests used short authored synthetic recordings and native time
 ## Personal notes migration
 
 Apply `20261005193131_personal_notes.sql` before deploying the editable-notes revision. Personal edits use a separate per-user/per-lesson/version table. Browser writes and RPC execution are revoked; the authenticated server performs an access/version check and the service-only save function enforces optimistic revisions. Teacher transcripts, generated citations and practice are never overwritten by these edits.
+
+## PDF resources
+
+Apply the service-only PDF claim migration. The server creates/checks the private `lesson-documents` bucket with an 8,000,000-byte limit and PDF MIME restriction. The JSON lesson payload stores physical page passages; no fake timestamps are used. `unpdf` stays external and is loaded in a bounded extraction worker only when a PDF is processed (128 MB heap, 15-second deadline). Image-only, encrypted, malformed, over-40-page and over-80,000-character inputs fail with an actionable message. Test a permitted authored PDF on the deployed Linux worker. Keep PDFs/private transcripts and credentials out of GitHub.

@@ -1,3 +1,4 @@
+import { sourcePassages } from "./source-passages";
 import { createHash } from "node:crypto";
 import { GoogleGenAI } from "@google/genai";
 import { db, safeLesson } from "./store";
@@ -5,7 +6,7 @@ import { rawLesson } from "./backend";
 import { cloudMode } from "./supabase/config";
 import { savedVectors, saveVectors } from "./supabase/store";
 import { instructionLike, noteAnchors, retrieve, tokens } from "./evidence";
-import type { Lesson, Segment } from "./types";
+import type { Lesson, Segment, StudyPassage } from "./types";
 
 export const EMBEDDING_MODEL="gemini-embedding-001",EMBEDDING_DIMENSIONS=768;
 type Window={hash:string;indices:number[];text:string};
@@ -87,10 +88,17 @@ export function rankedPassages(question:string,segments:Segment[],windows:Window
   for(const i of anchors){for(const neighbor of [i-1,i+1]){if(neighbor>=0&&neighbor<segments.length&&chosen.size<limit)chosen.add(neighbor);}}
   return [...chosen].sort((a,b)=>a-b).map(i=>segments[i]);
 }
-export async function lessonPassages(question:string,lesson:Lesson):Promise<{segments:Segment[];method:SearchMethod}> {
+export async function lessonPassages(question:string,lesson:Lesson):Promise<{segments:import("./types").StudyPassage[];method:SearchMethod}> {
+  if(lesson.sourceKind==="pdf"){
+    const pages=sourcePassages(lesson).filter(p=>!p.flags.length&&!instructionLike(p.text));
+    const anchors=noteAnchors(question,pages,lesson.artifacts?.notes);
+    if(anchors.length)return {segments:anchors,method:"note_anchor"};
+    if(pages.reduce((n,p)=>n+p.text.length,0)<=30_000)return {segments:pages,method:"whole_lesson"};
+    return {segments:retrieve(question,pages,8),method:"lexical_fallback"};
+  }
   const anchors=noteAnchors(question,lesson.segments,lesson.artifacts?.notes);
   if(anchors.length){
-    const chosen=new Set(anchors.map(s=>lesson.segments.indexOf(s)));
+    const chosen=new Set(anchors.map(s=>lesson.segments.findIndex(segment=>segment.id===s.id)));
     for(const anchor of [...chosen])for(const neighbor of [anchor-1,anchor+1])if(neighbor>=0&&neighbor<lesson.segments.length)chosen.add(neighbor);
     return {segments:[...chosen].sort((a,b)=>a-b).map(i=>lesson.segments[i]).filter(s=>!instructionLike(s.text)),method:"note_anchor"};
   }

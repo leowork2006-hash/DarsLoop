@@ -3,7 +3,7 @@ type Job = { id: string; lesson_id: string; lease: string };
 export type WorkerActions = {
   configured: () => { asr: boolean; generation: boolean };
   expire: () => Promise<void>;
-  claim: () => Promise<Job | null>;
+  claim: (pdfOnly?:boolean) => Promise<Job | null>;
   process: (job: Job) => Promise<void>;
   fail: (id: string, lease: string, error: string) => Promise<unknown>;
   defer?: (id:string,lease:string,retryAt:number,message:string)=>Promise<unknown>;
@@ -14,8 +14,8 @@ export type WorkerActions = {
 export async function workerTick(actions: WorkerActions): Promise<"idle" | "setup" | "worked"> {
   await actions.expire();
   const config = actions.configured();
-  if (!config.asr || !config.generation) return "setup";
-  const job = await actions.claim();
+  if (!config.generation) return "setup";
+  const job = await actions.claim(!config.asr);
   if (!job) return "idle";
   try {
     await actions.process(job);

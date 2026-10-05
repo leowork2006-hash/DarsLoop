@@ -34,7 +34,7 @@ describe("provider contracts using mocks, not live AI",()=>{
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(5));
     const result=await createArtifacts(segments,{enabled:false,detail:"detailed"});
     expect(result.notes).toEqual([]);expect(result.overview).toBe("");expect(result.practice).toHaveLength(3);
-    expect(JSON.parse(interaction.mock.calls[0][0].input).studyNotes).toEqual({enabled:false,detail:"detailed"});
+    expect(JSON.parse(interaction.mock.calls[0][0].input).studyNotes).toEqual({enabled:false,detail:"detailed",language:"auto"});
     expect(JSON.parse(interaction.mock.calls[1][0].input).claims).toHaveLength(5);
     expect(interaction.mock.calls[0][0].system_instruction).toContain("notes as an empty array");
   });

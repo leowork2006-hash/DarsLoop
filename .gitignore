@@ -32,3 +32,6 @@ service-account*.json
 *.flac
 *.mp4
 !fixtures/demo.mp3
+
+# Supabase CLI local metadata
+supabase/.temp/

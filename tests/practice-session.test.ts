@@ -101,3 +101,7 @@ describe("source-bound mixed mock exams", () => {
     expect(questions.filter(question => examReviewPayload(question, responses[question.key], lesson.version))).toEqual([mcq]);
   });
 });
+it("localizes derived True/False and blank prompts without translating source text or changing review IDs",()=>{
+ const evidence=[{segmentId:"v1-p1",quote:"Leaves receive sunlight and roots absorb water.",page:1}];const quiz={id:"pdf-q",kind:"quiz" as const,question:"ما الذي تمتصه الجذور؟",answer:"الماء",choices:["الماء","ضوء الشمس"],evidence},card={id:"pdf-c",kind:"flashcard" as const,question:"استرجع النص",answer:evidence[0].quote,choices:[],evidence};
+ for(const language of ["ar","ur"] as const){const questions=buildExam([quiz,card],{"multiple-choice":0,"true-false":1,"fill-blank":1,written:0},"pdf",language);const tf=questions[0];expect(tf.prompt).not.toContain("teacher");expect(tf.choices).toEqual(language==="ar"?["صحيح","خطأ"]:["درست","غلط"]);expect(automaticExamResult(tf,tf.choices[1])).toBe(true);expect(examReviewPayload(tf,tf.choices[1],1)).toEqual({itemId:"pdf-q",version:1,answer:"الماء"});expect(questions[1].source.evidence[0].quote).toBe(evidence[0].quote);expect(questions[1].prompt).not.toContain("Recall");}
+});

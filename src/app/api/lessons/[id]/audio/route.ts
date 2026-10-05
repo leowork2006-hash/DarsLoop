@@ -6,7 +6,7 @@ import { parseRange } from "@/lib/media";
 import { cloudAudioStream } from "@/lib/supabase/audio-stream";
 export const runtime="nodejs";
 export async function GET(req:Request,c:{params:Promise<{id:string}>}){try{
-  const user=await authenticate(req),l=await authorizedLesson(user,(await c.params).id);if(!l)throw new HttpError(404,"Lesson not found.");
+  const user=await authenticate(req),l=await authorizedLesson(user,(await c.params).id);if(!l)throw new HttpError(404,"Lesson not found.");if(l.sourceKind==="pdf")throw new HttpError(404,"This source is a PDF, not audio.");
   if(cloudMode()&&!l.demo){
     const response=await cloudAudioStream(req,l);
     const current=await authorizedLesson(user,l.id);

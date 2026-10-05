@@ -37,7 +37,7 @@ export async function seedDemo(user:string){
 }
 export async function countLessons(user:string){const r=await adminClient().from("lessons").select("id",{head:true,count:"exact"}).eq("owner_id",user);checked(r);return r.count||0;}
 export async function queueLesson(l:Lesson,isNew=false){await rpc("darsloop_queue",{p_payload:l,p_new:isNew});}
-export async function claimJob(){const rows=await rpc<{id:string;lesson_id:string;lease:string;attempts:number}[]>("darsloop_claim");return rows[0]||null;}
+export async function claimJob(pdfOnly=false){const rows=await rpc<{id:string;lesson_id:string;lease:string;attempts:number}[]>(pdfOnly?"darsloop_claim_pdf":"darsloop_claim");return rows[0]||null;}
 export async function heartbeat(id:string,lease:string){return rpc<boolean>("darsloop_heartbeat",{p_job:id,p_lease:lease});}
 export async function jobCommit(id:string,lease:string,l:Lesson,done=false){await rpc("darsloop_commit",{p_job:id,p_lease:lease,p_payload:l,p_done:done});}
 export async function failJob(id:string,lease:string,error:string){await rpc("darsloop_fail",{p_job:id,p_lease:lease,p_error:error});}

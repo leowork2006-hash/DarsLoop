@@ -12,7 +12,7 @@ export async function listLessons(user:string){return backend().listLessons(user
 export async function listReviews(user:string){return backend().listReviews(user);}
 export async function listGroups(user:string){return backend().listGroups(user);}
 export async function queueLesson(l:Lesson,isNew=false){return backend().queueLesson(l,isNew);}
-export async function claimJob(){return backend().claimJob();}
+export async function claimJob(pdfOnly=false){return backend().claimJob(pdfOnly);}
 export async function heartbeat(id:string,lease:string){return backend().heartbeat(id,lease);}
 export async function jobCommit(id:string,lease:string,l:Lesson,done=false){return backend().jobCommit(id,lease,l,done);}
 export async function failJob(id:string,lease:string,error:string){return backend().failJob(id,lease,error);}

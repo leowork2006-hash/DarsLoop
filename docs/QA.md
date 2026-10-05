@@ -2,10 +2,22 @@
 
 Checked 6 October 2026. These are scoped engineering results, not a student pilot or a promise of perfect transcription.
 
-## Current checks
+## Arabic study material and private PDF release — 6 October 2026
 
-- Production build, TypeScript and 130 unit tests in 22 files passed.
-- The signed-in demo and spoken-language code release is `e58cd309`. Its deployment succeeded, and the public health/example returned HTTP 200.
+The integrated PDF/language source passed a production build and 195 unit tests in 31 files. The final language-filter correction passed 34 focused checks, and the completion-notice correction passed 12 focused processing/PDF checks. The final source passed its production build/TypeScript again. These overlapping subsets are not added into a larger test total. Nineteen isolated local PDF HTTP/browser checks and ten language UI checks covered source access/version/sharing, recording-language preference recovery, RTL and narrow layouts.
+
+An actual hosted 23-second authored synthetic Arabic/English clip completed: 14.777 seconds upload, 22.209 seconds processing, eight timed segments, Arabic notes and supported quiz/cards with literal quotations. Its original Arabic script was retained. This is a short synthetic check, not real classroom accuracy proof.
+
+The final hosted English-only authored two-page PDF produced Arabic notes, quizzes and flashcards while keeping source pages and quotations in English: **8.703 seconds upload + 21.466 seconds processing**. Twenty-four assertions passed for completion without a false failure state, actual physical pages, literal evidence, unchanged private original PDF, source range/version/signed-out access, source-linked chat, off-source refusal, religious/hadith/prompt-disclosure boundaries, saved quiz/card reviews, no audio player, desktop/390px fit and browser error absence. Test account and source cleanup were checked. It used no speech recognition. This is not native translation approval.
+
+Two failed checks are retained privately: one wrong-language glossary definition rejected otherwise Arabic output; whole wrong-language items are now filtered before the unchanged support audit. A later check exposed a successful material notice stored as a failure; notices now stay separate from errors. A missing practice type can still offer an explicit practice retry, without discarding usable notes. No full-hour ASR test was repeated for these fixes.
+
+The two-hour upload boundary and full contiguous 91-minute/120-minute chunk coverage were checked without processing a real learner recording. Browser capture still stops at one hour. PDFs are bounded selectable-text resources, not scanned-book OCR. Private bucket readback confirmed audio 48,000,000 bytes and PDF 8,000,000 bytes, both non-public. Native speech/translation, two-hour hosted speed, concurrent load and learning benefit remain unproven.
+
+## Prior release checks
+
+- The mixed-format mock exam source passed its production build, TypeScript and 169 unit tests in 27 files; focused final format/helper checks also passed.
+- The mixed-format source release `95aebcd` deployed successfully. Public health/example returned HTTP 200. The earlier default-demo/language checks below remain separately scoped.
 - Twenty-seven focused hosted assertions passed with two disposable test users and authored fictional audio. They covered demo insertion once per user, metadata preservation, remembered deletion, private lesson/audio access, exact bundled audio byte ranges, timestamped evidence, cited demo answers, religious referral and saved practice excluded from actual student Insights.
 - A new 21.8-second synthetic Urdu/Arabic/English recording passed the actual private upload and hosted processing journey. Upload took 10.237 seconds; processing took 15.660 seconds. It produced eight transcript segments, two cited notes, one quiz and one flashcard. A Urdu question returned a supported quotation and timestamp. Stale-version and foreign-user access checks passed. The local worker was stopped. Disposable users and their upload data were removed and user absence was checked.
 - The prepared lesson and main-language recording option were inspected on desktop and at 390px. The demo had no document-level horizontal overflow. No microphone was started in this focused visual check.
@@ -31,7 +43,7 @@ Production build/TypeScript and 143 unit tests in 24 files passed. New mocked co
 
 Actual backup API calls used authored synthetic audio. Deepgram Nova-3 captured native word times from a 43.6-second mixed Urdu/Arabic/English clip in 6.937 seconds, with five low-confidence passages flagged; visible word errors remained. Speechmatics initially returned Hindi-script Urdu. Official language hints then produced unsuitable text/word times; that configuration was rejected and Urdu/Auto blocked. A separate 46-second Arabic/English Melia-1 clip returned 94 timed words in 7.112 seconds and retained both English sentences. Language labels were not reliably language-specific in that result. These observations do not establish broad accuracy or complete word retention.
 
-The new production concurrency and queue release is awaiting its separate hosted hour measurement; earlier timings above must not be reused as a claim about the new build.
+The final hosted V28 hour below measures this concurrency/queue release. Earlier timings remain dated evidence, not a new estimate.
 
 ## UI, chat and private-note revision — 6 October 2026
 
@@ -49,3 +61,11 @@ The source passed 169 unit tests in 27 files. Nine added helper cases cover non-
 Six controlled mixed-format browser journeys covered real count caps/live previews, MCQ/True / False/blank/written input, pre-submit source exclusion, interrupted-save retry without resubmitting acknowledged responses, source playback, separate written self-check retry and deadline expiry with unanswered items. An initial-paused follow-up confirmed newly mounted format rows/previews and navigated questions remain visible. Desktop and phone screenshots were inspected. An extra authored supported card exists only in this private UI harness, so all four formats could be exercised together without altering the bundled demo or actual lessons.
 
 All formats reuse existing supported lesson items; no new AI generation request is made when selecting formats. Written text remains within the open attempt and receives no AI correctness grade. Count/time drafts persist only in this tab, scoped to account, lesson and source version.
+
+## Final hosted workflow — 6 October 2026
+
+One fresh authored fictional English hour completed on the actual V28 deployment with the local worker stopped: 57,600,078-byte WAV in 14 private pieces, **55.112 seconds upload + 121.374 seconds processing**, 878 segments through 3598.74 seconds, eight cited notes, two supported quizzes and one flashcard. Twenty-nine assertions passed: full duration/timestamps/citations, fresh class chat and note-topic anchors, source ranges, saved private note edits/reopen/conflicts without modifying teacher material, quiz/card review/Insights, stale source versions, off-class refusal, ruling/hadith referral, prompt-disclosure guard, signed-out access and disposable account/media cleanup.
+
+Whole-container memory (web app, worker and file cache) was 205.3 MB at startup and peaked at 841.5 MB during this journey, below the actual 1000.0 MB container ceiling, with zero OOM kills. These are scoped measurements of one sequential synthetic repeated-English fixture; they do not establish native Arabic/Urdu accuracy, multiple simultaneous judge uploads or future uptime.
+
+Actual live public-example UI completed MCQ/True-False/exact blank and separately written-only self-check on desktop and 390px. Supporting quotes/times appear after submission, and the written-only result has no automatic correctness grade. This public-example UI check did not write backend review state.

@@ -36,3 +36,7 @@ it("defers a provider 429 instead of marking an upload failed",async()=>{
  const actions:WorkerActions={configured:()=>({asr:true,generation:true}),expire:async()=>{},claim:async()=>({id:"job",lesson_id:"lesson",lease:"current"}),process:async()=>{throw new ProviderError("quota","safe",1000000);},fail:vi.fn(),defer:vi.fn(async()=>{}),message:()=>"safe",log:vi.fn()};
  await workerTick(actions);expect(actions.fail).not.toHaveBeenCalled();expect(actions.defer).toHaveBeenCalledWith("job","current",1000000,"Waiting for AI capacity · resumes automatically");
 });
+
+it("claims only PDF jobs when generation is configured without ASR",async()=>{
+ const {workerTick}=await import("../src/lib/worker-loop");const actions:WorkerActions={configured:()=>({asr:false,generation:true}),expire:async()=>{},claim:vi.fn(async()=>({id:"pdf",lesson_id:"pdf",lease:"fence"})),process:vi.fn(async()=>{}),fail:vi.fn(),message:()=>"safe",log:vi.fn()};expect(await workerTick(actions)).toBe("worked");expect(actions.claim).toHaveBeenCalledWith(true);expect(actions.process).toHaveBeenCalledTimes(1);
+});

@@ -1,3 +1,4 @@
+import { sourcePassages } from "./source-passages";
 import { evidenceValid, normalise } from './evidence';
 import { getStudyPlan, type StudyPlanTopic } from './study-plan';
 import { studyInsights } from './insights';
@@ -5,12 +6,12 @@ import type { Citation, Lesson, Review } from './types';
 
 /** These are bounded views over current lesson evidence, never new generated facts. */
 export function catchUpPoints(lesson:Lesson){
-  return (lesson.artifacts?.notes??[]).filter(note=>evidenceValid(note.evidence,lesson.segments)).slice(0,7);
+  return (lesson.artifacts?.notes??[]).filter(note=>evidenceValid(note.evidence,sourcePassages(lesson))).slice(0,7);
 }
 export function teacherTerms(lessons:Lesson[],course='',query=''){
   const search=normalise(query).trim();
   return lessons.filter(l=>l.status==='ready'&&(!course||l.course===course)).flatMap(lesson=>(lesson.artifacts?.terms??[])
-    .filter(term=>evidenceValid(term.evidence,lesson.segments)&&(!search||normalise(`${term.term} ${term.definition} ${lesson.title}`).includes(search)))
+    .filter(term=>evidenceValid(term.evidence,sourcePassages(lesson))&&(!search||normalise(`${term.term} ${term.definition} ${lesson.title}`).includes(search)))
     .map((term,index)=>({id:`${lesson.id}:${lesson.version}:${index}`,lesson,...term})))
     .sort((a,b)=>a.term.localeCompare(b.term));
 }
