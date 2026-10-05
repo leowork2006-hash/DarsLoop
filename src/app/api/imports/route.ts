@@ -1,3 +1,4 @@
+import { spokenLanguages } from "@/lib/spoken-language";
 import { z } from "zod";
 import { authenticate,body,fail,HttpError,json } from "@/lib/http";
 import { cloudMode } from "@/lib/supabase/config";
@@ -6,7 +7,7 @@ import { createImport,signImportParts,completedImport,ImportFailure } from "@/li
 import { MAX_IMPORT_BYTES } from "@/lib/upload-options";
 import type { Lesson } from "@/lib/types";
 export const runtime="nodejs";
-const create=z.object({action:z.literal("start"),bytes:z.number().int().min(1).max(MAX_IMPORT_BYTES),title:z.string().trim().min(1).max(160),course:z.string().trim().max(100),permitted:z.literal(true),synthetic:z.literal(true),noteOptions:z.object({enabled:z.boolean(),detail:z.enum(["short","standard","detailed"])})});
+const create=z.object({action:z.literal("start"),bytes:z.number().int().min(1).max(MAX_IMPORT_BYTES),title:z.string().trim().min(1).max(160),course:z.string().trim().max(100),permitted:z.literal(true),synthetic:z.literal(true),spokenLanguage:z.enum(spokenLanguages).default("auto"),noteOptions:z.object({enabled:z.boolean(),detail:z.enum(["short","standard","detailed"])})});
 const command=z.object({action:z.enum(["parts","finish"]),id:z.uuid(),start:z.number().int().min(0).optional()});
 export async function POST(req:Request){try{
   const user=await authenticate(req);if(!cloudMode())return json({mode:"local"});const input=await body(req);
@@ -22,7 +23,7 @@ export async function POST(req:Request){try{
   if(b.action==="parts")return json(await signImportParts(user,b.id,b.start??0));
   const existing=await rawLesson(b.id);if(existing){if(existing.ownerId!==user)throw new HttpError(404,"Import not found.");return json(publicLesson(existing));}
   const m=await completedImport(user,b.id);
-  const l:Lesson={id:m.id,ownerId:user,title:m.title,course:m.course,createdAt:new Date().toISOString(),duration:0,version:1,status:"queued",stage:"Preparing your recording",error:null,demo:false,segments:[],artifacts:null,audioPath:`${user}/${m.id}`,mime:"application/octet-stream",noteOptions:m.noteOptions,sourceImport:{bytes:m.bytes,parts:m.parts}};
+  const l:Lesson={id:m.id,ownerId:user,title:m.title,course:m.course,createdAt:new Date().toISOString(),duration:0,version:1,status:"queued",stage:"Preparing your recording",error:null,demo:false,segments:[],artifacts:null,audioPath:`${user}/${m.id}`,mime:"application/octet-stream",noteOptions:m.noteOptions,spokenLanguage:m.spokenLanguage||"auto",sourceImport:{bytes:m.bytes,parts:m.parts}};
   try{await queueLesson(l,true);}catch(e){const raced=await rawLesson(b.id);if(raced?.ownerId===user)return json(publicLesson(raced));throw e;}
   return json(publicLesson(l),201);
 }catch(e){return fail(e instanceof ImportFailure?new HttpError(e.status,e.message):e);}}

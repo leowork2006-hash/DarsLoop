@@ -1,4 +1,6 @@
 "use client";
+import type { SpokenLanguage } from "@/lib/spoken-language";
+import { SpokenLanguageField } from "./spoken-language";
 import { MAX_IMPORT_BYTES, MEDIA_ACCEPT, MEDIA_EXTENSION } from "@/lib/upload-options";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Waveform as AudioLines, BookOpen, Check, CheckCircle, CaretRight as ChevronRight, FileAudio, Cards as Layers, Microphone as Mic, Pause, Play, ArrowCounterClockwise as RotateCcw, UploadSimple as Upload, ListBullets, TextAlignLeft, Notebook, ChatCircle, MapTrifold } from "@phosphor-icons/react";
@@ -24,6 +26,7 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
   const [file, setFile] = useState<File | null>(null), [preview, setPreview] = useState("");
   const [previewFailed,setPreviewFailed]=useState(false);
   const [title, setTitle] = useState(""), [course, setCourse] = useState("");
+  const [spokenLanguage,setSpokenLanguage]=useState<SpokenLanguage>("auto");
   const [notes, setNotes] = useState(true), [detail, setDetail] = useState<Detail>("standard");
   const [permitted, setPermitted] = useState(false), [fictional, setFictional] = useState(false);
   const [configure, setConfigure] = useState(false), [showProgress, setShowProgress] = useState(false);
@@ -53,7 +56,7 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
     setError(""); setUploading(true); setPercent(null); setConfigure(false); setShowProgress(true); setJobId(null);
     const controller=new AbortController();request.current=controller;
     try{
-      const lesson=await uploadLesson(file,{title:title.trim(),course:course.trim()||"My lessons",permitted,synthetic:fictional,noteOptions:{enabled:notes,detail}},controller.signal,setPercent);
+      const lesson=await uploadLesson(file,{title:title.trim(),course:course.trim()||"My lessons",permitted,synthetic:fictional,spokenLanguage,noteOptions:{enabled:notes,detail}},controller.signal,setPercent);
       if(!lesson.id)throw new Error("Saving was not confirmed. Check Recent uploads before trying again.");
       setJobId(lesson.id);onSaved(lesson);setPercent(100);
     }catch(e){if(!controller.signal.aborted)setError(message(e));}
@@ -93,6 +96,7 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
         <div className="upload-selected"><FileAudio size={25}/><div><strong>{file.name}</strong><span>{(file.size / 1024 / 1024).toFixed(1)} MB</span></div><button type="button" className="icon-button" aria-label="Choose another audio file" onClick={() => input.current?.click()}><RotateCcw size={18}/></button></div>
         {previewFailed?<p className="muted">This browser can’t preview this format. You can still upload it.</p>:<audio className="upload-audio-preview" controls src={preview} aria-label="Preview your recording" onError={()=>setPreviewFailed(true)}/>}
         <div className="upload-name-fields"><label className="field">Lesson name<input required maxLength={160} value={title} onChange={e => setTitle(e.target.value)} placeholder="Give it a name"/></label><label className="field">Course <span>(optional)</span><input maxLength={100} value={course} onChange={e => setCourse(e.target.value)} placeholder="e.g. Arabic"/></label></div>
+        <SpokenLanguageField value={spokenLanguage} onChange={setSpokenLanguage}/>
         <div className="notes-switch-row"><div><h3>Make study notes</h3><p>Choose the detail that works for you.</p></div><button type="button" role="switch" aria-checked={notes} aria-label="Make study notes" className="notes-switch" onClick={() => setNotes(v => !v)}><span/></button></div>
         {notes ? <fieldset className="note-detail-options"><legend className="sr-only">Note detail</legend>{details.map(option => <label key={option.id} className={`note-detail-choice ${detail === option.id ? "selected" : ""}`}><input type="radio" name="note-detail" value={option.id} checked={detail === option.id} onChange={() => setDetail(option.id)}/><option.icon size={28} aria-hidden="true"/><strong>{option.name}</strong><span>{option.copy}</span>{detail === option.id && <CheckCircle className="note-choice-check" size={16} weight="fill"/>}</label>)}</fieldset> : <p className="notes-off-message">You’ll still get a transcript, quiz and flashcards from clear parts of your lesson.</p>}
         <p className="note-detail-boundary">All detail comes from this lesson.</p>

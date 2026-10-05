@@ -1,5 +1,13 @@
 # Verification scope, 5 October 2026
 
+## Default example and spoken language update
+
+The changed source passes production build/TypeScript and 130 unit tests in 22 files. New focused checks cover main-language input validation, agreement grouping across differing ASR sentence boundaries, idempotent/deletable local demo seeding and safe exact-passage chat fallback when generation throws. These are local/mocked checks; the changed hosted journey is verified separately after deployment.
+
+One authorized new signup email arrived and its account became confirmed; password sign-in/private workspace worked. The one-use confirmation link was already expired or consumed when inspected, so a clean first-click callback is not proven. Custom sender branding and general public delivery are not established.
+
+Three short neural synthetic clips were checked using Urdu/Arabic/English combinations, automatic detection versus main-language hints, both Groq ASR models and actual study generation/questions. Urdu selection improved script choice; spelling errors and omissions remained. Both full-clip recognizers skipped an English utterance in the Arabic/English clip, while a short crop recovered it. These are fictional engineering fixtures, not a native-speaker or classroom accuracy study. No completeness guarantee is made and no new voice fixture is bundled publicly.
+
 87 unit tests in 18 files, TypeScript and production build passed on macOS/Node 26.4.0. Real FFmpeg checks cover AAC ADTS, AAC MP4 video extraction, FLAC, preserved small MP3, large WAV compression, no-audio video rejection and multipart bounds/cleanup. AAC duration uses decoded frames rather than unreliable bitrate estimation.
 
 A 14-assertion actual localhost/private Supabase check imported a WAV above the previous 24 MiB cap, raw AAC and MP4. Stored prepared audio fit the unchanged private bucket; byte ranges and detailed-note settings worked. AAC reached ready through the actual two-ASR/generation pipeline with valid source-backed notes, quizzes and flashcards. Temporary inputs and disposable accounts were removed. That run used the earlier fictional system-voice fixture; the public fixture was subsequently regenerated with eSpeak NG and preserved passage timing. No real classroom recording was used.

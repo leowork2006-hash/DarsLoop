@@ -1,4 +1,5 @@
 import type { StudyNoteOptions } from "./types";
+import type { SpokenLanguage } from "./spoken-language";
 
 export const RECORDING_LIMIT_SECONDS = 60 * 60;
 // Finish a little before the limit to allow a codec's final packet to flush.
@@ -8,6 +9,7 @@ export type RecordingDraft = {
   id: string; ownerId: string; title: string; course: string; mime: string;
   createdAt: number; updatedAt: number; complete: boolean;
   permitted: boolean; synthetic: boolean; noteOptions: StudyNoteOptions;
+  spokenLanguage?: SpokenLanguage;
 };
 type Chunk = { draftId: string; sequence: number; data: Blob };
 const databaseName = "darsloop-recording-drafts-v1";

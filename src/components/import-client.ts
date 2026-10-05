@@ -1,8 +1,9 @@
 "use client";
+import type { SpokenLanguage } from "@/lib/spoken-language";
 import { api } from "./client-api";
 import { IMPORT_PART_BYTES } from "@/lib/upload-options";
 import type { Lesson,StudyNoteOptions } from "@/lib/types";
-type Options={title:string;course:string;permitted:boolean;synthetic:boolean;noteOptions:StudyNoteOptions};
+type Options={title:string;course:string;permitted:boolean;synthetic:boolean;noteOptions:StudyNoteOptions;spokenLanguage?:SpokenLanguage};
 type Session={id:string;parts:number;options:string};
 const sessions=new WeakMap<File,Session>();
 function uploadPart(url:string,part:Blob,signal:AbortSignal,progress:(bytes:number)=>void){
@@ -24,7 +25,7 @@ export async function uploadLesson(audio:File,options:Options,signal:AbortSignal
     const started=await api<{mode:"local"|"cloud";id:string;parts:number}>("/api/imports",{method:"POST",body:JSON.stringify({action:"start",bytes:audio.size,...options}),signal});
     if(started.mode==="local"){
       const form=new FormData();form.set("audio",audio);form.set("title",options.title);form.set("course",options.course);
-      form.set("permitted",String(options.permitted));form.set("synthetic",String(options.synthetic));form.set("notesEnabled",String(options.noteOptions.enabled));form.set("noteDetail",options.noteOptions.detail);
+      form.set("permitted",String(options.permitted));form.set("synthetic",String(options.synthetic));form.set("notesEnabled",String(options.noteOptions.enabled));form.set("noteDetail",options.noteOptions.detail);form.set("spokenLanguage",options.spokenLanguage||"auto");
       const result=await api<Lesson>("/api/lessons",{method:"POST",body:form,signal});onProgress(100);return result;
     }
     session={id:started.id,parts:started.parts,options:signature};sessions.set(audio,session);

@@ -10,7 +10,7 @@ Public product register, checked 5 October 2026. Core provider/source checks occ
 | Google GenAI SDK 2.27.0 | Structured generation and support audit | Apache-2.0; https://github.com/googleapis/js-genai |
 | Gemini `gemini-3.5-flash-lite` default | Notes, answers and practice | Hosted model, subject to Google API terms/account access; https://ai.google.dev/gemini-api/docs/models and https://ai.google.dev/gemini-api/terms |
 | Groq `whisper-large-v3` default | Original-language timed transcription | Hosted model/API, subject to Groq/OpenAI model terms; https://console.groq.com/docs/speech-to-text and https://github.com/openai/whisper |
-| Groq `whisper-large-v3-turbo` | Secondary key-word disagreement check | Same hosted API terms; actual small English test. Correlated errors remain possible; no calibrated confidence claim |
+| Groq `whisper-large-v3-turbo` | Secondary key-word disagreement check | Same hosted API terms; small English and synthetic mixed-language checks. Correlated errors and omitted words remain possible; no calibrated confidence claim |
 | Google `gemini-embedding-001`, 768 dimensions | Version-scoped lesson semantic retrieval | https://ai.google.dev/gemini-api/docs/embeddings ; vectors are normalized locally, cached privately and deleted with the lesson |
 | Association MCP / HadeethEnc | Read-only candidate source records | Framework-approved source route; service terms at https://mcp.islamiccontent.org/terms.html ; canonical publisher https://hadeethenc.com . No blanket redistribution license is claimed |
 | Supabase SSR 0.12.7 / JS 2.117.2 | Verified identity, private cloud database/storage and worker | MIT; https://github.com/supabase/ssr and https://github.com/supabase/supabase-js ; dependencies pinned, real database tests recorded separately |
@@ -65,7 +65,7 @@ Official provider docs are used for implementation, not incorporated as project-
 - Railway trial/configuration/request limits: https://docs.railway.com/pricing/free-trial , https://docs.railway.com/config-as-code/reference , https://docs.railway.com/networking/public-networking/specs-and-limits
 - Alternative Render Free limitations: https://render.com/docs/free
 
-The Node container digest was actually checked via registry, but a Linux container build/run and public host execution are pending. Supabase runtime authentication after a secret-free build passed; hosted signup delivery and social consent remain pending.
+Railway actually built and ran the Linux image, including a hosted fictional one-hour upload. One owner-authorized signup email arrived and the account became confirmed; general public email delivery and fresh OAuth consent remain limited evidence. Synthetic mixed-language checks are engineering fixtures, not native-speaker review or classroom accuracy proof.
 
 ## Organizer requirements
 

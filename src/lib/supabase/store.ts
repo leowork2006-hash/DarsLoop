@@ -25,11 +25,15 @@ export async function listLessons(user:string):Promise<Lesson[]>{
  return [...new Map([...own,...shared].map(l=>[l.id,{...l,shared:l.ownerId!==user}])).values()].sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
 }
 export async function seedDemo(user:string){
- if((checked(await adminClient().from("lessons").select("id").eq("owner_id",user).limit(1)))?.length)return;
+ const client=adminClient(),account=await client.auth.admin.getUserById(user);
+ if(account.error||!account.data.user)throw new Error("Account unavailable");
+ if(account.data.user.user_metadata?.darsloop_example_added)return;
  const segments:Segment[]=JSON.parse(await readFile(path.join(process.cwd(),"fixtures/demo-timing.json"),"utf8"));if(segments.length!==demoScript.length||segments.some((s,i)=>s.text!==demoScript[i]||!Number.isFinite(s.start)||!Number.isFinite(s.end)||s.end<=s.start))throw new Error("Example audio manifest is invalid");
  const h=hash(`darsloop-demo:${user}`),id=`${h.slice(0,8)}-${h.slice(8,12)}-5${h.slice(13,16)}-8${h.slice(17,20)}-${h.slice(20,32)}`;
- const l:Lesson={id,ownerId:user,title:"Listening, catch-up & revision",course:"Adab of learning",createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:"fixtures/demo.mp3",mime:"audio/mpeg"};
- checked(await adminClient().from("lessons").upsert(row(l),{onConflict:"id",ignoreDuplicates:true}));
+ const l:Lesson={id,ownerId:user,title:"Demo lesson · Listening & revision",course:"Adab of learning",createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:"fixtures/demo.mp3",mime:"audio/mpeg"};
+ checked(await client.from("lessons").upsert(row(l),{onConflict:"id",ignoreDuplicates:true}));
+ const updated=await client.auth.admin.updateUserById(user,{user_metadata:{...account.data.user.user_metadata,darsloop_example_added:true}});
+ if(updated.error)throw new Error("Example preference could not be saved");
 }
 export async function countLessons(user:string){const r=await adminClient().from("lessons").select("id",{head:true,count:"exact"}).eq("owner_id",user);checked(r);return r.count||0;}
 export async function queueLesson(l:Lesson,isNew=false){await rpc("darsloop_queue",{p_payload:l,p_new:isNew});}

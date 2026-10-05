@@ -1,3 +1,4 @@
+import type { SpokenLanguage } from "../spoken-language";
 import { open } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { adminClient } from "./admin";
@@ -6,7 +7,7 @@ import type { Lesson, StudyNoteOptions } from "../types";
 
 export const IMPORT_BUCKET="lesson-imports";
 export class ImportFailure extends Error {constructor(public status:number,message:string){super(message);}}
-type Manifest={id:string;ownerId:string;createdAt:string;bytes:number;parts:number;title:string;course:string;noteOptions:StudyNoteOptions};
+type Manifest={id:string;ownerId:string;createdAt:string;bytes:number;parts:number;title:string;course:string;noteOptions:StudyNoteOptions;spokenLanguage?:SpokenLanguage};
 let bucketReady:Promise<void>|undefined;
 async function ensureBucket(){
   bucketReady??=(async()=>{

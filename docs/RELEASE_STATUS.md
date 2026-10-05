@@ -26,6 +26,10 @@ Checked 5 October 2026. [DarsLoop is live](https://darsloop-production.up.railwa
 - Public signup/recovery delivery and any advertised social consent.
 - Final starting-version/reused-work disclosure, deck/video and portal receipt.
 
+## Default example and language update
+
+Current source adds a prepared fictional lesson inside each signed-in workspace, remembers deletion, preserves the fresh upload path and keeps demo activity out of actual student Insights. Upload/recording can select a main spoken language, separately from interface language. Chat can fall back to explicitly labelled exact-passage search if AI generation fails. Production build/TypeScript and 130 unit tests pass; deployment and changed hosted-path evidence must be observed separately before this update is described as live.
+
 No student learning benefit or physical locked-phone reliability is established. Account quotas and hosting credits must be checked in the actual accounts. Do not interpret the earlier local checks as additional hosted coverage.
 
 Repository packaging pass, 5 October: curated the public runtime/check scripts and source register, added judge/architecture/submission guides, and rechecked TypeScript, dependency consistency, 18 isolated API checks and 14 key-free example boundaries. The example server ran with no AI connections and FFmpeg absent from its PATH. No new live model run or hosted execution is implied.

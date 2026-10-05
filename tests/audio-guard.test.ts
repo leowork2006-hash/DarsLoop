@@ -15,6 +15,21 @@ describe("audio disagreement boundary",()=>{
     const wrong="The Arabic word adapt is explained.";
     expect(compareTranscriptions([passage(wrong)],second(wrong),20)[0].flags).toEqual([]);
   });
+  it("catches Arabic and Urdu negation and term changes without rewriting the source",()=>{
+    for(const [original,other] of [["لم يكتب الطالب الجواب.","كتب الطالب الجواب."],["اگر واضح نہ ہو، مت لکھیں۔","اگر واضح ہو، لکھیں۔"],["كلمة الفاعل تعني من قام بالفعل.","كلمة الفعل تعني من قام بالفعل."],["لفظ مراجعت کی وضاحت سنیں۔","لفظ مراجعات کی وضاحت سنیں۔"]]){
+      const result=compareTranscriptions([passage(original)],second(other),20)[0];
+      expect(result.text).toBe(original);expect(result.flags).toHaveLength(1);
+    }
+  });
+  it("compares Arabic and Urdu digits as numbers while allowing their script variants",()=>{
+    expect(compareTranscriptions([passage("There are ۵ parts.")],second("There are 5 parts."),20)[0].flags).toEqual([]);
+    expect(compareTranscriptions([passage("هناك ٥ أجزاء.")],second("هناك ٦ أجزاء."),20)[0].flags).toHaveLength(1);
+  });
+  it("aligns a condition split into two segments and still flags a lost negation",()=>{
+    const split=[{...passage("إذا كانت الكلمة غير واضحة"),start:10,end:15},{...passage("لا تخمنها"),id:"q",start:15,end:17}];
+    expect(compareTranscriptions(split,[{start:0,end:7,text:"إذا كانت الكلمة غير واضحة لا تخمنها"}],10).every(p=>!p.flags.length)).toBe(true);
+    expect(compareTranscriptions(split,[{start:0,end:7,text:"إذا كانت الكلمة غير واضحة تخمنها"}],10).every(p=>p.flags.length===1)).toBe(true);
+  });
   it("retains existing uncertainty and uses original chunk offsets",()=>{
     const p={...passage("Do not apply it."),flags:["Low confidence"]};
     expect(compareTranscriptions([p],second("Do not apply it."),20)[0].flags).toEqual(["Low confidence"]);

@@ -22,6 +22,7 @@ export function db() {
     CREATE TABLE IF NOT EXISTS memberships (group_id TEXT NOT NULL REFERENCES groups(id),user_id TEXT NOT NULL,PRIMARY KEY(group_id,user_id));
     CREATE TABLE IF NOT EXISTS invites (token_hash TEXT PRIMARY KEY,group_id TEXT NOT NULL REFERENCES groups(id),expires_at INTEGER NOT NULL,used INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE IF NOT EXISTS shares (group_id TEXT NOT NULL REFERENCES groups(id),lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,version INTEGER NOT NULL,PRIMARY KEY(group_id,lesson_id));
+    CREATE TABLE IF NOT EXISTS workspace_flags (user_id TEXT PRIMARY KEY, example_seeded INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id TEXT NOT NULL,event TEXT NOT NULL,created_at TEXT NOT NULL);
   `);
   return database;
@@ -38,13 +39,16 @@ export function sessionUser(token:string|undefined) {
   return row?.user_id||null;
 }
 export function seedDemo(userId:string) {
-  const found=db().prepare("SELECT id FROM lessons WHERE owner_id=? LIMIT 1").get(userId); if(found)return;
+  if(db().prepare("SELECT user_id FROM workspace_flags WHERE user_id=?").get(userId))return;
+  const existing=db().prepare("SELECT id FROM lessons WHERE owner_id=? AND json_extract(payload,'$.demo')=1 LIMIT 1").get(userId);
+  if(existing){db().prepare("INSERT OR IGNORE INTO workspace_flags VALUES(?,1)").run(userId);return;}
   let segments:Segment[];
   try {segments=JSON.parse(readFileSync(path.join(process.cwd(),"fixtures/demo-timing.json"),"utf8"));}
   catch {throw new Error("Run npm run demo:audio before starting the app.");}
   if(segments.length!==demoScript.length||segments.some((s,i)=>!Number.isFinite(s.start)||!Number.isFinite(s.end)||s.start<0||s.end<=s.start||s.text!==demoScript[i]))throw new Error("Example audio manifest does not match the script.");
-  const lesson:Lesson={id:randomUUID(),ownerId:userId,title:"Listening, catch-up & revision",course:"Adab of learning",createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:path.join(process.cwd(),"fixtures/demo.mp3"),mime:"audio/mpeg"};
-  insertLesson(lesson);
+  const lesson:Lesson={id:randomUUID(),ownerId:userId,title:"Demo lesson · Listening & revision",course:"Adab of learning",createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:path.join(process.cwd(),"fixtures/demo.mp3"),mime:"audio/mpeg"};
+  db().exec("BEGIN IMMEDIATE");
+  try{if(!db().prepare("SELECT user_id FROM workspace_flags WHERE user_id=?").get(userId)){insertLesson(lesson);db().prepare("INSERT INTO workspace_flags VALUES(?,1)").run(userId);}db().exec("COMMIT");}catch(e){db().exec("ROLLBACK");throw e;}
 }
 export function insertLesson(l:Lesson) {db().prepare("INSERT INTO lessons VALUES(?,?,?,?)").run(l.id,l.ownerId,l.version,JSON.stringify(l));}
 export function rawLesson(id:string):Lesson|null {const row=db().prepare("SELECT payload FROM lessons WHERE id=?").get(id) as {payload:string}|undefined;return row?JSON.parse(row.payload):null;}

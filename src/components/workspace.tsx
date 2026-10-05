@@ -48,7 +48,7 @@ export function WorkspaceApp(){
     introduced.current=workspace.userId;
     const device=readDeviceOnboarding(workspace.userId),preference=device.pendingSync?device:workspace.onboarding?.completed?workspace.onboarding:device;
     setGuideLanguage(preference.language);
-    const returning=preference.completed||workspace.lessons.length>0||workspace.reviews.length>0||workspace.groups.length>0;
+    const returning=preference.completed||workspace.lessons.some(l=>!l.demo)||workspace.reviews.length>0||workspace.groups.length>0;
     if(returning){welcome.dismiss();setWelcomed(true);return;}
     // Invitation acceptance takes priority; never stack two dialogs on first entry.
     if(!new URLSearchParams(window.location.search).has("invite"))setOnboarding(true);

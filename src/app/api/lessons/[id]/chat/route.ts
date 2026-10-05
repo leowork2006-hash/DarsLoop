@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { authenticate, body, fail, HttpError, json } from "@/lib/http";
 import { authorizedLesson, takeBudget } from "@/lib/backend";
-import { answerLesson, configured, ProviderError } from "@/lib/ai";
+import { answerLesson, configured } from "@/lib/ai";
 import { excerptAnswer } from "@/lib/evidence";
 export const runtime="nodejs";
 export async function POST(req:Request,c:{params:Promise<{id:string}>}){try{
@@ -11,7 +11,12 @@ export async function POST(req:Request,c:{params:Promise<{id:string}>}){try{
   if(!l.segments.length)throw new HttpError(409,"Wait for the transcript before asking about this lesson.");
   if(!await takeBudget(user,"chat",6))throw new HttpError(429,"Please wait a moment before trying again.");
   let answer;
-  try{answer=configured().generation?await answerLesson(parsed.data.question,l):excerptAnswer(parsed.data.question,l.segments,l.version);}catch(e){answer={status:"temporarily_unavailable",blocks:[],message:e instanceof ProviderError?e.message:"The AI service is unavailable. Your lesson is saved; use the transcript or try again later.",mode:"ai",version:l.version};}
+  try{answer=!l.demo&&configured().generation?await answerLesson(parsed.data.question,l):excerptAnswer(parsed.data.question,l.segments,l.version);}catch{
+    // Retain a clearly labelled, exact-passage path when generation is down.
+    // This still runs the ruling/injection gates and excludes flagged speech.
+    const excerpts=excerptAnswer(parsed.data.question,l.segments,l.version);
+    answer={...excerpts,message:`AI answers are temporarily unavailable. ${excerpts.message}`};
+  }
   // Recheck membership and version after asynchronous provider work.
   const current=await authorizedLesson(user,l.id);if(!current)throw new HttpError(404,"Lesson access ended.");if(current.version!==l.version)throw new HttpError(409,"The lesson changed. Ask again using its current version.");
   return json(answer);

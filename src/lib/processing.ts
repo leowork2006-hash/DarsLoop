@@ -1,3 +1,4 @@
+import type { SpokenLanguage } from "./spoken-language";
 import { mkdir, rm, readFile } from "node:fs/promises";
 import path from "node:path";
 import { dataDir, heartbeat, jobCommit, rawLesson, prepareAudio, storeAudio, removeCloudAudio } from "./backend";
@@ -26,7 +27,7 @@ export function timedSegments(result:Awaited<ReturnType<typeof transcribe>>,chun
     return [{id:`v${version}-c${chunk.index}-s${j}`,start,end,text:s.text.trim(),flags:segmentFlags(s,s.text)}];
   });
 }
-export async function processLesson(job:{id:string;lesson_id:string;lease:string},providers:{transcribe:typeof transcribe;createArtifacts:typeof createArtifacts;audioChunk:typeof audioChunk;crossCheck?:(bytes:Buffer)=>ReturnType<typeof transcribe>}={transcribe,createArtifacts,audioChunk,crossCheck:bytes=>transcribe(bytes,"whisper-large-v3-turbo")}) {
+export async function processLesson(job:{id:string;lesson_id:string;lease:string},providers:{transcribe:typeof transcribe;createArtifacts:typeof createArtifacts;audioChunk:typeof audioChunk;crossCheck?:(bytes:Buffer,language?:SpokenLanguage)=>ReturnType<typeof transcribe>}={transcribe,createArtifacts,audioChunk,crossCheck:(bytes,language)=>transcribe(bytes,"whisper-large-v3-turbo",language)}) {
   let lesson=await rawLesson(job.lesson_id);if(!lesson)return;
   const temp=path.join(dataDir,"jobs",job.id,job.lease);let held=true,importStored=false;
   const timer=setInterval(()=>{void heartbeat(job.id,job.lease).then(ok=>{held=ok;}).catch(()=>{held=false;});},20_000);
@@ -62,7 +63,7 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
         lesson={...lesson,stage:`Transcribing section ${chunk.index+1} of ${chunks.length}`};await jobCommit(job.id,job.lease,lesson);
         // Independent ASR requests run together; keep a single bounded audio buffer.
         // Await both so a failed request cannot leak into the next job.
-        const heard=await Promise.allSettled([providers.transcribe(bytes),...(providers.crossCheck?[providers.crossCheck(bytes)]:[])]);
+        const heard=await Promise.allSettled([providers.transcribe(bytes,undefined,lesson.spokenLanguage||"auto"),...(providers.crossCheck?[providers.crossCheck(bytes,lesson.spokenLanguage||"auto")]:[])]);
         const rejected=heard.find(r=>r.status==="rejected");if(rejected?.status==="rejected")throw rejected.reason;
         const result=(heard[0] as PromiseFulfilledResult<Awaited<ReturnType<typeof transcribe>>>).value;
         let segments=timedSegments(result,chunk,lesson.duration,lesson.version);

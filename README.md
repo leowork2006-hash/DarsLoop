@@ -4,7 +4,7 @@ Return to what your teacher taught. A student workspace for Islamic classes: rec
 
 **Live app:** [DarsLoop](https://darsloop-production.up.railway.app) · [Try the fictional example without an account](https://darsloop-production.up.railway.app/example).
 
-**Release status, 5 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. Fourteen public-example checks and 26 authenticated hosted assertions passed; disposable accounts were removed and their absence confirmed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed 87 unit tests, 18 isolated API checks and 14 example boundaries. Email delivery and social sign-in consent still need owner verification. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
+**Release status, 5 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed the earlier release checks. One owner-authorized signup email arrived and the account became confirmed; a clean first-click callback and general public email delivery remain unproven. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
 
 ## Try it without keys
 
@@ -25,7 +25,8 @@ Download the repository ZIP (Code > Download ZIP), extract it and run these comm
 3. Ask “What should I do after missing a lesson?” Follow the source passage and play its audio.
 4. Ask about astronomy, which is outside the example. The app says it is not covered.
 5. Read the transcript, then try **Quiz**, **Flashcards**, **Catch me up** and **Teacher’s terms**.
-6. In a configured authenticated workspace, upload permitted fictional audio and choose Quick, Balanced or Detailed notes. This is the fresh AI path; it is separate from the prepared example.
+6. Sign in to find **Demo lesson · Listening & revision** in My lessons. This is a prepared fictional lesson with audio, notes and practice; it uses no fresh AI quota. It can be deleted and will not be added again to that account.
+7. In a configured authenticated workspace, upload permitted fictional audio, choose its main spoken language and Quick, Balanced or Detailed notes. This is the fresh AI path; it is separate from the prepared example.
 
 Without AI keys, local questions use visibly labelled transcript search, and fresh audio waits for the worker connection. Prepared material is never presented as freshly generated output.
 
@@ -54,6 +55,8 @@ Secrets stay server-side. Groq receives audio chunks; Google receives transcript
 MP3, M4A, AAC, WAV, MP4, Ogg, WebM and FLAC: up to **500 MiB and one hour**. The app extracts audio from video and prepares a smaller audio copy when needed. Keep your original file. Stored private audio stays below the existing 24 MiB storage allowance; prepared copies are labelled in the player. Hosting request/time limits can be stricter than the app allowance.
 
 Recording saves recoverable chunks on the device, offers Pause/Stop, and automatically stops at one hour while the browser is executing. Stop saves and queues the selected study material. Wake lock is best effort; a web app cannot guarantee continued recording with a locked phone or suspended browser. Use the phone recorder and import the file when unattended recording is needed. Permission and fictional-data confirmations remain explicit.
+
+**Languages:** choose automatic detection or the main spoken language (Urdu, Arabic or English). This affects transcription, separately from the interface/guide language. The app requests transcription rather than English translation. Mixed-language words may be rendered in their original script or as transliteration, and can be misheard or omitted. Short synthetic Urdu tests showed improved script selection with Urdu selected; Arabic/English switches still exposed omissions. This is not native classroom accuracy proof. Original audio stays available; flags withhold detected questionable passages from generated material, but two recognizers can agree on the same mistake.
 
 ## Cloud deployment
 
@@ -92,4 +95,4 @@ Original project code is [MIT](LICENSE). Dependencies, fonts, external source co
 
 A fresh hosted fictional one-hour WAV above the old 24 MB source limit completed in 55.708 seconds upload plus 139.154 seconds processing. It produced 878 timestamped segments, six cited notes, two quizzes and two cards; supported chat, practice saves and privacy checks passed. These are synthetic English measurements, not a classroom-accuracy, concurrency or uptime guarantee. Latest build/TypeScript and 122 unit tests pass; scoped hosted/browser/safety results and remaining gates are in [docs/QA.md](docs/QA.md).
 
-Private audio replay streams requested ranges. Long-lesson search caches exact repeated wording while retaining original source references. Completed transcripts survive generation problems; available supported notes remain usable and chat has explicit retry. Google API billing is confirmed absent, so free quotas can still pause new work. Use external-app API billing rather than buying Google AI Plus; see [DEPLOYMENT.md](DEPLOYMENT.md).
+Private audio replay streams requested ranges. Long-lesson search caches exact repeated wording while retaining original source references. Completed transcripts survive generation problems; available supported notes remain usable. If AI chat fails, a visibly labelled transcript-search response can return exact supported passages or abstain, with the same religious/scope boundaries. It does not invent an AI answer. Google API billing is confirmed absent, so free quotas can still pause new work. Consumer Google AI plans do not raise this app's API-key allowance; see [DEPLOYMENT.md](DEPLOYMENT.md).

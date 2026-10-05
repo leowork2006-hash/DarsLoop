@@ -1,3 +1,4 @@
+import type { SpokenLanguage } from "./spoken-language";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { answerSchema, artifactSchema, boundedQuestion, instructionLike, needsPersonalReferral, safePractice, validateAnswer, validateArtifacts } from "./evidence";
@@ -117,10 +118,11 @@ export async function answerLesson(question:string,l:Lesson):Promise<Answer> {
   return {...answer,retrieval:method,...(answer.status==="not_covered"&&method!=="whole_lesson"?{message:"I couldn’t find a supporting passage in this lesson. Try a more specific question or ask your teacher."}:{})};
 }
 const asrSchema=z.object({segments:z.array(z.object({start:z.number(),end:z.number(),text:z.string(),avg_logprob:z.number().optional(),no_speech_prob:z.number().optional(),compression_ratio:z.number().optional()})).max(5000)});
-export async function transcribe(bytes:Buffer,model=process.env.ASR_MODEL||"whisper-large-v3") {
+export async function transcribe(bytes:Buffer,model=process.env.ASR_MODEL||"whisper-large-v3",language:SpokenLanguage="auto") {
   const key=process.env.GROQ_API_KEY;if(!key)throw new ProviderError("not_configured","Connect Groq to transcribe this recording.");
-  const form=new FormData();form.set("file",new Blob([new Uint8Array(bytes)],{type:"audio/wav"}),"lesson.wav");form.set("model",model);form.set("response_format","verbose_json");form.append("timestamp_granularities[]","segment");form.set("temperature","0");
-  // Transcription endpoint, no forced language and no religious completion prompt.
+  const form=new FormData();form.set("file",new Blob([new Uint8Array(bytes)],{type:"audio/wav"}),"lesson.wav");form.set("model",model);form.set("response_format","verbose_json");form.append("timestamp_granularities[]","segment");form.set("temperature","0");if(language!=="auto")form.set("language",language);
+  // The student may choose a main spoken language. Never supply an expected
+  // religious quotation or completion prompt to the recognizer.
   const r=await fetch("https://api.groq.com/openai/v1/audio/transcriptions",{method:"POST",headers:{Authorization:`Bearer ${key}`},body:form,signal:AbortSignal.timeout(60_000)});
   if(!r.ok){
     if(r.status===429)throw new ProviderError("quota","The transcription limit was reached. Your audio is saved; retry later.");

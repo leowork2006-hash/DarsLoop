@@ -10,6 +10,14 @@ const segments:Segment[]=Array.from({length:8},(_,i)=>({id:`s${i}`,start:i*12,en
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();interaction.mockReset();});
 const checks=(count:number)=>({output_text:JSON.stringify({checks:Array.from({length:count},(_,index)=>({index,supported:true,preservesQualifications:true,lessonScopeOnly:true}))})});
 describe("provider contracts using mocks, not live AI",()=>{
+  it("sends a selected main language to ASR without a transcript or religious prompt",async()=>{
+    vi.stubEnv("GROQ_API_KEY","test-only");const requests:RequestInit[]=[];
+    vi.stubGlobal("fetch",vi.fn(async(_url:string,options:RequestInit)=>{requests.push(options);return new Response(JSON.stringify({segments:[]}));}));
+    await transcribe(Buffer.alloc(5),"whisper-large-v3","ur");await transcribe(Buffer.alloc(5),"whisper-large-v3","auto");
+    const selected=requests[0].body as FormData,automatic=requests[1].body as FormData;
+    expect(selected.get("language")).toBe("ur");expect(automatic.has("language")).toBe(false);expect(selected.has("prompt")).toBe(false);
+    expect(selected.get("response_format")).toBe("verbose_json");
+  });
   it("fails clearly when keys are missing",async()=>{
     vi.stubEnv("GEMINI_API_KEY","");vi.stubEnv("GROQ_API_KEY","");
     await expect(createArtifacts(segments)).rejects.toThrow("Connect Google");await expect(transcribe(Buffer.alloc(5))).rejects.toThrow("Connect Groq");

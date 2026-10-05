@@ -8,7 +8,12 @@ const s=await import("../src/lib/store");
 function fixtureSession(){const result=s.createSession();s.seedDemo(result.userId);return result;}
 afterAll(()=>{s.db().close();rmSync(process.env.DARSLOOP_DATA_DIR!,{recursive:true,force:true});});
 describe("private lessons and job durability",()=>{
-  it("starts an actual new session with an empty library",()=>{const user=s.createSession();expect(s.listLessons(user.userId)).toEqual([]);});
+  it("creates one complete fictional example per workspace and respects deletion",()=>{
+    const user=s.createSession();s.seedDemo(user.userId);s.seedDemo(user.userId);const lessons=s.listLessons(user.userId);
+    expect(lessons).toHaveLength(1);expect(lessons[0].demo).toBe(true);expect(lessons[0].artifacts?.notes.length).toBeGreaterThan(0);
+    expect(lessons[0].artifacts?.practice.map(p=>p.kind)).toEqual(expect.arrayContaining(["quiz","flashcard"]));
+    s.deleteLesson(user.userId,lessons[0].id);s.seedDemo(user.userId);expect(s.listLessons(user.userId)).toEqual([]);
+  });
   it("uses hashed sessions and isolates two students",()=>{
     const a=fixtureSession(),b=fixtureSession();
     expect(s.sessionUser(a.token)).toBe(a.userId);expect(s.sessionUser("wrong")).toBeNull();
