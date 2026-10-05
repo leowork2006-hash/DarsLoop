@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Answer, Artifacts, Citation, Note, StudyPassage, StudyNoteOptions } from "./types";
 import { isPdfPage, sourceCitations, validSourcePassage } from "./source-passages";
 import { resolveNoteOptions } from "./note-options";
+import { supportedOverview } from "./material-overview";
 const citation=z.object({segmentId:z.string().max(100),quote:z.string().min(1).max(5000),page:z.number().int().positive().optional()});
 const citations=z.array(citation).min(1).max(6);
 const supported=z.object({heading:z.string().min(1).max(160),text:z.string().min(1).max(1800),evidence:citations});
@@ -24,7 +25,7 @@ export function safePractice(artifacts:Artifacts) {
     return !literal;
   });
 }
-export function validateArtifacts(input:unknown,segments:StudyPassage[],options?:StudyNoteOptions):Artifacts {
+export function validateArtifacts(input:unknown,segments:StudyPassage[],options?:StudyNoteOptions,settings:{allowEmptyNotes?:boolean}={}):Artifacts {
   const a=artifactSchema.parse(input);
   for(const collection of [a.notes,a.terms,a.practice])for(const item of collection)if(evidenceValid(item.evidence,segments))item.evidence=sourceCitations(item.evidence,segments);
   const noteOptions=resolveNoteOptions(options);
@@ -36,9 +37,9 @@ export function validateArtifacts(input:unknown,segments:StudyPassage[],options?
     if(p.kind==="quiz")return p.choices.length>=2&&new Set(p.choices).size===p.choices.length&&p.choices.includes(p.answer);
     return p.choices.length===0;
   });
-  if(noteOptions.enabled&&!notes.length)throw new Error("No supported notes were returned. The transcript is still available.");
+  if(noteOptions.enabled&&!notes.length&&!settings.allowEmptyNotes)throw new Error("No supported notes were returned. The transcript is still available.");
   // Overview must be derived from validated notes rather than an uncited model paragraph.
-  return {...a,overview:notes.slice(0,3).map(n=>n.text).join(" "),notes,terms,practice:safePractice({...a,notes,terms,practice})};
+  return {...a,overview:supportedOverview(notes),notes,terms,practice:safePractice({...a,notes,terms,practice})};
 }
 export function validateAnswer(input:unknown,segments:StudyPassage[],version:number):Answer {
   const a=answerSchema.parse(input);

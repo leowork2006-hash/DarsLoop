@@ -5,6 +5,7 @@ import { validateArtifacts } from "../src/lib/evidence";
 import { safeLesson } from "../src/lib/store";
 const interaction=vi.hoisted(()=>vi.fn());
 vi.mock("@google/genai",()=>({GoogleGenAI:class{interactions={create:interaction};}}));
+vi.mock("../src/lib/generation-admission",()=>({acquireGenerationPermit:async()=>()=>{}}));
 import { createArtifacts } from "../src/lib/ai";
 
 const english="Listen carefully, then review the lesson later. Ask for clarification when needed.";

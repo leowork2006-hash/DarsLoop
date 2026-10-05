@@ -10,6 +10,8 @@ Study-material language (Auto/Arabic/Urdu/English) is separate from the spoken-l
 
 Notes can be disabled or set to Quick, Balanced or Detailed. Transcript/practice remain separate. Unclear passages are withheld from generated study material. Agreement between models is not proof that wording is correct.
 
+Long sources use bounded chronological generation sections and neighboring context for conditions. All sections must complete before replacing material. The explicit Detailed upgrade uses saved completed passages, preserves the original transcript/PDF and personal notes, and commits a new material revision only on success. Switching display views has no generation cost.
+
 ## Runtime
 
 - Next.js/React serves pages, authenticated APIs and byte-range audio. Node.js 24+ is required.
@@ -18,12 +20,15 @@ Notes can be disabled or set to Quick, Balanced or Detailed. Transcript/practice
 - Hosted mode uses Supabase Auth, private Storage, database access policies and job leases. Only the server/worker receive the secret key. Runtime connections can be supplied after a secret-free build.
 - Local development uses loopback-only SQLite/private files. It does not provide the hosted account security model.
 - One Docker service runs web and worker processes. /api/health checks the web process; it is not a model, database or ongoing uptime guarantee.
+- A shared local SQLite admission gate bounds generation calls across both processes. Completed eligible transcripts can be reused for an exact prepared-audio duplicate owned by the same account with identical transcription settings. Generation remains fresh; incomplete/shared/legacy checkpoints are excluded.
 
 ## Information boundaries
 
 Groq receives audio chunks. Google receives extracted transcript or PDF page passages, questions and embedding inputs. A separate read-only reference service receives an explicitly selected source query. Personal religious application refers to a teacher; unsupported topics remain outside the class. Source candidates and publisher metadata are distinguished from teacher wording.
 
 Private classes share permitted lesson material, not personal practice responses. Revocation blocks future access; already downloaded files cannot be recalled. Deleted lessons invalidate related stored material according to the implemented storage paths.
+
+Optional private quiz rounds snapshot one shared source/material revision and one supported question set. Explicit nickname opt-in gates questions/results; a server-only first-attempt submission is immutable. Withdrawal hides the result while retaining the attempt lock. Membership, share and snapshot checks apply to every operation, and share/source/material changes permanently close a round. Round results do not feed personal review history.
 
 ## Implemented limits
 

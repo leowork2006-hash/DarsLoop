@@ -7,10 +7,18 @@ import { safeLesson } from "../store";
 import { nextReview } from "../review-activity";
 import { demoArtifacts, demoScript } from "../demo";
 import type { ClassGroup, Lesson, Review, Segment } from "../types";
+import { MATERIAL_GENERATION_REVISION, detailedOptions, sourceReadyForMaterial } from "../material-sections";
+import { checkMaterialRequest, materialSourceSnapshot, MaterialQueueError, type DetailedQueueResult, type MaterialQueueCode } from "../material-queue";
 function checked<T>(r:{data:T;error:unknown}){if(r.error)throw new Error("Private database action failed");return r.data;}
 const hash=(s:string)=>createHash("sha256").update(s).digest("hex");
 const row=(l:Lesson)=>({id:l.id,owner_id:l.ownerId,version:l.version,payload:l});
 export async function rawLesson(id:string):Promise<Lesson|null>{if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id))return null;const r=await adminClient().from("lessons").select("payload").eq("id",id).maybeSingle();return checked(r)?.payload||null;}
+export async function transcriptCandidates(owner:string,key:string,exclude:string):Promise<Lesson[]>{
+ if(!owner||!/^[a-f0-9]{64}$/.test(key))return [];
+ // Worker-only lookup: sharing or membership never broadens the owner predicate.
+ const rows=checked(await adminClient().from("lessons").select("payload").eq("owner_id",owner).neq("id",exclude).eq("payload->transcriptCache->>key",key).eq("payload->>status","ready").eq("payload->>transcriptionComplete","true").limit(30));
+ return (rows||[]).map(r=>r.payload as Lesson).filter(l=>l.ownerId===owner);
+}
 async function memberGroups(user:string):Promise<string[]>{return checked(await adminClient().from("memberships").select("group_id").eq("user_id",user))!.map(m=>m.group_id);}
 export async function authorizedLesson(user:string,id:string):Promise<Lesson|null>{
  const l=await rawLesson(id);if(!l)return null;if(l.ownerId===user)return safeLesson(l);
@@ -36,7 +44,19 @@ export async function seedDemo(user:string){
  if(updated.error)throw new Error("Example preference could not be saved");
 }
 export async function countLessons(user:string){const r=await adminClient().from("lessons").select("id",{head:true,count:"exact"}).eq("owner_id",user);checked(r);return r.count||0;}
-export async function queueLesson(l:Lesson,isNew=false){await rpc("darsloop_queue",{p_payload:l,p_new:isNew});}
+export async function queueLesson(l:Lesson,isNew=false){
+ const result=await adminClient().rpc("darsloop_queue",{p_payload:l,p_new:isNew});
+ if(result.error?.code==="55P03")throw new MaterialQueueError("busy");
+ if(result.error?.code==="40001")throw new MaterialQueueError("conflict");
+ checked(result);
+}
+export async function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number):Promise<DetailedQueueResult>{
+ checkMaterialRequest(version,materialRevision);
+ const current=await rawLesson(id);if(!current||current.ownerId!==user||current.demo||current.shared)throw new MaterialQueueError("not_found");
+ const result=await rpc<DetailedQueueResult|{error:MaterialQueueCode}>("darsloop_queue_detailed_material",{p_owner:user,p_lesson:id,p_source_version:version,p_material_revision:materialRevision,p_source_snapshot:materialSourceSnapshot(current),p_source_ready:!current.sourceImport&&sourceReadyForMaterial(current),p_note_options:detailedOptions(current),p_prepared_revision:MATERIAL_GENERATION_REVISION});
+ if("error" in result)throw new MaterialQueueError(result.error);
+ return result;
+}
 export async function claimJob(pdfOnly=false){const rows=await rpc<{id:string;lesson_id:string;lease:string;attempts:number}[]>(pdfOnly?"darsloop_claim_pdf":"darsloop_claim");return rows[0]||null;}
 export async function heartbeat(id:string,lease:string){return rpc<boolean>("darsloop_heartbeat",{p_job:id,p_lease:lease});}
 export async function jobCommit(id:string,lease:string,l:Lesson,done=false){await rpc("darsloop_commit",{p_job:id,p_lease:lease,p_payload:l,p_done:done});}

@@ -24,7 +24,7 @@ Do not describe this as Supabase TUS or page-reload resume. Interrupted unqueued
 - Inspect whole-container memory logs (`host-memory`) after startup and a fictional job. The supervisor reads Linux cgroup current/peak/limit and OOM kills. Local null readings are not hosted proof. One worker handles one job at a time with bounded buffers.
 - Check actual provider permissions, limits and service capacity privately. Two recognizers, overlap, generation audits, chat, embeddings and retries consume allowance. Do not infer access or remaining capacity from a historical peak chart.
 - Observe host health/restarts and storage/egress. Confirm the projected operating runway privately before judging. An optional desktop check depends on the desktop being available and is not independent uptime monitoring.
-- Provider failures must preserve completed transcripts/audio and display an honest retry state. Durable automatic quota waiting is implemented. Audio-hash reuse across duplicate uploads is not implemented.
+- Provider failures must preserve completed transcripts/audio and display an honest retry state. Durable automatic quota waiting is implemented. Exact duplicate prepared audio can reuse a completed eligible transcript within the same owner's account and unchanged transcription settings; study material is generated afresh. Partial, legacy, shared and different-owner transcripts are not reused.
 - Prepared demo playback/practice/answers remain usable without external AI. Never substitute the example for a failed new upload.
 - Validate any backup provider through timestamps, captured quotations, mixed-language speech and the complete private lesson journey before calling it a working fallback.
 
@@ -60,6 +60,18 @@ Deepgram uses Nova-3 and requires the main spoken language. Its multilingual set
 Manual switching affects new/unstarted jobs. An already started lesson remains pinned to its original provider to avoid mixing checkpoints. For an outage during a started job, preserve it and retry after recovery, or explicitly upload a new permitted copy after choosing the backup. No automatic cross-provider switch or administrator rewrite of an existing transcript is implemented.
 
 The actual backup tests used short authored synthetic recordings and native timestamps, not a native-speaker classroom pilot or a hosted provider-switch rehearsal. See [QA.md](docs/QA.md) for evidence and limits.
+
+## Detailed preparation, transcript reuse and private quiz rounds
+
+Apply `20261005220213_detailed_material_queue.sql` and `20261005220424_class_quiz_rounds.sql` in migration order before deploying this revision. Both use service-only actions; quiz tables deny direct browser reads/writes. Detailed preparation atomically checks ownership, source version, material revision and existing job state. It preserves the completed source and previous material until a complete audited replacement succeeds. Private rounds close on source/material change or share revocation.
+
+Transcript reuse uses an owner-bound server HMAC of prepared audio plus transcription settings and policy. Cloud mode uses the private Supabase server secret. Local mode must explicitly set `DARSLOOP_TRANSCRIPT_CACHE_SECRET` to enable reuse; an absent secret simply disables it. A secret change causes safe cache misses. No raw audio hash or origin lesson identifier is persisted. Concurrent unfinished duplicate uploads are not coalesced.
+
+Gemini generation admission uses the web and worker's shared `DARSLOOP_DATA_DIR` SQLite file. It permits at most two in-flight generation calls and twelve starts per rolling minute per model, including failed requests and format repairs. Interactive questions fall back promptly to labelled source excerpts when capacity is busy; queued material waits/retries. This guard assumes the documented single-container deployment. Separate replicas need a distributed limiter, and calls from AI Studio or another app can still consume the same account quota.
+
+## Confirmation emails
+
+See [email-confirmation.md](docs/email-confirmation.md) for the prepared token-hash template and scanner-safe explicit confirmation step. Default signup remains PKCE until the hosted template, allowed redirects and optional `DARSLOOP_EMAIL_CONFIRMATION_FLOW=token_hash` setting are configured together. A custom SMTP sender must be configured and actual public inbox delivery tested; a locally passing confirmation route does not prove delivery. Do not commit SMTP credentials.
 
 ## Personal notes migration
 

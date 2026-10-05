@@ -5,6 +5,7 @@ import { ArrowRight, Check, Copy, FilePdf, Headphones, LinkSimple, LockKey, Plus
 import { formatTime, type ClassGroup, type Lesson, type Workspace } from "@/lib/types";
 import { api, message } from "./client-api";
 import { Modal as NativeModal } from "./modal";
+import { ClassChallenges } from "./class-challenges";
 
 export type ClassesPageProps = {
   workspace: Workspace;
@@ -82,7 +83,7 @@ export function ClassesPage({ workspace, refresh, onOpen, onError, onUpload }: C
   return <section className="classes-reference-page">
     <header className="classes-reference-heading"><div><h1>Private classes</h1><p>Catch up on lessons with your classmates.</p></div><span className="classes-private-pill"><LockKey size={15} /> Invite only</span></header>
 
-    <aside className="classes-reference-intro"><span className="classes-intro-icon" aria-hidden="true"><UsersThree size={32} /></span><div><h2>A lesson you can return to together.</h2><p>Share permitted recordings, resources, notes and practice. Each person’s answers stay private.</p></div></aside>
+    <aside className="classes-reference-intro"><span className="classes-intro-icon" aria-hidden="true"><UsersThree size={32} /></span><div><h2>A lesson you can return to together.</h2><p>Share permitted recordings, resources, notes and practice. Personal study answers stay private. Optional quiz rounds share only a nickname and round score.</p></div></aside>
 
     <form className="classes-create-form" data-tour="classes-create" onSubmit={event => { event.preventDefault(); if (name.trim().length >= 2) void action("create", { action: "create", name: name.trim() }, () => setName("")); }}>
       <div><h2>Start a private class</h2><p>Give your class or study circle a name.</p></div>
@@ -107,6 +108,7 @@ export function ClassesPage({ workspace, refresh, onOpen, onError, onUpload }: C
             const canRemove = group.owner || full?.ownerId === workspace.userId;
             return <div className="classes-shared-row" key={shared.id}><span className="classes-lesson-icon" aria-hidden="true">{full?.sourceKind === "pdf" ? <FilePdf size={23}/> : <Headphones size={23}/>}</span><button type="button" className="classes-lesson-open" onClick={() => openShared(shared.id)} disabled={!!busy || !full}><strong dir="auto">{shared.title}</strong><span dir="auto">{shared.course}{shared.demo ? " · Fictional example" : ""}{!full ? " · No longer available" : ""}</span></button><div className="classes-lesson-actions">{canRemove && <button type="button" className="classes-stop-sharing" disabled={!!busy} onClick={() => setRemoval({ groupId: group.id, lessonId: shared.id })}>Stop sharing</button>}<button type="button" className="classes-lesson-arrow" aria-label={`Open ${shared.title}`} disabled={!!busy || !full} onClick={() => openShared(shared.id)}><ArrowRight size={18} /></button></div></div>;
           }) : <div className="classes-shared-empty"><Headphones size={28} /><h4>No shared lessons yet</h4><p>{availableToShare ? "Choose one of your ready lessons to share with this class." : ownLessons.length ? "The lessons you can share will appear here." : "Upload material or a PDF, or ask a classmate to share a lesson."}</p>{!ownLessons.length && <button type="button" className="classes-button" disabled={!!busy} onClick={onUpload}><UploadSimple size={16} /> Upload material</button>}</div>}</div>
+          <ClassChallenges group={group} lessons={workspace.lessons} onOpen={onOpen}/>
         </article>;
       })}</div> : <div className="classes-reference-empty"><span className="classes-empty-icon" aria-hidden="true"><UsersThree size={38} /></span><h3>Your first study circle starts here.</h3><p>Create a class above. Invite a classmate, then share a lesson you have permission to share.</p><div className="classes-empty-steps"><span><b>1</b>Create a class</span><ArrowRight size={15} /><span><b>2</b>Invite a classmate</span><ArrowRight size={15} /><span><b>3</b>Share a lesson</span></div></div>}
     </section>

@@ -7,6 +7,8 @@ import { demoArtifacts, demoScript } from "./demo";
 import { evidenceValid, instructionLike, safePractice } from "./evidence";
 import { nextReview } from "./review-activity";
 import type { ClassGroup, Lesson, Review, Segment } from "./types";
+import { detailedQueueChange, MaterialQueueError, type DetailedQueueResult } from "./material-queue";
+import { supportedOverview } from "./material-overview";
 
 export const dataDir=path.resolve(/* turbopackIgnore: true */ process.env.DARSLOOP_DATA_DIR||".data");
 let database:DatabaseSync|undefined;
@@ -56,6 +58,11 @@ export function seedDemo(userId:string) {
 }
 export function insertLesson(l:Lesson) {db().prepare("INSERT INTO lessons VALUES(?,?,?,?)").run(l.id,l.ownerId,l.version,JSON.stringify(l));}
 export function rawLesson(id:string):Lesson|null {const row=db().prepare("SELECT payload FROM lessons WHERE id=?").get(id) as {payload:string}|undefined;return row?JSON.parse(row.payload):null;}
+export function transcriptCandidates(owner:string,key:string,exclude:string):Lesson[] {
+  if(!owner||!/^[a-f0-9]{64}$/.test(key))return [];
+  const rows=db().prepare("SELECT payload FROM lessons WHERE owner_id=? AND id<>? AND json_extract(payload,'$.transcriptCache.key')=? AND json_extract(payload,'$.status')='ready' AND json_extract(payload,'$.transcriptionComplete')=1 LIMIT 30").all(owner,exclude,key) as {payload:string}[];
+  return rows.map(r=>JSON.parse(r.payload) as Lesson).filter(l=>l.ownerId===owner);
+}
 export function safeLesson(l:Lesson):Lesson {
   // Also guard older saved transcripts without rewriting their stored text/audio.
   const segments=l.segments.map(s=>instructionLike(s.text)?{...s,flags:[...new Set([...s.flags,"Instruction-like wording: excluded from AI study material; replay the audio"])]}:s);
@@ -64,7 +71,7 @@ export function safeLesson(l:Lesson):Lesson {
   if(!l.artifacts)return {...l,segments,pdfPages};
   const notes=l.artifacts.notes.filter(n=>evidenceValid(n.evidence,passages));
   const terms=l.artifacts.terms.filter(t=>evidenceValid(t.evidence,passages));
-  const a={...l.artifacts,notes,terms,overview:notes.slice(0,3).map(n=>n.text).join(" "),practice:l.artifacts.practice.filter(p=>evidenceValid(p.evidence,passages))};
+  const a={...l.artifacts,notes,terms,overview:supportedOverview(notes),practice:l.artifacts.practice.filter(p=>evidenceValid(p.evidence,passages))};
   return {...l,segments,pdfPages,artifacts:{...a,practice:l.demo?a.practice:safePractice(a)}};
 }
 export function authorizedLesson(user:string,id:string):Lesson|null {
@@ -77,7 +84,7 @@ export function listLessons(user:string):Lesson[] {
   const rows=db().prepare("SELECT DISTINCT l.payload FROM lessons l LEFT JOIN shares s ON s.lesson_id=l.id AND s.version=l.version LEFT JOIN memberships m ON m.group_id=s.group_id WHERE l.owner_id=? OR m.user_id=?").all(user,user) as {payload:string}[];
   return rows.map(r=>JSON.parse(r.payload) as Lesson).map(l=>({...l,shared:l.ownerId!==user})).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
 }
-export function publicLesson(l:Lesson) { const {sourceImport,...visible}=safeLesson(l);void sourceImport;return {...visible,audioPath:"",...(l.sourceKind==="pdf"?{pdfUrl:`/api/lessons/${l.id}/pdf?v=${l.version}`}:{audioUrl:`/api/lessons/${l.id}/audio?v=${l.version}`})}; }
+export function publicLesson(l:Lesson) { const {sourceImport,transcriptCache,...visible}=safeLesson(l);void sourceImport;void transcriptCache;return {...visible,audioPath:"",...(l.sourceKind==="pdf"?{pdfUrl:`/api/lessons/${l.id}/pdf?v=${l.version}`}:{audioUrl:`/api/lessons/${l.id}/audio?v=${l.version}`})}; }
 export function updateLesson(l:Lesson,expectedVersion=l.version) {
   const result=db().prepare("UPDATE lessons SET version=?,payload=? WHERE id=? AND owner_id=? AND version=?").run(l.version,JSON.stringify(l),l.id,l.ownerId,expectedVersion);
   if(result.changes!==1)throw new Error("The lesson changed. Reload before trying again.");
@@ -85,8 +92,30 @@ export function updateLesson(l:Lesson,expectedVersion=l.version) {
 export function enqueue(id:string) {db().prepare("INSERT INTO jobs(id,lesson_id,status) VALUES(?,?,'queued') ON CONFLICT(lesson_id) DO UPDATE SET status='queued',lease=NULL,lease_until=NULL,error=NULL,attempts=0,available_at=0 WHERE status IN ('failed','done')").run(randomUUID(),id);}
 export function queueLesson(l:Lesson,isNew=false) {
   db().exec("BEGIN IMMEDIATE");
-  try{if(isNew)insertLesson(l);else updateLesson(l);enqueue(l.id);db().exec("COMMIT");}
+  try{
+    if(isNew)insertLesson(l);
+    else{
+      const active=db().prepare("SELECT status FROM jobs WHERE lesson_id=? AND status IN ('queued','running')").get(l.id);
+      if(active)throw new MaterialQueueError("busy");
+      const current=rawLesson(l.id);if(current&&(current.materialRevision??0)!==(l.materialRevision??0))throw new MaterialQueueError("conflict");
+      updateLesson(l);
+    }
+    enqueue(l.id);db().exec("COMMIT");
+  }
   catch(e){db().exec("ROLLBACK");throw e;}
+}
+export function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number):DetailedQueueResult {
+  db().exec("BEGIN IMMEDIATE");
+  try{
+    const current=rawLesson(id),job=db().prepare("SELECT status FROM jobs WHERE lesson_id=?").get(id) as {status:string}|undefined;
+    const change=detailedQueueChange(current,user,version,materialRevision,job?.status);
+    if(change.lesson){
+      updateLesson(change.lesson,version);
+      const queued=db().prepare("INSERT INTO jobs(id,lesson_id,status) VALUES(?,?,'queued') ON CONFLICT(lesson_id) DO UPDATE SET status='queued',lease=NULL,lease_until=NULL,error=NULL,attempts=0,available_at=0 WHERE jobs.status IN ('failed','done') RETURNING id").get(randomUUID(),id);
+      if(!queued)throw new MaterialQueueError("busy");
+    }
+    db().exec("COMMIT");return change.result;
+  }catch(error){db().exec("ROLLBACK");throw error;}
 }
 export function claimJob(pdfOnly=false) {
   const lease=randomUUID();

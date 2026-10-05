@@ -16,7 +16,7 @@ export function parseNoteOptions(form:Pick<FormData,"getAll">):StudyNoteOptions 
 }
 
 export const NOTE_DETAIL_LIMITS={
-  short:{maxNotes:6,maxText:500,instruction:"Write a short recap of the main points: at most 6 notes, each at most 500 characters. Combine related points only when their conditions remain clear."},
-  standard:{maxNotes:16,maxText:1000,instruction:"Write organized notes for the main topics: at most 16 notes, each at most 1000 characters. Include the teacher's key explanations and qualifications."},
-  detailed:{maxNotes:40,maxText:1800,instruction:"Write detailed section-by-section notes: at most 40 notes, each at most 1800 characters. Retain separately taught steps, examples, conditions and exceptions only where the transcript supports them."},
+  short:{maxNotes:6,maxText:500,instruction:"Write a short recap of the main taught points. Combine related points only when their conditions remain clear."},
+  standard:{maxNotes:16,maxText:1000,instruction:"Write organized notes for the distinct taught topics. Include key explanations, source-supported examples, steps and qualifications throughout this section."},
+  detailed:{maxNotes:40,maxText:1800,instruction:"Write detailed section-by-section notes. Preserve distinct taught explanations, examples, steps, conditions, exceptions and disagreements throughout the supplied section. A broad overview must not replace the separate explanations."},
 } as const;

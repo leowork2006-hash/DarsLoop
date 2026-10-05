@@ -3,6 +3,7 @@ import { accountConfigured } from "@/lib/supabase/config";
 import { accountDestination, accountInput, accountProblem } from "@/lib/account-input";
 import { body, fail, HttpError, json, localRequest } from "@/lib/http";
 import { cookies } from "next/headers";
+import { signupEmailRedirect } from "@/lib/auth-confirmation";
 export const runtime="nodejs";
 export async function POST(req:Request){try{
  localRequest(req);
@@ -16,7 +17,7 @@ export async function POST(req:Request){try{
   return json({ok:true,next:accountDestination(raw.invite)});
  }
  const origin=process.env.DARSLOOP_ORIGIN||new URL(req.url).origin;
- const {error}=await client.auth.signUp({email:input.email,password:input.password,options:{emailRedirectTo:`${origin}/auth/callback`}});
+ const {error}=await client.auth.signUp({email:input.email,password:input.password,options:{emailRedirectTo:signupEmailRedirect(origin,raw.invite)}});
  if(error){const problem=accountProblem(error,"signup");throw new HttpError(problem.status,problem.message);}
  const invite=accountDestination(raw.invite)!=="/learn"?raw.invite as string:"";
  (await cookies()).set("darsloop-auth-invite",invite,{httpOnly:true,sameSite:"lax",secure:origin.startsWith("https://"),path:"/",maxAge:invite?86400:0});

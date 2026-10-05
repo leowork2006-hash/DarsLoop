@@ -9,9 +9,12 @@ export async function rawLesson(id:string){return backend().rawLesson(id);}
 export async function authorizedLesson(user:string,id:string){return backend().authorizedLesson(user,id);}
 export async function seedDemo(user:string){return backend().seedDemo(user);}
 export async function listLessons(user:string){return backend().listLessons(user);}
+export async function transcriptCandidates(owner:string,key:string,exclude:string){return backend().transcriptCandidates(owner,key,exclude);}
 export async function listReviews(user:string){return backend().listReviews(user);}
 export async function listGroups(user:string){return backend().listGroups(user);}
 export async function queueLesson(l:Lesson,isNew=false){return backend().queueLesson(l,isNew);}
+export async function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number){return backend().queueDetailedMaterial(user,id,version,materialRevision);}
+export { MaterialQueueError } from "./material-queue";
 export async function claimJob(pdfOnly=false){return backend().claimJob(pdfOnly);}
 export async function heartbeat(id:string,lease:string){return backend().heartbeat(id,lease);}
 export async function jobCommit(id:string,lease:string,l:Lesson,done=false){return backend().jobCommit(id,lease,l,done);}

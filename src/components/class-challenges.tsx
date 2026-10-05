@@ -1,0 +1,64 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, CheckCircle, EyeSlash, FlagCheckered, LockKey, Plus, UsersThree } from "@phosphor-icons/react";
+import { challengeQuestions, type ChallengeAction, type RoundDetail, type RoundSummary } from "@/lib/class-challenges";
+import { citedPassage, sourceLabel } from "@/lib/source-passages";
+import type { ClassGroup, Lesson } from "@/lib/types";
+import { api, message } from "./client-api";
+import { Modal } from "./modal";
+import styles from "./class-challenges.module.css";
+
+export function ClassChallenges({group,lessons,onOpen}:{group:ClassGroup;lessons:Lesson[];onOpen:(lesson:Lesson)=>void}) {
+  const [expanded,setExpanded]=useState(false),[rounds,setRounds]=useState<RoundSummary[]>([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState("");
+  const [mode,setMode]=useState<"create"|"join"|"round"|"withdraw"|null>(null),[detail,setDetail]=useState<RoundDetail|null>(null);
+  const [lessonId,setLessonId]=useState(""),[alias,setAlias]=useState(""),[consent,setConsent]=useState(false),[index,setIndex]=useState(0),[answers,setAnswers]=useState<Record<string,number>>({});
+  const working=useRef(false);
+  const sharedKey=group.lessons.map(lesson=>lesson.id).join(",");
+  const eligible=lessons.filter(lesson=>group.lessons.some(shared=>shared.id===lesson.id)&&lesson.status==="ready"&&challengeQuestions(lesson).length);
+  const lesson=detail?lessons.find(item=>item.id===detail.lessonId):undefined;
+  const question=detail?.questions?.[index];
+  async function load() {
+    const result=await api<{rounds:RoundSummary[]}>(`/api/class-challenges?groupId=${group.id}`);
+    setRounds(result.rounds);
+  }
+  useEffect(()=>{
+    if(!expanded)return;
+    let live=true;
+    void api<{rounds:RoundSummary[]}>(`/api/class-challenges?groupId=${group.id}`).then(result=>{if(live)setRounds(result.rounds);}).catch(error=>{if(live)setNotice(message(error));});
+    return()=>{live=false;};
+  },[expanded,group.id,sharedKey]);
+  async function action(input:ChallengeAction,done?:(round:RoundDetail)=>void) {
+    if(working.current)return;
+    working.current=true;setBusy(true);setNotice("");
+    try {
+      const result=await api<{round:RoundDetail}>("/api/class-challenges",{method:"POST",body:JSON.stringify(input)});
+      setDetail(result.round);done?.(result.round);
+      await load();setExpanded(true);
+    } catch(error) {
+      const text=message(error);setNotice(text);
+      if(/no longer available|lesson changed/i.test(text)){setMode(null);setDetail(null);setAnswers({});void load().catch(()=>{});}
+    } finally {working.current=false;setBusy(false);}
+  }
+  async function open(roundId:string) {
+    if(working.current)return;working.current=true;setBusy(true);setNotice("");
+    try {
+      const result=await api<{round:RoundDetail}>(`/api/class-challenges?roundId=${roundId}`);
+      setDetail(result.round);setIndex(0);setAnswers({});setAlias("");setConsent(false);setMode(result.round.joined?"round":"join");
+    } catch(error){setNotice(message(error));void load().catch(()=>{});}
+    finally{working.current=false;setBusy(false);}
+  }
+  function close() {if(!busy){setMode(null);setDetail(null);setAnswers({});setNotice("");}}
+  const submit=()=>{if(detail?.questions&&detail.questions.every(item=>Number.isInteger(answers[item.id])))void action({action:"submit",roundId:detail.id,choices:detail.questions.map(item=>answers[item.id])});};
+  const scores=detail?.joined&&<section className={styles.scores} aria-label="Opted-in class scores"><h3><UsersThree size={18}/>Class scores</h3><p>Correct answers in this round only. These scores do not measure faith or religious standing.</p>{detail.participants?.length?<table><thead><tr><th>Nickname</th><th>Correct answers</th></tr></thead><tbody>{detail.participants.map(peer=><tr key={peer.alias}><td dir="auto">{peer.alias}{peer.alias===detail.alias&&<span> · You</span>}</td><td>{peer.correct} / {peer.total}</td></tr>)}</tbody></table>:<p>No submitted scores yet.</p>}</section>;
+  return <section className={styles.panel} aria-label={`Quiz rounds in ${group.name}`}>
+    <header className={styles.heading}><span className={styles.icon} aria-hidden="true"><FlagCheckered size={24}/></span><div><h4>Class quiz rounds</h4><p>Same questions. One attempt. Join if you’d like.</p></div><div className={styles.headerActions}><button type="button" className="classes-button" disabled={busy} aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?"Hide rounds":"View rounds"}</button>{group.owner&&<button type="button" className="classes-button" disabled={busy||!eligible.length} onClick={()=>{setLessonId(eligible[0]?.id??"");setNotice("");setMode("create");}}><Plus size={15}/>New round</button>}</div></header>
+    {group.owner&&!eligible.length&&<p className={styles.empty}>Share a ready lesson with supported quiz questions to start a round. The fictional demo is excluded.</p>}
+    {expanded&&<div className={styles.rounds}>{rounds.length?rounds.map(round=><article className={styles.roundCard} key={round.id}><div><h5 dir="auto">{round.lessonTitle}</h5><p>{round.questionCount} {round.questionCount===1?"question":"questions"} · {round.submitted?"First attempt saved":round.joined?"Joined":"Optional"}</p></div><button type="button" className="classes-button" disabled={busy} onClick={()=>void open(round.id)}>{round.joined?round.submitted?"Your result":"Open round":round.submitted?"Join again":"Join round"}<ArrowRight size={15}/></button></article>):<p className={styles.empty}>No open rounds yet. Rounds close when their shared source or prepared questions change.</p>}</div>}
+    {notice&&!mode&&<p className={styles.notice} role="status">{notice}</p>}
+    {mode==="create"&&<Modal title="Start a class quiz round" className={styles.modal} onClose={close}><div className={styles.form}><p>Everyone gets the same existing questions from a shared lesson. No new material is generated.</p><label>Shared lesson<select value={lessonId} onChange={event=>setLessonId(event.target.value)} disabled={busy}>{eligible.map(item=><option key={item.id} value={item.id}>{item.title} · {challengeQuestions(item).length} {challengeQuestions(item).length===1?"question":"questions"}</option>)}</select></label><aside className={styles.permission}><LockKey size={20}/><p>Only invited class members can join. They choose a nickname and agree to share their round score. Personal study answers and review history stay private.</p></aside>{notice&&<p className={styles.notice} role="alert">{notice}</p>}<div className={styles.actions}><button className="classes-button" disabled={busy} onClick={close}>Back</button><button className="classes-button classes-button-dark" disabled={busy||!lessonId} onClick={()=>void action({action:"create",groupId:group.id,lessonId},round=>{setAlias("");setConsent(false);setMode(round.joined?"round":"join");})}>{busy?"Starting…":"Create round"}<ArrowRight size={16}/></button></div></div></Modal>}
+    {mode==="join"&&detail&&<Modal title={detail.submitted?"Rejoin this round":"Join a private quiz round"} className={styles.modal} onClose={close}><form className={styles.form} onSubmit={event=>{event.preventDefault();if(consent)void action({action:"join",roundId:detail.id,alias,consent:true},()=>setMode("round"));}}><p><strong dir="auto">{detail.lessonTitle}</strong><br/>{detail.questionCount} supported {detail.questionCount===1?"question":"questions"}. Your first submitted attempt is the one that counts.</p>{detail.submitted&&<p className={styles.permission}>Your previous attempt stays saved. Joining again makes its nickname and score visible again.</p>}<label>Your nickname<input value={alias} onChange={event=>setAlias(event.target.value)} minLength={2} maxLength={30} required disabled={busy} autoComplete="off" placeholder="e.g. Cedar"/><span>Use a nickname without your name, email or phone number.</span></label><label className={styles.consent}><input type="checkbox" required checked={consent} onChange={event=>setConsent(event.target.checked)} disabled={busy}/><span>I agree to show this nickname and my round score to current members who join this round. I can withdraw to hide both.</span></label><p className={styles.small}>This is a practice score, not a measure of faith or religious knowledge. It stays separate from your personal review history.</p>{notice&&<p className={styles.notice} role="alert">{notice}</p>}<div className={styles.actions}><button type="button" className="classes-button" disabled={busy} onClick={close}>Back</button><button className="classes-button classes-button-dark" disabled={busy||!consent||alias.trim().length<2}>{busy?"Joining…":"Join round"}<ArrowRight size={16}/></button></div></form></Modal>}
+    {mode==="round"&&detail?.joined&&<Modal title={detail.result?"Your class round result":"Class quiz round"} className={`${styles.modal} ${styles.roundModal}`} wide onClose={close}><div className={styles.session}><div className={styles.sessionMeta}><span dir="auto">{detail.lessonTitle}</span><span><LockKey size={13}/>{detail.alias}</span></div>{detail.result?<><div className={styles.result}><CheckCircle size={33}/><div><h3>{detail.result.correct} / {detail.result.total} correct</h3><p>Your first submitted attempt is saved. Personal review marks are unchanged.</p></div></div><div className={styles.resultQuestions}>{detail.result.items.map((item,i)=><article key={item.id}><h4 dir="auto">{i+1}. {item.question}</h4><p dir="auto"><span>Your answer:</span> {item.choices[detail.result!.choices[i]]} {item.choices[detail.result!.choices[i]]===item.answer&&<Check size={16} aria-label="Correct"/>}</p><p dir="auto"><span>Prepared answer:</span> {item.answer}</p><details><summary>{lesson?.sourceKind==="pdf"?"Source excerpt":"Captured source"}</summary>{item.evidence.map((citation,n)=>{const passage=lesson&&citedPassage(lesson,citation);return <blockquote key={n} dir="auto">{citation.quote}{passage&&<cite>{sourceLabel(passage)}</cite>}</blockquote>;})}</details></article>)}</div></>:question&&<><div className={styles.progress}><span>Question {index+1} of {detail.questions!.length}</span><span>{Object.keys(answers).length} answered</span><progress value={index+1} max={detail.questions!.length}/></div><div className={styles.question} key={question.id}><h3 dir="auto">{question.question}</h3><div className={styles.choices} role="group" aria-label="Answer choices">{question.choices.map((choice,n)=><button type="button" key={n} aria-pressed={answers[question.id]===n} disabled={busy} data-selected={answers[question.id]===n||undefined} onClick={()=>setAnswers(current=>({...current,[question.id]:n}))}><span>{String.fromCharCode(65+n)}</span><bdi>{choice}</bdi>{answers[question.id]===n&&<Check size={18}/>}</button>)}</div></div><div className={styles.navigation}><button className="classes-button" disabled={busy||index===0} onClick={()=>setIndex(value=>value-1)}><ArrowLeft size={15}/>Previous</button><span>{index+1} / {detail.questions!.length}</span><button className="classes-button" disabled={busy||index===detail.questions!.length-1} onClick={()=>setIndex(value=>value+1)}>Next<ArrowRight size={15}/></button></div><p className={styles.small}>Check your choices before submitting. You can save only one attempt.</p><div className={styles.submit}><button className="classes-button classes-button-dark" disabled={busy||!detail.questions!.every(item=>Number.isInteger(answers[item.id]))} onClick={submit}>{busy?"Saving your attempt…":"Submit first attempt"}<Check size={16}/></button></div></>}{notice&&<p className={styles.notice} role="alert">{notice}</p>}{scores}<div className={styles.bottomActions}>{detail.result&&lesson&&<button className="classes-button" disabled={busy} onClick={()=>{close();onOpen(lesson);}}>Open source lesson<ArrowRight size={15}/></button>}<button className="classes-button" disabled={busy} onClick={()=>setMode("withdraw")}><EyeSlash size={15}/>Withdraw</button></div></div></Modal>}
+    {mode==="withdraw"&&detail&&<Modal title="Hide your nickname and score?" className={styles.modal} onClose={()=>{if(!busy)setMode("round");}}><div className={styles.form}><p>You will leave this round’s score list. Your nickname and score will be hidden from classmates. Your first submitted attempt stays saved, so joining again cannot reset it.</p>{notice&&<p className={styles.notice} role="alert">{notice}</p>}<div className={styles.actions}><button className="classes-button" disabled={busy} onClick={()=>setMode("round")}>Keep participating</button><button className="classes-button classes-button-dark" disabled={busy} onClick={()=>void action({action:"withdraw",roundId:detail.id},()=>{setMode(null);setAnswers({});setNotice("Your nickname and score are hidden.");})}>{busy?"Withdrawing…":"Withdraw"}<EyeSlash size={16}/></button></div></div></Modal>}
+  </section>;
+}

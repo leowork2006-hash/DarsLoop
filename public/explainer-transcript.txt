@@ -1,0 +1,36 @@
+DarsLoop AI — captioned explainer
+100 seconds. Silent video with burned captions and an optional English caption track.
+Actual prepared fictional material, not a staged fresh processing run.
+
+0–10s
+DarsLoop is a student workspace for Islamic classes. This explainer shows actual prepared fictional material.
+
+10–20s
+The founder reports divided attention, missed lessons and difficult revision. These are observations, not a learner study.
+
+20–30s
+Permitted sources become automatic notes. Students can choose note detail and study language before preparation.
+
+30–40s
+Each supported explanation returns to an original audio time or genuine physical PDF page.
+
+40–50s
+Choose Auto, Arabic, Urdu or English study material. Original quotations keep their source language.
+
+50–60s
+Answer a lesson question, then review its supporting source. Quiz and flashcard progress stays private.
+
+60–70s
+Mock exams use available prepared items. Written recall has a separate self-check, with no AI religious grading.
+
+70–80s
+Catch-up, terms and study plans reuse source material. Personal rulings and hadith grading go to a qualified teacher.
+
+80–90s
+One hosted synthetic hour processed in 121.374 seconds after 55.112 seconds upload. This is one sequential English fixture.
+
+90–100s
+Try the prepared fictional example and public code. Learning benefit, native quality and physical phone behavior still need evaluation.
+
+Live: https://darsloop-production.up.railway.app/example
+Code: https://github.com/leowork2006-hash/DarsLoop

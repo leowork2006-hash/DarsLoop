@@ -1,4 +1,5 @@
 import type { Artifacts, Segment } from "./types";
+import { supportedOverview } from "./material-overview";
 
 export const studyMaterialLanguages=["auto","ar","ur","en"] as const;
 export type StudyMaterialLanguage=typeof studyMaterialLanguages[number];
@@ -60,7 +61,7 @@ export function filterMaterialLanguage(material:Artifacts,language:PreparedMater
   const notes=material.notes.filter(note=>uses(note.heading)&&uses(note.text));
   const terms=material.terms.filter(term=>uses(term.definition));
   const practice=material.practice.filter(item=>[item.question,item.answer,...item.choices].every(uses));
-  return {...material,overview:notes.slice(0,3).map(note=>note.text).join(" "),notes,terms,practice};
+  return {...material,overview:supportedOverview(notes),notes,terms,practice};
 }
 
 export function supportedNoteCardQuestion(heading:string,language:PreparedMaterialLanguage,source:"audio"|"pdf"="audio"):string {

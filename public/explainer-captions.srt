@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:10,000
+DarsLoop is a student workspace for Islamic classes. This explainer shows actual prepared fictional material.
+
+2
+00:00:10,000 --> 00:00:20,000
+The founder reports divided attention, missed lessons and difficult revision. These are observations, not a learner study.
+
+3
+00:00:20,000 --> 00:00:30,000
+Permitted sources become automatic notes. Students can choose note detail and study language before preparation.
+
+4
+00:00:30,000 --> 00:00:40,000
+Each supported explanation returns to an original audio time or genuine physical PDF page.
+
+5
+00:00:40,000 --> 00:00:50,000
+Choose Auto, Arabic, Urdu or English study material. Original quotations keep their source language.
+
+6
+00:00:50,000 --> 00:01:00,000
+Answer a lesson question, then review its supporting source. Quiz and flashcard progress stays private.
+
+7
+00:01:00,000 --> 00:01:10,000
+Mock exams use available prepared items. Written recall has a separate self-check, with no AI religious grading.
+
+8
+00:01:10,000 --> 00:01:20,000
+Catch-up, terms and study plans reuse source material. Personal rulings and hadith grading go to a qualified teacher.
+
+9
+00:01:20,000 --> 00:01:30,000
+One hosted synthetic hour processed in 121.374 seconds after 55.112 seconds upload. This is one sequential English fixture.
+
+10
+00:01:30,000 --> 00:01:40,000
+Try the prepared fictional example and public code. Learning benefit, native quality and physical phone behavior still need evaluation.

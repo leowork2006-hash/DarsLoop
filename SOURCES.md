@@ -99,3 +99,11 @@ Retrieval-format/feedback research informed this design, without claiming measur
 - Supabase Free per-file global limit and private bucket caps: https://supabase.com/docs/guides/storage/uploads/file-limits . Prepared audio is capped at48,000,000bytes and private PDFs at8,000,000bytes, within that global cap. Actual media/API checks are scoped in docs/QA.md.
 
 One student’s private feedback motivated Arabic note choices, longer uploads and PDF resources. It is qualitative usability input, not a controlled student pilot or measured learning gain. Personal identity, class recordings, feedback screenshots and diagnostic data are excluded from this repository.
+
+## Submission explainer and account confirmation — 6 October 2026
+
+`public/explainer.mp4`, its captions and accessible transcript are original DarsLoop submission materials. The 100-second silent video uses actual product screenshots with fictional/authored example data and native text captions. No real classroom recording, beneficiary voice, music or competitor artwork is included. The associated editable deck was authored with OpenAI's artifact tooling; FFmpeg encoded H.264 video. Prepared screenshots are explicitly separate from the measured synthetic-hour processing test. See [EXPLAINER.md](docs/EXPLAINER.md).
+
+The optional token-hash email confirmation route is informed by Supabase's official [email-template guidance](https://supabase.com/docs/guides/auth/auth-email-templates) and [custom SMTP limits](https://supabase.com/docs/guides/auth/auth-smtp). Its prepared template is project-authored; it is not proof that SMTP delivery or the hosted template is configured. The default signup flow remains PKCE until the operator opts in after configuration.
+
+The generation admission helper uses Node's built-in [SQLite API](https://nodejs.org/api/sqlite.html) to coordinate requests from the current single container's web and worker processes. It is an application guard; the [Gemini project rate limits](https://ai.google.dev/gemini-api/docs/rate-limits) remain authoritative. No third-party data or credentials are stored in the admission database.

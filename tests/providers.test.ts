@@ -3,6 +3,7 @@ import { demoArtifacts } from "../src/lib/demo";
 import type { Lesson, Segment } from "../src/lib/types";
 const interaction=vi.hoisted(()=>vi.fn());
 vi.mock("@google/genai",()=>({GoogleGenAI:class{interactions={create:interaction};}}));
+vi.mock("../src/lib/generation-admission",()=>({acquireGenerationPermit:vi.fn(async()=>()=>{})}));
 import { answerLesson, createArtifacts, generationFailure, generationSchema, transcribe } from "../src/lib/ai";
 import { artifactSchema } from "../src/lib/evidence";
 import { z } from "zod";
@@ -20,7 +21,7 @@ describe("provider contracts using mocks, not live AI",()=>{
   });
   it("fails clearly when keys are missing",async()=>{
     vi.stubEnv("GEMINI_API_KEY","");vi.stubEnv("GROQ_API_KEY","");
-    await expect(createArtifacts(segments)).rejects.toThrow("Connect Google");await expect(transcribe(Buffer.alloc(5))).rejects.toThrow("Connect Groq");
+    await expect(createArtifacts(segments)).rejects.toMatchObject({code:"not_configured",message:expect.stringContaining("Your original source is saved")});await expect(transcribe(Buffer.alloc(5))).rejects.toMatchObject({code:"not_configured"});
   });
   it("enforces structured outputs and audits generated notes and practice",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");
@@ -36,20 +37,20 @@ describe("provider contracts using mocks, not live AI",()=>{
     expect(result.notes).toEqual([]);expect(result.overview).toBe("");expect(result.practice).toHaveLength(3);
     expect(JSON.parse(interaction.mock.calls[0][0].input).studyNotes).toEqual({enabled:false,detail:"detailed",language:"auto"});
     expect(JSON.parse(interaction.mock.calls[1][0].input).claims).toHaveLength(5);
-    expect(interaction.mock.calls[0][0].system_instruction).toContain("notes as an empty array");
+    expect(interaction.mock.calls[0][0].system_instruction).toContain("Return notes and overview empty");
   });
   it("detail selection changes generation instructions and enforces different output bounds",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.notes[0].text="A".repeat(700);
     interaction.mockResolvedValue({output_text:JSON.stringify(a)});
     await expect(createArtifacts(segments,{enabled:true,detail:"short"})).rejects.toMatchObject({code:"invalid_response"});
-    expect(interaction.mock.calls[0][0].system_instruction).toContain("at most 6 notes");
+    expect(interaction.mock.calls[0][0].system_instruction).toContain("upper limit is 6 notes");
     expect(interaction).toHaveBeenCalledTimes(2);
     interaction.mockReset();
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(9));
     const result=await createArtifacts(segments,{enabled:true,detail:"detailed"});
     expect(result.notes[0].text).toHaveLength(700);
     expect(interaction.mock.calls[0][0].system_instruction).toContain("detailed section-by-section");
-    expect(interaction.mock.calls[0][0].system_instruction).toContain("Never add religious knowledge");
+    expect(interaction.mock.calls[0][0].system_instruction).toContain("Never repair a religious quotation from memory");
     expect(JSON.parse(interaction.mock.calls[1][0].input).claims[0].text).toContain(a.notes[0].heading);
   });
   it("repairs a malformed response once, then still audits all claims",async()=>{
@@ -62,7 +63,7 @@ describe("provider contracts using mocks, not live AI",()=>{
   it("notes off does not bypass the independent support audit",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.notes=[];a.overview="";
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce({output_text:JSON.stringify({checks:[]})});
-    const result=await createArtifacts(segments,{enabled:false,detail:"short"});expect(result.practice).toEqual([]);expect(result.warnings?.[0]).toContain("could not be prepared");
+    const result=await createArtifacts(segments,{enabled:false,detail:"short"});expect(result.practice).toEqual([]);expect(result.warnings?.find(warning=>warning.includes("could not be prepared"))).toContain("could not be prepared");
   });
   it("sends a lean provider schema but keeps strict response limits",async()=>{
     const wire=generationSchema(z.object({maxLength:z.string().max(5),items:z.array(z.string()).max(4)}));
@@ -103,14 +104,14 @@ describe("provider contracts using mocks, not live AI",()=>{
   });
   it("keeps audited notes when missing practice cannot be repaired",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.practice=[];
-    interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(6));const result=await createArtifacts(segments);expect(result.notes.length).toBeGreaterThan(0);expect(result.practice.every(p=>p.kind==="flashcard")).toBe(true);expect(result.warnings?.[0]).toContain("quiz questions");
+    interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(6));const result=await createArtifacts(segments);expect(result.notes.length).toBeGreaterThan(0);expect(result.practice.every(p=>p.kind==="flashcard")).toBe(true);expect(result.warnings?.find(warning=>warning.includes("quiz questions"))).toContain("quiz questions");
     expect(result.practice[0].answer).toBe(result.notes[0].text);expect(result.practice[0].evidence).toEqual(result.notes[0].evidence);
   });
   it("never derives cards from rejected notes or truncates long qualifications",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.practice=[];a.notes[0].text="A".repeat(1300);
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce({output_text:JSON.stringify({checks:[{index:0,supported:true,preservesQualifications:true,lessonScopeOnly:true},{index:1,supported:false,preservesQualifications:false,lessonScopeOnly:false}]})});
     const result=await createArtifacts(segments,{enabled:true,detail:"detailed"});
-    expect(result.notes).toHaveLength(1);expect(result.practice).toEqual([]);expect(result.warnings?.[0]).toContain("flashcards");
+    expect(result.notes).toHaveLength(1);expect(result.practice).toEqual([]);expect(result.warnings?.find(warning=>warning.includes("flashcards"))).toContain("flashcards");
   });
   it("uses transcription, keeps language unset, and reports quota failure",async()=>{
     vi.stubEnv("GROQ_API_KEY","test-only");const request=vi.fn(async(_url:string,_options:RequestInit)=>new Response(JSON.stringify({segments:[{start:0,end:4,text:"نہیں Arabic term"}]}),{status:200}));vi.stubGlobal("fetch",request);
