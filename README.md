@@ -87,3 +87,9 @@ Teacher review currently creates a listening-first question handoff, with no app
 A printable guide is in [docs/Repository-and-Judge-Guide.pdf](docs/Repository-and-Judge-Guide.pdf). Judge instructions and the required public-file boundary are in [docs/JUDGE_GUIDE.md](docs/JUDGE_GUIDE.md). Architecture is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); the verified submission checklist is in [docs/SUBMISSION.md](docs/SUBMISSION.md).
 
 Original project code is [MIT](LICENSE). Dependencies, fonts, external source content and logos retain their own terms: see [SOURCES.md](SOURCES.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Design references informed the interface; competitor code, assets and real recordings are not bundled. Built with AI assistance by Hamza Adam, team 965. Commit dates are actual creation dates; earlier local work is not reconstructed as invented historical commits.
+
+## Latest actual verification — 5 October 2026
+
+A fresh hosted fictional one-hour WAV above the old 24 MB source limit completed in 55.708 seconds upload plus 139.154 seconds processing. It produced 878 timestamped segments, six cited notes, two quizzes and two cards; supported chat, practice saves and privacy checks passed. These are synthetic English measurements, not a classroom-accuracy, concurrency or uptime guarantee. Latest build/TypeScript and 122 unit tests pass; scoped hosted/browser/safety results and remaining gates are in [docs/QA.md](docs/QA.md).
+
+Private audio replay streams requested ranges. Long-lesson search caches exact repeated wording while retaining original source references. Completed transcripts survive generation problems; available supported notes remain usable and chat has explicit retry. Google API billing is confirmed absent, so free quotas can still pause new work. Use external-app API billing rather than buying Google AI Plus; see [DEPLOYMENT.md](DEPLOYMENT.md).

@@ -116,3 +116,17 @@ Allow both `whisper-large-v3` and `whisper-large-v3-turbo` at Groq organization 
 ### Study material recovery
 
 Concept questions may mention a teacher-defined term; literal name/spelling memorization remains excluded. Missing practice no longer discards a completed transcript or supported notes. When possible, a flashcard reuses the complete text of an independently checked note and its captured evidence. Overlong notes are not truncated to fit a card. Remaining missing material is shown honestly, and retry reuses the saved transcript. Two ASR requests run together for one bounded audio section at a time.
+
+## Latest hour/chat verification and capacity checklist — 5 October
+
+- [x] Actual fresh hosted hour: 57.6 MB WAV; 55.708 s upload; 139.154 s processing; 878 timestamped segments; supported notes, quizzes/cards and chat. No local ASR model.
+- [x] Full-journey cgroup peak 773.6 MB under 999,997,440 bytes, zero OOM kills. This is one synthetic hour, not concurrency or every possible source. Inspect later streamed-replay measurements separately in QA.md.
+- [x] Actual recording pipeline, practice, uncertainty, handoff, settings/theme and private sharing checked in a browser; 43 checks plus 18 chat/control follow-ups. Phone hardware/locked screen and signup delivery remain separate gates.
+- [x] Latest production build/TypeScript and 122 unit checks passed. Sixteen real-adapter authored safety cases passed.
+- [x] Signed-in AI Studio Billing says **No billing account**; project remains **Free**. The rate-limit warning is real. Generation caps 15 RPM/250k input TPM/500 RPD; embedding 100 RPM/30k input TPM/1000 RPD. These limits are not a bank of unused tokens.
+- [x] Preserve source/transcript on provider failures; bounded format repair and explicit chat retry; cache exact repeated embedding text without weakening lesson/source checks. A provider 429 was actually observed while indexing a long lesson.
+- [ ] Owner: AI Studio → Dashboard → Billing → Set up billing for **DarsLoop** → complete account/terms/payment privately and fund the Gemini API (official minimum prepay $5). Verify Paid Tier and positive balance afterward. **Google AI Plus does not fund this external app.** The agent has not purchased or accepted billing terms.
+- [ ] Owner: Groq → organization Settings → Billing → choose Developer pay-as-you-go if several hourly judge uploads are expected; keep both Whisper models allowed and inspect the resulting actual limits.
+- [ ] Inspect Railway remaining trial credit/forecast daily, and Supabase storage/egress. Formula scenarios above are not a guarantee of affordability. Desktop alerts depend on the desktop running.
+
+Google account browser readings are 28-day peaks, not remaining quota: generation 17/15 RPM, 93.61k/250k TPM, 116/500 RPD; embeddings 96/100 RPM, 8.57k/30k TPM, 400/1000 RPD. Data can lag 15 minutes. Limits/billing were rechecked against [official billing](https://ai.google.dev/gemini-api/docs/billing), [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits) and [Google AI plans](https://ai.google.dev/gemini-api/docs/google-ai-plans) on 5 October 2026. No remaining paid API credit is claimed.
