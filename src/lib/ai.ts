@@ -13,6 +13,7 @@ import type { Answer, Artifacts, Lesson, StudyPassage, StudyNoteOptions } from "
 import { isPdfPage, sourcePassages } from "./source-passages";
 import { MATERIAL_GENERATION_REVISION, materialCounts, materialQuotas, materialSections, mergeSectionMaterial, type MaterialSection, type MaterialQuota } from "./material-sections";
 import { acquireGenerationPermit, type GenerationMode } from "./generation-admission";
+import { noteRecallCards } from "./note-recall";
 export const POLICY_VERSION="teacher-fidelity-v7";
 
 export function configured(){return {asr:transcriptionConfigured(),generation:!!process.env.GEMINI_API_KEY};}
@@ -86,7 +87,7 @@ async function auditedSection(section:MaterialSection,quota:MaterialQuota,noteOp
   if(!section.clear.length){const counts=emptyAuditCounts();console.log(JSON.stringify({event:"material-section-audit",section:section.index+1,...sourceCounts,...counts}));return {material:emptyMaterial(),removedLanguage:0,languageNotes:0,counts};}
   const noteInstruction=noteOptions.enabled&&quota.notes?`${limits.instruction} This section's upper limit is ${quota.notes} notes, each at most ${limits.maxText} characters.`:"Return notes and overview empty for this section. Still generate explicitly taught terms and supported practice.";
   const schema=artifactSchema.extend({notes:z.array(artifactSchema.shape.notes.element.extend({text:z.string().min(1).max(limits.maxText)})).max(quota.notes),terms:artifactSchema.shape.terms.max(quota.terms),practice:artifactSchema.shape.practice.max(quota.practice)});
-  const result=await generate(basePolicy+" Create explicitly taught terms and conceptual quizzes and flashcards across the beginning, middle and end of the assigned core section. Every item must cite at least one assignedPassageId. Extra neighboring passages are context for conditions, exceptions and disagreement, not independent topics to generate again. Cite that neighboring context too when needed to retain a qualification. Preserve separate explanations and source-given examples; a broad recap must not replace them. "+noteInstruction+` At most ${quota.terms} terms and ${quota.practice} total practice items in this section. All counts are upper limits, never targets or minimums. Use fewer items if fewer distinct explanations are supported. Do not invent facts, explanations, examples or practice to fill a quota. A quiz answer must be exactly one choice; flashcards have empty choices. Avoid testing literal word/name/spelling recall. Give unique practice IDs. `+languageInstruction,{task:"Make automatic study material",section:section.index+1,assignedPassageIds:section.clear.map(p=>p.id),sectionLimits:{...quota,maxNoteCharacters:limits.maxText},studyNotes:noteOptions,studyMaterialLanguage:language,passages:context(section.context)},schema,"queued");
+  const result=await generate(basePolicy+" Create explicitly taught terms and conceptual quizzes and flashcards across the beginning, middle and end of the assigned core section. Every item must cite at least one assignedPassageId. Extra neighboring passages are context for conditions, exceptions and disagreement, not independent topics to generate again. Cite that neighboring context too when needed to retain a qualification. Preserve separate explanations and source-given examples; a broad recap must not replace them. "+noteInstruction+` At most ${quota.terms} terms and ${quota.practice} total practice items in this section. All counts are upper limits, never targets or minimums. Use fewer items if fewer distinct explanations are supported. Do not invent facts, explanations, examples or practice to fill a quota. A quiz answer must be exactly one choice; flashcards have empty choices. When multiple explanations are supported, include both quiz and flashcard formats. Prioritize distinct important explanations, their stated conditions, comparisons, sequences and source-given examples across the entire section. Avoid redundant questions about the same fact and literal word/name/spelling recall. Give unique practice IDs. `+languageInstruction,{task:"Make automatic study material",section:section.index+1,assignedPassageIds:section.clear.map(p=>p.id),sectionLimits:{...quota,maxNoteCharacters:limits.maxText},studyNotes:noteOptions,studyMaterialLanguage:language,passages:context(section.context)},schema,"queued");
   const proposed=materialCounts(result),checkedEvidence=validateArtifacts(result,section.context,noteOptions,{allowEmptyNotes:true});
   const assigned=(item:{evidence:{segmentId:string}[]})=>item.evidence.some(c=>section.clear.some(p=>p.id===c.segmentId));
   const evidence={...checkedEvidence,notes:checkedEvidence.notes.filter(assigned),terms:checkedEvidence.terms.filter(assigned),practice:checkedEvidence.practice.filter(assigned)},evidenceCounts=materialCounts(evidence);
@@ -114,16 +115,7 @@ export async function createArtifacts(segments:StudyPassage[],options?:StudyNote
   let a=mergeSectionMaterial(outputs),removed=removedCounts.reduce((n,value)=>n+value,0);
   const {notes,terms}=a;let practice=a.practice;
   if(noteOptions.enabled&&!notes.length){const wrongLanguage=removed>0&&languageNotes===0;throw new ProviderError(wrongLanguage?"material_language":"unsupported",wrongLanguage?"Study material could not be prepared in the chosen language. Your original source is saved; please retry later.":"The generated notes could not be supported. Your source text is available to read and check.");}
-  if(!practice.some(p=>p.kind==="flashcard")&&notes.length){
-    // The note's heading + full answer already passed the independent support audit.
-    // Reuse that exact supported text; never shorten away a condition to fit a card.
-    const ids=new Set(practice.map(p=>p.id));
-    const cards=notes.filter(n=>n.text.length<=1200).slice(0,Math.min(4,Math.max(0,40-practice.length))).map((n,i)=>{
-      let id=`note-card-${i}`;while(ids.has(id))id=`n-${id}`;ids.add(id);
-      return {id,kind:"flashcard" as const,question:supportedNoteCardQuestion(n.heading,language,clear.some(isPdfPage)?"pdf":"audio"),answer:n.text,choices:[],evidence:n.evidence};
-    });
-    practice=[...practice,...safePractice({...a,terms,practice:cards})];
-  }
+  practice=noteRecallCards({...a,language},segments).practice;
   if(practice.length<40&&(!practice.some(p=>p.kind==="quiz")||!practice.some(p=>p.kind==="flashcard"))){
     // One bounded repair. Audit it independently; never fill gaps with made-up items.
     try{

@@ -1,0 +1,10 @@
+.grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;}
+.card {display:flex;flex-direction:column;min-width:0;padding:14px 14px 22px;border:1px solid var(--ref-line);border-radius:14px;background:var(--ref-card);box-shadow:0 4px 0 var(--ref-soft);}
+.body {display:flex;flex-direction:column;flex:1;min-width:0;padding-inline:7px;}
+.course {font-size:11px;line-height:1.6;color:var(--ref-muted);overflow-wrap:anywhere;}
+.body h3 {font:500 22px/1.4 'Bitter Variable',Georgia,serif;letter-spacing:-.025em;color:var(--ref-text);margin:7px 0 13px;overflow-wrap:anywhere;}
+.inventory {font-size:12px;line-height:1.65;color:var(--ref-body);margin:0 0 4px;}
+.source {font-size:11px;line-height:1.7;color:var(--ref-muted);margin:0 0 20px;}
+.body button {align-self:flex-start;margin-top:auto;}
+@media(max-width:1100px){.grid {grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:700px){.grid {grid-template-columns:1fr;gap:18px;}.body h3 {font-size:21px;}}

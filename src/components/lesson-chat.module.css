@@ -41,6 +41,22 @@
 .homeRoot.homeRoot.homeRoot :global(.home-welcome h2) { font: 500 24px/1.4 var(--font-body); letter-spacing: -.025em; }
 .homeRoot.homeRoot.homeRoot .homeSuggestions { display: grid; grid-template-columns: 1fr; width: min(100%,720px); gap: 10px; margin-inline: auto; }
 .homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding-bottom: 32px; }
+.workspace.workspace:has(:global(.chat-empty)) { width: min(100%,1050px); max-width: 1050px; }
+.homeRoot.homeRoot.homeRoot :global(.home-chat-stage):has(:global(.home-welcome)),.homeRoot.homeRoot.homeRoot :global(.home-chat-empty):has(:global(.home-welcome)),.homeRoot.homeRoot.homeRoot .homeWorkspace:has(:global(.home-welcome)) { max-width: 1050px; }
+.heading { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 58px; margin: 5px 0 14px; }
+.workspace.workspace .heading h2,.homeRoot.homeRoot.homeRoot .heading h2 { font: 500 24px/1.4 var(--font-editorial); margin: 0; letter-spacing: -.025em; }
+.heading > button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: var(--ref-muted); border-radius: 50%; background: transparent; }
+.heading > button:hover { background: var(--ref-soft); }
+.starters { width: 100%; max-width: 1050px; margin: 12px auto 0; }
+.chips { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.workspace.workspace .chips > button,.homeRoot.homeRoot.homeRoot .chips > button { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; min-height: 44px; padding: 5px 14px 5px 6px; border: 1px solid var(--ref-line); border-radius: 999px; background: var(--ref-card); color: var(--ref-text); box-shadow: 0 1px 2px #00000008; text-align: start; font: 400 14px/1.5 var(--font-body); }
+.chips > button > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.chipIcon { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #eef0ff; color: #4668ed; }
+.chipIcon[data-tone=green] { background: #edf8ef; color: #388a51; }
+.chipIcon[data-tone=orange] { background: #fff0e7; color: #cc6531; }
+.workspace.workspace .chips > button:hover,.homeRoot.homeRoot.homeRoot .chips > button:hover { background: var(--ref-soft); }
+.workspace.workspace .chips > button:focus-visible,.homeRoot.homeRoot.homeRoot .chips > button:focus-visible,.more:focus-visible { outline: 2px solid var(--ref-text); outline-offset: 3px; }
+.workspace.workspace .more,.homeRoot.homeRoot.homeRoot .more { display: block; min-height: 40px; margin: 10px auto 0; padding: 5px 12px; color: var(--ref-muted); background: transparent; font: 400 13px/1.5 var(--font-body); }
 .homeRoot.homeRoot.homeRoot .homeWorkspace .header { flex: 0 0 auto; width: 100%; margin: 8px 0 0; }
 .homeRoot.homeRoot.homeRoot .homeWorkspace :global(.chat-messages) { padding-top: 14px; }
 .homeRoot.homeRoot.homeRoot :global(.composer-caption) { width: 100%; text-align: center; margin-inline: auto; box-sizing: border-box; }
@@ -62,6 +78,9 @@
   .homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding-top: 14px; padding-bottom: 20px; }
   .homeRoot.homeRoot.homeRoot :global(.home-welcome > .study-avatar) { width: 72px; height: 72px; margin-bottom: 0; }
   .homeRoot.homeRoot.homeRoot :global(.home-welcome h2) { font-size: 22px; margin: 6px 0 16px; }
+  .workspace.workspace .heading h2,.homeRoot.homeRoot.homeRoot .heading h2 { font-size: 22px; margin: 0; }
+  .heading { min-height: 64px; margin-bottom: 8px; }
+  .workspace.workspace .chips > button,.homeRoot.homeRoot.homeRoot .chips > button { font-size: 13px; }
   .homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) { height: auto; min-height: 0; }
   .homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) :global(.home-chat-stage),.homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) :global(.home-chat-empty),.homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) .homeWorkspace { height: auto; min-height: 0; }
   .header { gap: 8px; }

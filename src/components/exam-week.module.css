@@ -1,0 +1,10 @@
+.controls {display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;align-items:end;gap:14px;margin:20px 0;}
+.field {display:flex;flex-direction:column;min-width:0;gap:7px;font-size:12px;line-height:1.5;color:var(--ref-body);}
+.field :is(input,select) {display:block;box-sizing:border-box;width:100%;min-width:0;height:48px;min-height:48px;border:1px solid var(--ref-line);border-radius:9px;background:var(--ref-card);color:var(--ref-text);padding:10px 13px;font:400 14px/1.5 var(--font-body);}
+.field input::-webkit-date-and-time-value {text-align:start;}
+.actions {display:flex;align-items:center;gap:9px;min-height:48px;}
+.actions button {display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 18px;border:1px solid var(--ref-primary);border-radius:25px;font:400 12px/1.5 var(--font-body);white-space:nowrap;}
+.save {background:var(--ref-primary);color:var(--ref-primary-text);box-shadow:0 3px 0 var(--ref-shadow);}
+.actions .reset {background:transparent;color:var(--ref-muted);border-color:transparent;box-shadow:none;padding-inline:9px;}
+@media(max-width:1000px){.controls {grid-template-columns:repeat(2,minmax(0,1fr));}.actions {grid-column:1/-1;}}
+@media(max-width:600px){.controls {grid-template-columns:minmax(0,1fr);gap:14px;}.field :is(input,select) {font-size:16px;}.actions {grid-column:auto;flex-wrap:wrap;}}

@@ -9,6 +9,7 @@ import { nextReview } from "./review-activity";
 import type { ClassGroup, Lesson, Review, Segment } from "./types";
 import { detailedQueueChange, MaterialQueueError, type DetailedQueueResult } from "./material-queue";
 import { supportedOverview } from "./material-overview";
+import { noteRecallCards } from "./note-recall";
 
 export const dataDir=path.resolve(/* turbopackIgnore: true */ process.env.DARSLOOP_DATA_DIR||".data");
 let database:DatabaseSync|undefined;
@@ -72,7 +73,7 @@ export function safeLesson(l:Lesson):Lesson {
   const notes=l.artifacts.notes.filter(n=>evidenceValid(n.evidence,passages));
   const terms=l.artifacts.terms.filter(t=>evidenceValid(t.evidence,passages));
   const a={...l.artifacts,notes,terms,overview:supportedOverview(notes),practice:l.artifacts.practice.filter(p=>evidenceValid(p.evidence,passages))};
-  return {...l,segments,pdfPages,artifacts:{...a,practice:l.demo?a.practice:safePractice(a)}};
+  return {...l,segments,pdfPages,artifacts:l.demo?a:noteRecallCards({...a,practice:safePractice(a)},passages,l.materialRevision||0)};
 }
 export function authorizedLesson(user:string,id:string):Lesson|null {
   const l=rawLesson(id); if(!l)return null;

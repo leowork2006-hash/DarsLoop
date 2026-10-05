@@ -1,13 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUp, BookOpen, Check, CaretDown, FileAudio, FilePdf, FolderOpen, ListBullets, MapTrifold, Microphone, Plus, MagnifyingGlass, UploadSimple, Users, X } from "@phosphor-icons/react";
-import { Chat, chatSuggestions, type LessonTab } from "./lesson-view";
+import { ArrowUp, BookOpen, Check, CaretDown, FileAudio, FilePdf, FolderOpen, ListBullets, MapTrifold, Microphone, Plus, MagnifyingGlass, UploadSimple, Users, X } from "@phosphor-icons/react";
+import { Chat, type LessonTab } from "./lesson-view";
 import { Modal } from "./modal";
 import { StudyAvatar } from "./study-avatar";
 import { formatTime, type Lesson, type Workspace } from "@/lib/types";
 
 import { sourcePassages } from "@/lib/source-passages";
+import { availablePractice } from "@/lib/insights";
 import chatStyles from "./lesson-chat.module.css";
+import { ChatHeading, ChatStarters } from "./chat-starters";
 
 type HomeAction = { kind: "question"; text: string } | { kind: "notes" | "quiz" | "cards" | "plan" };
 
@@ -52,7 +54,7 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
     else if (action.kind === "plan") onPlan(lesson);
     else if (action.kind === "notes") onOpen(lesson, "notes");
     else {
-      const item = lesson.artifacts?.practice.find(p => p.kind === (action.kind === "quiz" ? "quiz" : "flashcard"));
+      const item = availablePractice(lesson).find(p => p.kind === (action.kind === "quiz" ? "quiz" : "flashcard"));
       if (item) onOpen(lesson, "practice", item.id);
       else onError(`This lesson has no ${action.kind === "quiz" ? "quiz questions" : "flashcards"} yet.`);
     }
@@ -96,8 +98,8 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
     <button type="button" className={`home-source ${active ? "has-source" : ""}`} data-tour="home-source" onClick={() => selectLesson()}><BookOpen size={17}/><span>{active ? active.title : "Choose a lesson"}</span><CaretDown size={13}/></button>
   </div>;
   const welcome = <div className="home-welcome">
-    <StudyAvatar reference/><h2>How can I help?</h2>
-    <div className={`home-suggestions ${chatStyles.homeSuggestions}`} data-tour="home-prompts">{chatSuggestions(active||undefined).map(({label,question})=><button key={label} type="button" onClick={()=>run({kind:"question",text:question})}><span dir="auto">{label}</span><ArrowRight size={20} aria-hidden="true"/></button>)}</div>
+    <StudyAvatar reference/><ChatHeading/>
+    <ChatStarters lesson={active||undefined} onAsk={text=>run({kind:"question",text})} onNotes={()=>run({kind:"notes"})} onQuiz={()=>run({kind:"quiz"})} onCards={()=>run({kind:"cards"})} onPlan={()=>run({kind:"plan"})}/>
     <div className="home-shortcuts"><button onClick={() => selectLesson()}><FolderOpen size={17}/> Materials</button><button onClick={() => onPlan(active || undefined)}><MapTrifold size={17}/> Study plan</button><button onClick={onClasses}><Users size={17}/> My classes</button></div>
   </div>;
 

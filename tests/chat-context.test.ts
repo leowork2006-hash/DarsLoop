@@ -17,6 +17,8 @@ describe('lesson chat context and source coverage',()=>{
   expect(selected.map(p=>p.id)).toEqual(['p29','p31']);
  });
  it('covers beginning middle and tail for a broad request and excludes flagged source',()=>{
+  expect(chatQuestion('How do the main topics connect in this lesson?',lesson).overview).toBe(true);
+  expect(chatQuestion('How do astronomy topics connect in this lesson?',lesson).overview).toBe(false);
   const r=overviewPassages({...lesson,segments:segments.map(p=>p.id==='p30'?{...p,flags:['unclear']}:p)});
   expect(r.passages.map(p=>p.id)).toEqual(expect.arrayContaining(['p0','p40','p79']));expect(r.passages.some(p=>p.id==='p30')).toBe(false);expect(r.complete).toBe(false);
  });

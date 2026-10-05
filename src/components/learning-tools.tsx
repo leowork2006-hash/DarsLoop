@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, BookOpen, CalendarBlank, Check, Headphones, MagnifyingGlass, Play, DownloadSimple, Question, WarningCircle } from '@phosphor-icons/react';
 import { catchUpPoints, citationStart, examWeek, localDay, teacherTerms } from '@/lib/learning-tools';
 import { formatTime, type Lesson, type Review } from '@/lib/types';
@@ -7,6 +7,7 @@ import { SourceEvidence, SourceLink } from "./source-evidence";
 import { sourceLabel, citedPassage, pdfSourceUrl } from "@/lib/source-passages";
 import { Modal } from './modal';
 import { exclusiveAudio, playAt } from '@/lib/audio-playback';
+import examStyles from './exam-week.module.css';
 
 function AudioCatchUp({lesson,onPlay}:{lesson:Lesson;onPlay:(time:number)=>void}){
   const points=catchUpPoints(lesson),moments=points.slice(0,3);
@@ -28,12 +29,13 @@ export function TeacherDictionary({lessons,onOpen,onPlay}:{lessons:Lesson[];onOp
 
 export function ExamWeek({userId,lessons,reviews,onOpen,onPractice}:{userId:string;lessons:Lesson[];reviews:Review[];onOpen:(lesson:Lesson)=>void;onPractice:(lesson:Lesson,id:string)=>void}){
   const [date,setDate]=useState(''),[course,setCourse]=useState(''),[saved,setSaved]=useState(false),[storageError,setStorageError]=useState(false);
+  const controlsId=useId();
   useEffect(()=>{try{const raw=JSON.parse(localStorage.getItem(`darsloop-exam:${userId}`)||'null');if(raw&&typeof raw.date==='string'&&typeof raw.course==='string'){setDate(raw.date);setCourse(raw.course);setSaved(true);}}catch{}},[userId]);
   const courses=[...new Set(lessons.filter(l=>l.status==='ready'&&!l.demo).map(l=>l.course))];
   const days=examWeek(lessons,reviews,date,course),tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
   function save(){try{localStorage.setItem(`darsloop-exam:${userId}`,JSON.stringify({date,course}));setStorageError(false);setSaved(true);}catch{setStorageError(true);}}
   function reset(){setDate('');setCourse('');setSaved(false);try{localStorage.removeItem(`darsloop-exam:${userId}`);}catch{setStorageError(true);}}
-  return <section className="exam-week"><header><CalendarBlank size={22}/><div><h2>Exam week</h2><p>A short schedule for the seven days before your date.</p></div></header><div className="exam-week-controls"><label>Exam date<input type="date" min={localDay(tomorrow)} value={date} onChange={e=>{setDate(e.target.value);setSaved(false);}}/></label><label>Course<select value={course} onChange={e=>{setCourse(e.target.value);setSaved(false);}}><option value="">All courses</option>{courses.map(c=><option key={c}>{c}</option>)}</select></label><button disabled={!days.length} onClick={save}>{saved?<><Check size={15}/>Saved here</>:<>Save schedule<ArrowRight size={15}/></>}</button>{date&&<button className="exam-reset" onClick={reset}>Clear</button>}</div>{storageError&&<p role="alert">The schedule could not be saved on this device. You can still use the dates below.</p>}
+  return <section className="exam-week"><header><CalendarBlank size={22}/><div><h2>Exam week</h2><p>A short schedule for the seven days before your date.</p></div></header><div className={examStyles.controls}><div className={examStyles.field}><label htmlFor={`${controlsId}-date`}>Exam date</label><input id={`${controlsId}-date`} type="date" min={localDay(tomorrow)} value={date} onChange={e=>{setDate(e.target.value);setSaved(false);}}/></div><div className={examStyles.field}><label htmlFor={`${controlsId}-course`}>Course</label><select id={`${controlsId}-course`} value={course} onChange={e=>{setCourse(e.target.value);setSaved(false);}}><option value="">All courses</option>{courses.map(c=><option key={c}>{c}</option>)}</select></div><div className={examStyles.actions}><button className={examStyles.save} disabled={!days.length} onClick={save}>{saved?<><Check size={15}/>Saved here</>:<>Save schedule<ArrowRight size={15}/></>}</button>{date&&<button className={examStyles.reset} onClick={reset}>Clear</button>}</div></div>{storageError&&<p role="alert">The schedule could not be saved on this device. You can still use the dates below.</p>}
     {!!days.length&&<><p className="exam-week-scope">Missed quiz points come first, then due and untried topics. This uses your available lessons, not a complete exam syllabus. The date is saved on this device; topic order updates with your responses.</p><div className="exam-week-days">{days.map(day=><details key={day.date} open={day===days[0]}><summary><bdi>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</bdi><span>{day.topics.length} {day.topics.length===1?'topic':'topics'}</span></summary>{day.topics.length?day.topics.map(topic=>{const lesson=lessons.find(l=>l.id===topic.lessonId)!;return <button key={topic.id} onClick={()=>topic.practiceItemIds[0]?onPractice(lesson,topic.practiceItemIds[0]):onOpen(lesson)}><span dir="auto">{topic.title}<small>{lesson.title} · {sourceLabel(topic.sources[0])}</small></span><ArrowRight size={15}/></button>;}):<p>No new topics assigned. Revisit your notes if useful.</p>}</details>)}</div></>}
   </section>;
 }

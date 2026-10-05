@@ -16,7 +16,7 @@ const overview=/\b(?:what (?:is|was) (?:this |the )?(?:lesson|class|lecture) abo
 const elaboration=/\b(?:explain|elaborate|expand|detail|detailed|more|simpler|shorter|brief|example|again|it|that|this|mean|ore)\b|مزید|تفصیل|وضاحت|اشرح|بالتفصيل|وضح/u;
 const commandWords=new Set('explain explaination explanation elaborate expand detail detailed more much ore me in please it that this again simpler shorter brief example give make can you mean why how understand اشرح اكثر أكثر بالتفصيل وضح وضاحت مزید تفصیل کریں کرو دوبارہ مختصر بتائیں سمجھائیں چاہتا ہوں'.split(' '));
 function requestIntent(question:string){return normalise(question).replace(/\b(?:explian|explane)\b/g,'explain').replace(/\b(?:detial|dedail|detials)\b/g,'detail').replace(/\b(?:ovewview|overveiw)\b/g,'overview').replace(/\b(?:sumarise|sumarize)\b/g,'summarize').replace(/\b(?:mroe|mor)\b/g,'more');}
-export function isLessonOverview(question:string){return overview.test(requestIntent(question));}
+export function isLessonOverview(question:string){const intent=requestIntent(question).replace(/\s+/gu,' ').trim();return overview.test(intent)||/^how do (?:the )?main topics connect(?: in (?:this|the) lesson)?[?.]?$/iu.test(intent);}
 export function isDetailQuestion(question:string){return /\b(?:detail|detailed|elaborate|expand|thorough)\b|تفصیل|بالتفصيل/u.test(requestIntent(question));}
 export function chatQuestion(question:string,lesson:Lesson,previous?:ChatContext){
   const safe=previous&&!boundedQuestion(previous.question,sourcePassages(lesson),lesson.version,'ai')&&!needsPersonalReferral(previous.question);

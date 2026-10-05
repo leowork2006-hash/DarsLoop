@@ -1,5 +1,13 @@
 # Verification and known limits
 
+## V33 readable sources and recall — 6 October
+
+- PDF pages and References use compact source cards with expandable complete text and an optional original line-break view. Stored text and citations are unchanged; extraction artifacts still require checking the original PDF.
+- Home/lesson suggestions use six wrapping icon chips. Notes, practice and plan actions open the corresponding existing feature. Headings reveal words with pause and reduced-motion support.
+- Quiz/card lesson choices show the full supported inventory separately from the selected quick-session size, with colored raised icon covers. Exam date/course controls have equal heights and stack on narrow screens.
+- Complete already-supported notes can supply distinct recall cards, even when cards already exist. Full answers and citations are preserved; flagged evidence, duplicate answers and overlong notes are withheld. Existing practice IDs remain; derived IDs bind the full note, evidence and material revision. The inventory remains bounded to40 items. No fixed questions-per-minute promise or newly invented quiz choices.
+- Verification is confined to changed paths:24 focused unit tests,49 Review/Exam fixture assertions, an isolated local HTTP recall-review check and one combined Chat/PDF viewport check. TypeScript and a production build passed. These checks do not establish real-language accuracy, physical-phone compatibility, learning gains, email delivery or provider failover.
+
 ## V32 suggestion styling — 6 October
 
 Home and lesson chat retain four grounded suggestion actions in stacked rounded text-and-arrow buttons. TypeScript passed. One short isolated visual check covered both screens at 1440px and 390px, with no horizontal overflow or browser errors; screenshots were inspected. It made no AI or transcription requests.
