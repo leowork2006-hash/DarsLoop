@@ -1,6 +1,32 @@
 # Verification and known limits
 
+## V31 chat, mobile and audio corrections — 6 October
+
+- Targeted backend checks:48 tests in6 files pass, plus TypeScript. This is a bounded changed-path check, not a rerun of the entire release suite.
+- Isolated sidebar/player UI:49 fixture checks pass at1440/390/320px. Desktop player64px and mobile96px preserve44px controls and matching content clearance. This is viewport evidence, not physical-phone proof.
+- Actual Gemini check on four authored Urdu study-routine passages: the final overview and misspelled detail follow-up each returned four supported English explanation blocks with unchanged Urdu citations. Initial support-audit rejections are retained privately. It is not a native-language accuracy benchmark or a promise that every model reply passes.
+- Chat now carries bounded prior-question/source-ID context, handles whole-lesson coverage and conservative lexical typos, matches explanation language to the question, and retains messages in account/source-scoped browser memory. Clear chat is explicit. Unsupported claims remain withheld; independently accepted points can be shown as partial, and already prepared source-backed notes can serve as a labelled fallback.
+- Audio playback/download limits now share the48,000,000-byte prepared-audio limit. Previously the private playback endpoint still refused files above24MiB. Playback metadata caching retains neither audio bytes nor authorization, and membership/source checks still run for each request. Timestamp clicks call an existing player directly to preserve the browser gesture; newly mounted players can still require a Play tap on strict mobile browsers.
+- No new full-hour transcription, real-class publication, paid plan or purchase was used for these corrections.
+
+
 Checked 6 October 2026. These are scoped engineering results, not a student pilot or a promise of perfect transcription.
+
+## Finishing release — 6 October 2026 (V30)
+
+The combined source passed **288 tests across 43 files** and a production build. The later confirmation-header correction passed 25 focused auth/account/header checks, including two new tests of Next's actual header emission, and another production build. These overlapping subsets are not summed into a fabricated suite total. Both new server-only queue/private-round migrations were applied; their functions deny client roles, and the new private tables enable RLS and deny client reads/writes.
+
+Eight bounded local Notes-control checks passed at 1440px/390px with no AI calls or page errors. Saved-view changes and warning navigation made no generation request; one explicit owner action queued the expected source/material revisions. Shared/demo preparation controls were absent. Thirty-three separate local private-round checks covered desktop/mobile/dark controls and first-attempt/privacy boundaries.
+
+Actual hosted private-round checks passed for explicit nickname consent, foreign-account denial, hidden answers, server grading, idempotent retries, immutable first score, withdrawal and rejoining. A later model preparation invalidated the old round, and share revocation permanently closed a new round even after re-sharing. Scores are private-class exercises, not global rankings or measures of religious knowledge.
+
+The final narrow preparation/cache run passed **21 assertions including cleanup**. Three sections of authored saved timed text produced **12 notes, 11 quizzes and 9 cards in 23.962 seconds**, with no speech recognition. The text had sparse synthetic timestamps across a lesson-shaped span; this is not a newly transcribed 35-minute class. All planned sections were covered, citations stayed literal, source text/times/version and separate personal notes were preserved. The owner-only Detailed action commits a new material revision atomically; old material remains available on failure.
+
+Two exact owned uploads of the same 23-second synthetic Arabic recording proved real completed-transcript reuse. Both returned eight identical source passages including word metadata and flags; the second had a private completed reuse checkpoint, rebased IDs and newly audited material. Upload/processing times were 11.366/22.325 seconds and 10.441/22.836 seconds respectively. This short clip showed no processing-speed improvement; the verified benefit is avoiding another transcription. Other owners, incomplete/legacy records and different ASR settings are excluded.
+
+A generated disposable signup token passed five live confirmation checks plus cleanup: HEAD/GET did not consume it, the page emitted no-store/no-referrer, a foreign-origin POST was rejected, and explicit confirmation created a session with a fixed workspace redirect. This did not send an email or verify SMTP/template configuration. Public email delivery remains a separate owner-dependent setup gate.
+
+Two initial failures remain in private evidence: one real global-header override was fixed; one test compared JSON object-key order rather than source values and was corrected before a narrow successful repeat. Neither initial run is represented as fully passing. No full-hour transcription was repeated. The final source correction deployed successfully; health, presentation and video links were checked. Native language quality, hardware screen lock, concurrency, full backup switching, two-hour performance and learning benefit remain unproved.
 
 ## Arabic study material and private PDF release — 6 October 2026
 
@@ -35,7 +61,7 @@ Automatic notes and practice do not require teacher approval. Flagged or instruc
 
 Three additional synthetic mixed-language probes found script/term errors and shared omissions. In an Arabic/English clip, both full-clip recognizers missed English words that a short crop recovered. Another transcription provider also omitted portions. Choosing a main language is a hint, not translation or guaranteed word retention.
 
-Native speech fidelity, physical screen-lock recording, clean first-click email confirmation, simultaneous uploads, duplicate-upload transcript cache, a hosted backup-switch rehearsal and student learning benefit remain unproven. Private recordings, raw reports, user identifiers, credentials and billing records are excluded from this repository.
+Native speech fidelity, physical screen-lock recording, clean first-click email confirmation, simultaneous uploads, cross-owner/concurrent transcript reuse, a hosted backup-switch rehearsal and student learning benefit remain unproven. Private recordings, raw reports, user identifiers, credentials and billing records are excluded from this repository.
 
 ## Reliability revision — 6 October 2026
 

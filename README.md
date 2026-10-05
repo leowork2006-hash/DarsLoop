@@ -97,7 +97,7 @@ Original project code is [MIT](LICENSE). Dependencies, fonts, external source co
 
 ## Latest actual verification — 5 October 2026
 
-The final V28 hosted fictional one-hour WAV completed in 55.112 seconds upload plus 121.374 seconds processing and passed 29 scoped assertions. Whole-container memory peaked at 841.5 MB under its 1000.0 MB limit, with zero OOM kills. These are synthetic sequential English measurements. They do not prove native classroom accuracy, concurrency or future uptime. V29 language/PDF verification is recorded separately in [docs/QA.md](docs/QA.md).
+The final V28 hosted fictional one-hour WAV completed in 55.112 seconds upload plus 121.374 seconds processing and passed 29 scoped assertions. Whole-container memory peaked at 841.5 MB under its 1000.0 MB limit, with zero OOM kills. These are synthetic sequential English measurements. They do not prove native classroom accuracy, concurrency or future uptime. V29 language/PDF and V30 chronological-note, private-round, cache and confirmation-route verification are recorded separately in [docs/QA.md](docs/QA.md).
 
 Private audio replay streams requested ranges. Long-lesson search caches exact repeated wording while retaining original source references. Completed transcripts survive generation problems; available supported notes remain usable. If AI chat fails, a visibly labelled transcript-search response can return exact supported passages or abstain, with the same religious/scope boundaries. It does not invent an AI answer. Provider quotas can pause new work; the durable queue retains audio/checkpoints and schedules quota retries. Consumer Google AI plans do not raise this app's API-key allowance; see [DEPLOYMENT.md](DEPLOYMENT.md).
 

@@ -167,20 +167,30 @@
   display: grid;
   gap: 8px;
 }
-.reference-guide-button {
+.workspace-shell.is-reference-shell .reference-sidebar-bottom .reference-footer-button {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
-  min-height: 38px;
-  gap: 8px;
+  min-height: 40px;
+  padding: 9px 12px;
+  gap: 11px;
   border: 1px solid #3f3f3f;
   border-radius: 24px;
   color: #b9b9b9;
   font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
   background: transparent;
 }
-.reference-guide-button:hover { background: #262626; color: #fff; }
+.workspace-shell.is-reference-shell .reference-sidebar-bottom .reference-footer-button:hover { background: #262626; color: #fff; }
+.workspace-shell.is-reference-shell .reference-sidebar-bottom .reference-footer-button>svg {margin:0;}
+.workspace-shell.is-reference-shell .reference-review-nav {display:flex;align-items:center;gap:4px;}
+.workspace-shell.is-reference-shell .reference-review-nav>button:first-child {flex:1;min-width:0;}
+.workspace-shell.is-reference-shell .reference-review-nav>.reference-review-toggle {width:36px;min-width:36px;min-height:40px;padding:0;justify-content:center;flex:none;}
+.reference-review-toggle svg {transition:transform 120ms ease;transform:rotate(-90deg);}
+.reference-review-toggle[aria-expanded=true] svg {transform:rotate(0);}
+@media(prefers-reduced-motion:reduce){.reference-review-toggle svg{transition:none;}}
 .workspace-shell.is-reference-shell .settings-button {
   min-height: 38px;
   padding: 8px 12px;

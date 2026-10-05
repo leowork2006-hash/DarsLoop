@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { adminClient, rpc } from "./admin";
 import { removeImport } from "./imports";
+import { MAX_STORED_AUDIO_BYTES } from "../upload-options";
 import { safeLesson } from "../store";
 import { nextReview } from "../review-activity";
 import { demoArtifacts, demoScript } from "../demo";
@@ -103,7 +104,7 @@ export async function storeAudio(l:Lesson,bytes:Buffer){const audioPath=`${l.own
 export async function audioBytes(l:Lesson){
  if(l.demo)return readFile(path.join(process.cwd(),"fixtures/demo.mp3"));
  if(l.audioPath!==`${l.ownerId}/${l.id}`)throw new Error("Invalid private audio path");
- const blob=checked(await adminClient().storage.from("lesson-audio").download(l.audioPath));if(!blob||blob.size>24*1024*1024)throw new Error("Audio is unavailable");return Buffer.from(await blob.arrayBuffer());
+ const blob=checked(await adminClient().storage.from("lesson-audio").download(l.audioPath));if(!blob||blob.size>MAX_STORED_AUDIO_BYTES)throw new Error("Audio is unavailable");return Buffer.from(await blob.arrayBuffer());
 }
 export async function prepareAudio(l:Lesson,file:string){const bytes=await audioBytes(l);await writeFile(file,bytes,{mode:0o600});return file;}
 export async function removeAudio(l:Lesson){if(l.demo)return;if(l.audioPath!==`${l.ownerId}/${l.id}`)throw new Error("Invalid private audio path");if(l.sourceImport)await removeImport(l.ownerId,l.id,l.sourceImport.parts);checked(await adminClient().storage.from("lesson-audio").remove([l.audioPath]));}

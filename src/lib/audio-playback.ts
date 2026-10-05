@@ -1,4 +1,13 @@
 /** One spoken passage at a time, including the original player and small previews. */
+const players=new Map<string,(time:number)=>void>();
+export function registerLessonPlayer(id:string,seek:(time:number)=>void){
+  players.set(id,seek);return ()=>{if(players.get(id)===seek)players.delete(id);};
+}
+// Invoke playback inside the timestamp's click, preserving the mobile browser's
+// user gesture instead of waiting for React's later effect.
+export function seekLessonPlayer(id:string,time:number):boolean{
+  const seek=players.get(id);if(!seek)return false;seek(time);return true;
+}
 export function exclusiveAudio(active:HTMLAudioElement){
   document.querySelectorAll('audio').forEach(audio=>{if(audio!==active)audio.pause();});
 }

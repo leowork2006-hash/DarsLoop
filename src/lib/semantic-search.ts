@@ -5,7 +5,7 @@ import { db, safeLesson } from "./store";
 import { rawLesson } from "./backend";
 import { cloudMode } from "./supabase/config";
 import { savedVectors, saveVectors } from "./supabase/store";
-import { instructionLike, noteAnchors, retrieve, tokens } from "./evidence";
+import { instructionLike, noteAnchors, queryTokenMatches, retrieve, tokens } from "./evidence";
 import type { Lesson, Segment, StudyPassage } from "./types";
 
 export const EMBEDDING_MODEL="gemini-embedding-001",EMBEDDING_DIMENSIONS=768;
@@ -78,7 +78,7 @@ export async function indexedVectors(lesson:Lesson,windows:Window[],embedder=emb
 export function rankedPassages(question:string,segments:Segment[],windows:Window[],vectors:number[][],query:number[],limit=18) {
   if(windows.length!==vectors.length)throw new Error("Incomplete retrieval index");
   const q=unitVector(query),semantic=windows.map((w,i)=>({w,score:unitVector(vectors[i]).reduce((n,v,j)=>n+v*q[j],0)})).sort((a,b)=>b.score-a.score);
-  const terms=tokens(question),lexical=segments.map((s,i)=>({i,score:tokens(s.text).filter(t=>terms.includes(t)).length})).filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
+  const terms=tokens(question),lexical=segments.map((s,i)=>({i,score:tokens(s.text).filter(t=>terms.some(term=>queryTokenMatches(term,t))).length})).filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
   const scores=new Map<number,number>();
   const semanticSeen=new Set<number>();
   semantic.forEach(({w},rank)=>w.indices.forEach(i=>{if(!semanticSeen.has(i)){semanticSeen.add(i);scores.set(i,(scores.get(i)||0)+1/(60+rank+1));}}));

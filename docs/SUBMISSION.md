@@ -38,7 +38,7 @@ Published deadline in the supplied guide: 6 October 2026, 23:59 Riyadh / 7 Octob
 
 ## Release status
 
-Public repository publication, anonymous fresh-clone checks and the previous hosted release passed as recorded in QA.md. The current presentation and captioned 100-second screenshot walkthrough are prepared; see [EXPLAINER.md](EXPLAINER.md). New finishing changes still need combined release verification. Public signup delivery/social consent and the official portal receipt remain pending. Measured student-learning benefit and physical locked-phone recording have not been established.
+Public repository publication, anonymous fresh-clone checks and the previous hosted release passed as recorded in QA.md. The current presentation and captioned 100-second screenshot walkthrough are prepared; see [EXPLAINER.md](EXPLAINER.md). The combined finishing source, focused header correction and actual hosted finishing flows passed as scoped in QA.md. Public signup delivery/social consent and the official portal receipt remain pending. Measured student-learning benefit and physical locked-phone recording have not been established.
 
 ## Primary references
 

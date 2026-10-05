@@ -1,22 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, BookOpen, Brain, Check, CaretDown, FileAudio, FilePdf, FolderOpen, ListBullets, MapTrifold, Microphone, NotePencil, Plus, MagnifyingGlass, UploadSimple, Users, X } from "@phosphor-icons/react";
-import { Chat, type LessonTab } from "./lesson-view";
+import { ArrowUp, BookOpen, Brain, Check, CaretDown, FileAudio, FilePdf, FolderOpen, ListBullets, MapTrifold, Microphone, Plus, MagnifyingGlass, UploadSimple, Users, X } from "@phosphor-icons/react";
+import { Chat, chatSuggestions, type LessonTab } from "./lesson-view";
 import { Modal } from "./modal";
 import { StudyAvatar } from "./study-avatar";
 import { formatTime, type Lesson, type Workspace } from "@/lib/types";
 
 import { sourcePassages } from "@/lib/source-passages";
+import chatStyles from "./lesson-chat.module.css";
 
 type HomeAction = { kind: "question"; text: string } | { kind: "notes" | "quiz" | "cards" | "plan" };
-const suggestions: { label: string; action: HomeAction; icon: typeof Brain; tone: string }[] = [
-  { label: "What is this lesson about?", action: { kind: "question", text: "What is this lesson about?" }, icon: Brain, tone: "blue" },
-  { label: "How do these topics connect?", action: { kind: "question", text: "How do the main topics in this lesson connect?" }, icon: Brain, tone: "blue" },
-  { label: "Open my study plan", action: { kind: "plan" }, icon: BookOpen, tone: "green" },
-  { label: "Quiz me on this lesson", action: { kind: "quiz" }, icon: BookOpen, tone: "green" },
-  { label: "Review my flashcards", action: { kind: "cards" }, icon: NotePencil, tone: "peach" },
-  { label: "Show my class notes", action: { kind: "notes" }, icon: NotePencil, tone: "peach" },
-];
 
 export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview, onChatLesson, onPlan, onClasses }: {
   workspace: Workspace;
@@ -39,6 +32,8 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
   const active = ready.find(l => l.id === activeId) || null;
   const groupIds = group ? workspace.groups.find(g => g.id === group)?.lessons.map(l => l.id) || [] : null;
   const choices = ready.filter(l => (!groupIds || groupIds.includes(l.id)) && `${l.title} ${l.course}`.toLowerCase().includes(search.toLowerCase()));
+
+  useEffect(()=>{setActiveId(null);setQuestionDraft(undefined);setQuestion("");setPicker(false);setMenu(false);},[workspace.userId]);
 
   useEffect(() => {
     if (!menu) return;
@@ -89,31 +84,31 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
     <div className="home-menu-anchor" ref={menuRoot} onKeyDown={menuKey}>
       <button type="button" ref={menuButton} className={`home-attach ${menu ? "is-open" : ""}`} aria-label="Chat actions" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu(!menu)}><Plus size={23}/></button>
       {menu && <div className="home-actions-menu" role="menu" aria-label="Chat actions">
-        <button role="menuitem" onClick={() => menuAction(() => onAdd("record"))}><Microphone size={20}/>Record a lesson</button>
-        <button role="menuitem" onClick={() => menuAction(() => onAdd("upload"))}><UploadSimple size={20}/>Upload material</button>
-        <button role="menuitem" onClick={() => selectLesson()}><FolderOpen size={20}/>Materials</button>
+        <button type="button" role="menuitem" onClick={() => menuAction(() => onAdd("record"))}><Microphone size={20}/>Record a lesson</button>
+        <button type="button" role="menuitem" onClick={() => menuAction(() => onAdd("upload"))}><UploadSimple size={20}/>Upload material</button>
+        <button type="button" role="menuitem" onClick={() => selectLesson()}><FolderOpen size={20}/>Materials</button>
         <div className="home-menu-divider"/>
-        <button role="menuitem" onClick={() => menuAction(onClasses)}><Users size={20}/>My classes</button>
-        <button role="menuitem" onClick={() => menuAction(() => onPlan(active || undefined))}><MapTrifold size={20}/>Study plan</button>
-        <button role="menuitem" onClick={() => menuAction(onReview)}><ListBullets size={20}/>My revision</button>
+        <button type="button" role="menuitem" onClick={() => menuAction(onClasses)}><Users size={20}/>My classes</button>
+        <button type="button" role="menuitem" onClick={() => menuAction(() => onPlan(active || undefined))}><MapTrifold size={20}/>Study plan</button>
+        <button type="button" role="menuitem" onClick={() => menuAction(onReview)}><ListBullets size={20}/>My revision</button>
       </div>}
     </div>
     <button type="button" className={`home-source ${active ? "has-source" : ""}`} data-tour="home-source" onClick={() => selectLesson()}><BookOpen size={17}/><span>{active ? active.title : "Choose a lesson"}</span><CaretDown size={13}/></button>
   </div>;
   const welcome = <div className="home-welcome">
     <StudyAvatar reference/><h2>How can I help?</h2>
-    <div className="home-suggestions" data-tour="home-prompts">{suggestions.map(({ label, action, icon: Icon, tone }) => <button key={label} type="button" onClick={() => run(action)}><span className={`home-prompt-icon ${tone}`}><Icon size={18}/></span>{label}</button>)}</div>
+    <div className={`home-suggestions ${chatStyles.homeSuggestions}`} data-tour="home-prompts">{chatSuggestions(active||undefined).map(({label,description,question},index)=><button key={label} type="button" onClick={()=>run({kind:"question",text:question})}><span className={`home-prompt-icon ${index<2?"blue":"peach"}`}><Brain size={18}/></span><span><strong dir="auto">{label}</strong><small>{description}</small></span></button>)}</div>
     <div className="home-shortcuts"><button onClick={() => selectLesson()}><FolderOpen size={17}/> Materials</button><button onClick={() => onPlan(active || undefined)}><MapTrifold size={17}/> Study plan</button><button onClick={onClasses}><Users size={17}/> My classes</button></div>
   </div>;
 
-  return <section className={`study-home reference-chat ${active ? "has-active-chat" : ""}`}>
+  return <section className={`study-home reference-chat ${chatStyles.homeRoot} ${active ? "has-active-chat" : ""}`}>
     <h1 className="sr-only">Your study space</h1>
     <div className="home-chat-stage" data-tour="home-chat">
-      {active ? <Chat key={`${active.id}-${active.version}`} lesson={active} onPlay={time => onPlay(active, time)} onError={onError} configured={workspace.configured.generation} home tools={tools} composerActions={entryActions} emptyState={welcome} draft={questionDraft}/> : <div className="home-chat-empty">
+      {active ? <Chat key={`${workspace.userId}-${active.id}-${active.version}`} viewerId={workspace.userId} lesson={active} onPlay={time => onPlay(active, time)} onError={onError} configured={workspace.configured.generation} home tools={tools} composerActions={entryActions} emptyState={welcome} draft={questionDraft}/> : <div className="home-chat-empty">
         {welcome}
         <form className="home-composer-empty" data-tour="home-composer" onSubmit={e => { e.preventDefault(); selectLesson(question.trim().length >= 2 ? { kind: "question", text: question } : null); }}>
           <label className="sr-only" htmlFor="home-question">Ask about your lesson</label>
-          <textarea id="home-question" rows={1} maxLength={1000} placeholder="Ask about your lesson…" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); selectLesson(question.trim().length >= 2 ? { kind: "question", text: question } : null); } }}/>
+          <textarea id="home-question" dir="auto" rows={1} maxLength={1000} placeholder="Ask about your lesson…" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); selectLesson(question.trim().length >= 2 ? { kind: "question", text: question } : null); } }}/>
           <div className="home-composer-footer">{tools}<div className="home-composer-actions">{entryActions}<button className="send-button" aria-label="Choose a lesson for this question" disabled={question.trim().length < 2}><ArrowUp size={22}/></button></div></div>
         </form>
         <p className="composer-caption">Answers use your lesson. Ask a teacher for religious guidance.</p>

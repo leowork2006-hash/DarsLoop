@@ -1,15 +1,72 @@
-.workspace { min-width: 0; }
+.workspace.workspace {
+  width: min(100%, 850px);
+  max-width: 850px;
+  min-width: 0;
+  margin-inline: auto;
+  font-family: var(--font-body);
+}
+.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.workspace.workspace .header :global(.chat-scope) { position: static; margin: 0; padding: 0; font: 400 12px/1.5 var(--font-body); text-align: start; }
+.clear { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 8px; border-radius: 7px; color: var(--ref-body); font: 400 12px/1.4 var(--font-body); white-space: nowrap; background: transparent; }
+.clear:hover { background: var(--ref-soft); }
+.clear:disabled { opacity: .45; cursor: default; }
+.workspace.workspace :global(.chat-empty) { width: 100%; padding-inline: 0; }
+.workspace.workspace :global(.chat-empty h2) { font: 500 24px/1.4 var(--font-body); letter-spacing: -.025em; }
+.workspace.workspace :global(.chat-messages) { width: 100%; min-width: 0; max-width: 850px; margin-inline: auto; }
+.workspace.workspace :global(.chat-composer) { width: 100%; min-width: 0; max-width: 850px; margin-inline: auto; box-sizing: border-box; }
+.workspace.workspace :global(.chat-composer textarea) { font: 400 16px/1.7 var(--font-body); text-align: start; }
+.workspace.workspace :global(.home-composer-footer) { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.workspace.workspace :global(.student-message) { width: fit-content; max-width: 86%; margin-inline-start: auto; margin-inline-end: 0; overflow-wrap: anywhere; }
+.workspace.workspace :global(.student-message p),.workspace.workspace :global(.assistant-message p) { font: 400 15px/1.8 var(--font-body); text-align: start; overflow-wrap: anywhere; }
+.workspace.workspace :global(.assistant-message) { min-width: 0; }
+.workspace.workspace :global(.assistant-message > div) { min-width: 0; font-family: var(--font-body); }
+.workspace.workspace :global(.answer-block) { min-width: 0; }
+.workspace.workspace :global(.answer-block > p) { white-space: pre-line; }
+.workspace.workspace :global(.quote-detail blockquote) { overflow-wrap: anywhere; }
+.workspace.workspace .suggestions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: 100%; max-width: 720px; gap: 10px; margin: 12px auto 0; }
+.workspace.workspace .suggestions button { display: flex; justify-content: space-between; gap: 12px; padding: 13px 15px; border-radius: 12px; min-width: 0; white-space: normal; text-align: start; font-family: var(--font-body); }
+.suggestions strong,.homeSuggestions strong { display: block; font-size: 13px; font-weight: 550; line-height: 1.5; }
+.suggestions small,.homeSuggestions small { display: block; margin-top: 4px; font-size: 11px; line-height: 1.55; color: var(--ref-muted); }
+.suggestions svg { flex-shrink: 0; align-self: center; }
+.menuAnchor { position: relative; flex-shrink: 0; }
+.plus { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--ref-line); border-radius: 8px; background: var(--ref-soft); color: var(--ref-body); }
+.plus[aria-expanded=true],.plus:hover { background: var(--ref-card); }
+.actionsMenu { position: absolute; inset-inline-start: 0; bottom: calc(100% + 10px); z-index: 30; width: 230px; max-width: calc(100vw - 48px); padding: 6px; border: 1px solid var(--ref-line); border-radius: 11px; box-shadow: 0 5px 20px #0002; background: var(--ref-card); color: var(--ref-text); }
+.actionsMenu button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 43px; padding: 9px 10px; font: 400 13px/1.5 var(--font-body); text-align: start; background: transparent; border-radius: 6px; }
+.actionsMenu button:hover,.actionsMenu button:focus-visible { background: var(--ref-soft); }
+.homeRoot.homeRoot.homeRoot { width: 100%; max-width: none; margin-inline: auto; }
+.homeRoot.homeRoot.homeRoot :global(.home-chat-stage) { width: 100%; max-width: 850px; margin-inline: auto; }
+.homeRoot.homeRoot.homeRoot :global(.home-chat-empty),.homeRoot.homeRoot.homeRoot .homeWorkspace { width: 100%; max-width: 850px; margin-inline: auto; }
+.homeRoot.homeRoot.homeRoot :global(.home-welcome h2) { font: 500 24px/1.4 var(--font-body); letter-spacing: -.025em; }
+.homeRoot.homeRoot.homeRoot .homeSuggestions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: min(100%,720px); gap: 10px; }
+.homeRoot.homeRoot.homeRoot .homeSuggestions > button { min-width: 0; border-radius: 12px; padding: 12px; align-items: flex-start; text-align: start; white-space: normal; font-family: var(--font-body); }
+.homeRoot.homeRoot.homeRoot .homeSuggestions > button > span:last-child { min-width: 0; }
+.homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding-bottom: 32px; }
+.homeRoot.homeRoot.homeRoot .homeWorkspace .header { flex: 0 0 auto; width: 100%; margin: 8px 0 0; }
+.homeRoot.homeRoot.homeRoot .homeWorkspace :global(.chat-messages) { padding-top: 14px; }
+.homeRoot.homeRoot.homeRoot :global(.composer-caption) { width: 100%; text-align: center; margin-inline: auto; box-sizing: border-box; }
 .workspace .caption {
   display: block;
-  width: min(100%, 920px);
+  width: min(100%, 850px);
   margin: 12px auto 0;
   text-align: center;
   align-self: center;
   padding-inline: 12px;
   box-sizing: border-box;
-  scroll-margin-bottom: 104px;
+  scroll-margin-bottom: var(--player-clearance, 104px);
 }
 
 @media (max-width: 760px) {
-  .workspace .caption { scroll-margin-bottom: 230px; }
+  .workspace .caption { scroll-margin-bottom: var(--player-clearance, 230px); }
+  .workspace.workspace .suggestions,.homeRoot.homeRoot.homeRoot .homeSuggestions { grid-template-columns: 1fr; gap: 7px; }
+  .workspace.workspace .suggestions button,.homeRoot.homeRoot.homeRoot .homeSuggestions > button { padding: 10px 12px; }
+  .homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding-top: 14px; padding-bottom: 20px; }
+  .homeRoot.homeRoot.homeRoot :global(.home-welcome > .study-avatar) { width: 72px; height: 72px; margin-bottom: 0; }
+  .homeRoot.homeRoot.homeRoot :global(.home-welcome h2) { font-size: 22px; margin: 6px 0 16px; }
+  .homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) { height: auto; min-height: 0; }
+  .homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) :global(.home-chat-stage),.homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) :global(.home-chat-empty),.homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) .homeWorkspace { height: auto; min-height: 0; }
+  .header { gap: 8px; }
+  .workspace.workspace .header :global(.chat-scope) { font-size: 10px; }
+  .clear { font-size: 11px; min-height: 36px; padding-inline: 4px; }
+  .workspace.workspace :global(.student-message) { max-width: 94%; }
 }

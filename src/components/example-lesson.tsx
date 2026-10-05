@@ -4,12 +4,13 @@ import { useCallback, useState } from "react";
 import { ArrowRight, X } from "@phosphor-icons/react";
 import { Brand } from "./brand";
 import { LessonView, type LessonTab } from "./lesson-view";
+import { seekLessonPlayer } from "@/lib/audio-playback";
 import { Player, type Seek } from "./player";
 import type { Lesson } from "@/lib/types";
 
 export function ExampleLesson({ lesson }: { lesson: Lesson }) {
   const [tab, setTab] = useState<LessonTab>("notes"), [seek, setSeek] = useState<Seek | null>(null), [error, setError] = useState("");
-  const onPlay = useCallback((time: number) => setSeek({ lessonId: lesson.id, time, nonce: Date.now() }), [lesson.id]);
+  const onPlay = useCallback((time: number) => {if(!seekLessonPlayer(lesson.id,time))setSeek({ lessonId: lesson.id, time, nonce: Date.now() });}, [lesson.id]);
   const onError = useCallback((message: string) => setError(message), []);
   return <div className="example-shell is-reference-lesson">
     <a className="skip-link" href="#example-content">Skip to lesson content</a>

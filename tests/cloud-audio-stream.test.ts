@@ -23,7 +23,14 @@ describe('private replay streams exact ranges without materializing whole record
  });
  it('does not request arbitrary paths or oversized storage objects',async()=>{
   await expect(cloudAudioStream(new Request('https://app.example.invalid/audio'),{...lesson,audioPath:'other/recording'})).rejects.toThrow('Invalid private audio path');expect(storage.info).not.toHaveBeenCalled();
-  storage.info.mockResolvedValue({data:{size:25*1024*1024},error:null});await expect(cloudAudioStream(new Request('https://app.example.invalid/audio'),lesson)).rejects.toThrow('Audio is unavailable');expect(storage.createSignedUrl).not.toHaveBeenCalled();
+  storage.info.mockResolvedValue({data:{size:48_000_001},error:null});await expect(cloudAudioStream(new Request('https://app.example.invalid/audio'),lesson)).rejects.toThrow('Audio is unavailable');expect(storage.createSignedUrl).not.toHaveBeenCalled();
+ });
+ it('accepts a prepared recording above the old 24 MiB limit and reuses delivery metadata only',async()=>{
+  storage.info.mockResolvedValue({data:{size:44_000_000},error:null});
+  const fetcher=vi.fn(async()=>new Response(new Uint8Array(2),{status:206,headers:{'Content-Range':'bytes 0-1/44000000'}}));vi.stubGlobal('fetch',fetcher);
+  const ready={...lesson,status:'ready',version:31} as Lesson;
+  for(let i=0;i<2;i++){const r=await cloudAudioStream(new Request('https://app.example.invalid/audio',{headers:{Range:'bytes=0-1'}}),ready);expect(r.status).toBe(206);expect((await r.arrayBuffer()).byteLength).toBe(2);}
+  expect(storage.info).toHaveBeenCalledTimes(1);expect(storage.createSignedUrl).toHaveBeenCalledTimes(1);expect(fetcher).toHaveBeenCalledTimes(2);
  });
  it('preserves suffix range semantics and storage cancellation signal',async()=>{
   const fetcher=vi.fn(async()=>new Response(new Uint8Array(2),{status:206,headers:{'Content-Range':'bytes 23999998-23999999/24000000'}}));vi.stubGlobal('fetch',fetcher);

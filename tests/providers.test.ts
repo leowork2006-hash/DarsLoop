@@ -102,6 +102,11 @@ describe("provider contracts using mocks, not live AI",()=>{
     interaction.mockResolvedValueOnce({output_text:JSON.stringify({status:"answered",message:"",blocks:[{text:"An outside claim",evidence:[{segmentId:"s0",quote:segments[0].text}]}]})}).mockResolvedValueOnce({output_text:JSON.stringify({checks:[{index:0,supported:false,preservesQualifications:false,lessonScopeOnly:false}]})});
     const result=await answerLesson("revision",{segments,version:1} as Lesson);expect(result.blocks).toEqual([]);expect(result.status).toBe("unclear_audio");
   });
+  it("keeps independently supported answer points and labels omitted claims partial",async()=>{
+    vi.stubEnv("GEMINI_API_KEY","test-only");
+    interaction.mockResolvedValueOnce({output_text:JSON.stringify({status:"answered",message:"",blocks:[{text:"The teacher explained listening and revision.",evidence:[{segmentId:"s0",quote:segments[0].text}]},{text:"An outside claim",evidence:[{segmentId:"s1",quote:segments[1].text}]}]})}).mockResolvedValueOnce({output_text:JSON.stringify({checks:[{index:0,supported:true,preservesQualifications:true,lessonScopeOnly:true},{index:1,supported:false,preservesQualifications:false,lessonScopeOnly:false}]})});
+    const r=await answerLesson("Explain revision",{segments,version:1} as Lesson);expect(r.status).toBe("partial");expect(r.blocks).toHaveLength(1);expect(r.blocks[0].text).not.toContain("outside");expect(r.message).toContain("could not be verified");
+  });
   it("keeps audited notes when missing practice cannot be repaired",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.practice=[];
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(6));const result=await createArtifacts(segments);expect(result.notes.length).toBeGreaterThan(0);expect(result.practice.every(p=>p.kind==="flashcard")).toBe(true);expect(result.warnings?.find(warning=>warning.includes("quiz questions"))).toContain("quiz questions");

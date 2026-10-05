@@ -1,24 +1,38 @@
 import { adminClient } from './admin';
 import { parseRange } from '../media';
 import type { Lesson } from '../types';
+import { MAX_STORED_AUDIO_BYTES } from '../upload-options';
+
+// Cache delivery metadata only, never authorization or audio bytes. The route
+// rechecks ownership/membership before and after every request.
+const delivery = new Map<string,{size:number;signedUrl:string;until:number}>();
 
 // Called only after lesson authorization. The short-lived storage URL stays on
 // the server; browser playback remains subject to membership on every request.
 export async function cloudAudioStream(req:Request,l:Lesson):Promise<Response> {
   if(l.audioPath!==`${l.ownerId}/${l.id}`)throw new Error('Invalid private audio path');
-  const storage=adminClient().storage.from('lesson-audio'),info=await storage.info(l.audioPath);
-  const size=info.data?.size??info.data?.metadata?.size;
-  if(info.error||!Number.isSafeInteger(size)||!size||size>24*1024*1024)throw new Error('Audio is unavailable');
+  const storage=adminClient().storage.from('lesson-audio');
+  const cacheKey=JSON.stringify([l.audioPath,l.version,l.mime,l.duration,l.importedMedia]);
+  const saved=l.status==='ready'?delivery.get(cacheKey):undefined;
+  const cached=saved&&saved.until>Date.now()?saved:undefined;
+  const info=cached?undefined:await storage.info(l.audioPath);
+  const size=cached?.size??info?.data?.size??info?.data?.metadata?.size;
+  if(info?.error||!Number.isSafeInteger(size)||!size||size>MAX_STORED_AUDIO_BYTES)throw new Error('Audio is unavailable');
   let range;
   try{range=parseRange(req.headers.get('range'),size);}catch{return new Response(null,{status:416,headers:{'Content-Range':`bytes */${size}`,'Cache-Control':'private, no-store'}});}
-  const signed=await storage.createSignedUrl(l.audioPath,60);
-  if(signed.error||!signed.data?.signedUrl)throw new Error('Audio is unavailable');
+  const signed=cached?undefined:await storage.createSignedUrl(l.audioPath,60);
+  const signedUrl=cached?.signedUrl??signed?.data?.signedUrl;
+  if(signed?.error||!signedUrl)throw new Error('Audio is unavailable');
+  if(!cached&&l.status==='ready'){
+    if(delivery.size>=128)delivery.delete(delivery.keys().next().value!);
+    delivery.set(cacheKey,{size,signedUrl,until:Date.now()+40_000});
+  }
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30_000);
   let upstream:Response;
-  try{upstream=await fetch(signed.data.signedUrl,{headers:range?{Range:`bytes=${range.start}-${range.end}`}:{},signal:AbortSignal.any([req.signal,controller.signal]),cache:'no-store',redirect:'error'});}finally{clearTimeout(timer);}
+  try{upstream=await fetch(signedUrl,{headers:range?{Range:`bytes=${range.start}-${range.end}`}:{},signal:AbortSignal.any([req.signal,controller.signal]),cache:'no-store',redirect:'error'});}finally{clearTimeout(timer);}
   const start=range?.start??0,end=range?.end??size-1;
   if(!upstream.body||upstream.status!==(range?206:200)||(range&&upstream.headers.get('content-range')!==`bytes ${start}-${end}/${size}`)){
-    await upstream.body?.cancel();throw new Error('Audio is unavailable');
+    delivery.delete(cacheKey);await upstream.body?.cancel();throw new Error('Audio is unavailable');
   }
   const length=end-start+1,reader=upstream.body.getReader();
   const read=async()=>{

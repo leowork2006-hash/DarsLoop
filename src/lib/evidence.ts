@@ -55,6 +55,20 @@ export function validateAnswer(input:unknown,segments:StudyPassage[],version:num
 export function normalise(text:string){return text.normalize("NFKC").toLowerCase().replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[^\p{L}\p{N}\s]/gu," ");}
 const stops=new Set("the a an is of to for in on what where did does do teacher lesson this that how can i you explain please my me with and about said tell from it was we are should class".split(" "));
 export function tokens(text:string){return [...new Set(normalise(text).split(/\s+/).filter(t=>t.length>1&&!stops.has(t)))];}
+// Conservative typo tolerance for retrieval only. Original speech, quotations
+// and safety routing are unchanged; a fuzzy match is a candidate, never proof.
+export function queryTokenMatches(query:string,word:string){
+  if(query===word)return true;
+  const a=Array.from(query),b=Array.from(word),max=a.length>=8&&b.length>=8?2:1;
+  if(a.length<4||b.length<4||Math.abs(a.length-b.length)>max)return false;
+  if(/\p{Script=Latin}/u.test(query)!==/\p{Script=Latin}/u.test(word))return false;
+  let row=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const next=[i];for(let j=1;j<=b.length;j++)next[j]=Math.min(next[j-1]+1,row[j]+1,row[j-1]+(a[i-1]===b[j-1]?0:1));
+    row=next;if(Math.min(...row)>max)return false;
+  }
+  return row[b.length]<=max;
+}
 /** Conservative routing aid, not a complete injection detector. Keep source audio/text intact. */
 export function instructionLike(text:string) {
   const t=text.normalize("NFKC").replace(/\s+/g," ");
@@ -69,7 +83,7 @@ const religiousTopic=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allo
 export function retrieve(question:string,segments:StudyPassage[],limit=8):StudyPassage[] {
   segments=segments.filter(s=>!instructionLike(s.text));
   const q=tokens(question);if(!q.length)return [];
-  const ranked=segments.map((s,i)=>({i,score:tokens(s.text).reduce((n,t)=>n+(q.includes(t)?1:0),0)})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
+  const ranked=segments.map((s,i)=>({i,score:tokens(s.text).reduce((n,t)=>n+(q.some(term=>queryTokenMatches(term,t))?1:0),0)})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
   const selected=new Set<number>();ranked.forEach(r=>{for(let i=Math.max(0,r.i-1);i<=Math.min(segments.length-1,r.i+1);i++)selected.add(i);});
   return [...selected].sort((a,b)=>a-b).slice(0,limit).map(i=>segments[i]);
 }
@@ -91,7 +105,7 @@ export function boundedQuestion(question:string,segments:StudyPassage[],version:
 }
 /** A saved topic suggestion is a pointer to audited quotes, never extra evidence. */
 export function noteAnchors(question:string,segments:StudyPassage[],notes:Note[]=[]) {
-  const topic=/^(?:What did the teacher say|What does the source say) about [“"](.{1,160})[”"]\?$/u.exec(question.trim())?.[1];
+  const topic=(/^(?:What did the teacher say|What does the source say) about [“"](.{1,160})[”"]\?$/u.exec(question.trim())||/^Explain [“"](.{1,160})[”"] using this lesson\.$/u.exec(question.trim()))?.[1];
   if(!topic||instructionLike(question))return [];
   const note=notes.find(n=>normalise(n.heading).trim()===normalise(topic).trim()&&evidenceValid(n.evidence,segments));
   if(!note)return [];
@@ -101,7 +115,7 @@ export function excerptAnswer(question:string,segments:StudyPassage[],version:nu
   const bounded=boundedQuestion(question,segments,version,"excerpt");if(bounded)return bounded;
   if(needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher about applying religious teachings to your own situation.",mode:"excerpt",version};
   const anchors=noteAnchors(question,segments,notes);
-  const related=(anchors.length?anchors:retrieve(question,segments).filter(s=>tokens(question).some(t=>tokens(s.text).includes(t)))).slice(0,2);
+  const related=(anchors.length?anchors:retrieve(question,segments).filter(s=>tokens(question).some(t=>tokens(s.text).some(word=>queryTokenMatches(t,word))))).slice(0,2);
   if(!related.length)return {status:"not_covered",blocks:[],message:"I couldn’t find a supporting passage in this lesson. Try a more specific question or ask your teacher.",mode:"excerpt",version};
   const clear=related.filter(s=>!s.flags.length);
   if(!clear.length)return {status:"unclear_audio",blocks:[],message:segments.some(isPdfPage)?"The matching page is flagged. Check the original PDF.":"The matching passage is marked unclear. Please replay it.",mode:"excerpt",version};
