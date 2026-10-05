@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, BookOpen, Brain, Check, CaretDown, FileAudio, FilePdf, FolderOpen, ListBullets, MapTrifold, Microphone, Plus, MagnifyingGlass, UploadSimple, Users, X } from "@phosphor-icons/react";
+import { ArrowRight, ArrowUp, BookOpen, Check, CaretDown, FileAudio, FilePdf, FolderOpen, ListBullets, MapTrifold, Microphone, Plus, MagnifyingGlass, UploadSimple, Users, X } from "@phosphor-icons/react";
 import { Chat, chatSuggestions, type LessonTab } from "./lesson-view";
 import { Modal } from "./modal";
 import { StudyAvatar } from "./study-avatar";
@@ -97,7 +97,7 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
   </div>;
   const welcome = <div className="home-welcome">
     <StudyAvatar reference/><h2>How can I help?</h2>
-    <div className={`home-suggestions ${chatStyles.homeSuggestions}`} data-tour="home-prompts">{chatSuggestions(active||undefined).map(({label,description,question},index)=><button key={label} type="button" onClick={()=>run({kind:"question",text:question})}><span className={`home-prompt-icon ${index<2?"blue":"peach"}`}><Brain size={18}/></span><span><strong dir="auto">{label}</strong><small>{description}</small></span></button>)}</div>
+    <div className={`home-suggestions ${chatStyles.homeSuggestions}`} data-tour="home-prompts">{chatSuggestions(active||undefined).map(({label,question})=><button key={label} type="button" onClick={()=>run({kind:"question",text:question})}><span dir="auto">{label}</span><ArrowRight size={20} aria-hidden="true"/></button>)}</div>
     <div className="home-shortcuts"><button onClick={() => selectLesson()}><FolderOpen size={17}/> Materials</button><button onClick={() => onPlan(active || undefined)}><MapTrifold size={17}/> Study plan</button><button onClick={onClasses}><Users size={17}/> My classes</button></div>
   </div>;
 

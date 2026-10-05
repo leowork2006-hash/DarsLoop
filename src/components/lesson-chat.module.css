@@ -23,11 +23,12 @@
 .workspace.workspace :global(.answer-block) { min-width: 0; }
 .workspace.workspace :global(.answer-block > p) { white-space: pre-line; }
 .workspace.workspace :global(.quote-detail blockquote) { overflow-wrap: anywhere; }
-.workspace.workspace .suggestions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: 100%; max-width: 720px; gap: 10px; margin: 12px auto 0; }
-.workspace.workspace .suggestions button { display: flex; justify-content: space-between; gap: 12px; padding: 13px 15px; border-radius: 12px; min-width: 0; white-space: normal; text-align: start; font-family: var(--font-body); }
-.suggestions strong,.homeSuggestions strong { display: block; font-size: 13px; font-weight: 550; line-height: 1.5; }
-.suggestions small,.homeSuggestions small { display: block; margin-top: 4px; font-size: 11px; line-height: 1.55; color: var(--ref-muted); }
-.suggestions svg { flex-shrink: 0; align-self: center; }
+.workspace.workspace .suggestions { display: grid; grid-template-columns: 1fr; width: 100%; max-width: 720px; gap: 10px; margin: 12px auto 0; }
+.workspace.workspace .suggestions button,.homeRoot.homeRoot.homeRoot .homeSuggestions > button { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; min-height: 48px; padding: 12px 20px; border: 1px solid var(--ref-line); border-radius: 999px; background: var(--ref-card); color: var(--ref-body); box-shadow: 0 1px 2px #00000008; white-space: normal; text-align: start; font: 400 15px/1.5 var(--font-body); }
+.suggestions button > span,.homeSuggestions button > span { min-width: 0; overflow-wrap: anywhere; }
+.suggestions svg,.homeSuggestions svg { flex-shrink: 0; }
+.workspace.workspace .suggestions button:hover,.homeRoot.homeRoot.homeRoot .homeSuggestions > button:hover { background: var(--ref-soft); }
+.workspace.workspace .suggestions button:focus-visible,.homeRoot.homeRoot.homeRoot .homeSuggestions > button:focus-visible { outline: 2px solid var(--ref-text); outline-offset: 3px; }
 .menuAnchor { position: relative; flex-shrink: 0; }
 .plus { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--ref-line); border-radius: 8px; background: var(--ref-soft); color: var(--ref-body); }
 .plus[aria-expanded=true],.plus:hover { background: var(--ref-card); }
@@ -38,9 +39,7 @@
 .homeRoot.homeRoot.homeRoot :global(.home-chat-stage) { width: 100%; max-width: 850px; margin-inline: auto; }
 .homeRoot.homeRoot.homeRoot :global(.home-chat-empty),.homeRoot.homeRoot.homeRoot .homeWorkspace { width: 100%; max-width: 850px; margin-inline: auto; }
 .homeRoot.homeRoot.homeRoot :global(.home-welcome h2) { font: 500 24px/1.4 var(--font-body); letter-spacing: -.025em; }
-.homeRoot.homeRoot.homeRoot .homeSuggestions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: min(100%,720px); gap: 10px; }
-.homeRoot.homeRoot.homeRoot .homeSuggestions > button { min-width: 0; border-radius: 12px; padding: 12px; align-items: flex-start; text-align: start; white-space: normal; font-family: var(--font-body); }
-.homeRoot.homeRoot.homeRoot .homeSuggestions > button > span:last-child { min-width: 0; }
+.homeRoot.homeRoot.homeRoot .homeSuggestions { display: grid; grid-template-columns: 1fr; width: min(100%,720px); gap: 10px; margin-inline: auto; }
 .homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding-bottom: 32px; }
 .homeRoot.homeRoot.homeRoot .homeWorkspace .header { flex: 0 0 auto; width: 100%; margin: 8px 0 0; }
 .homeRoot.homeRoot.homeRoot .homeWorkspace :global(.chat-messages) { padding-top: 14px; }
@@ -59,7 +58,7 @@
 @media (max-width: 760px) {
   .workspace .caption { scroll-margin-bottom: var(--player-clearance, 230px); }
   .workspace.workspace .suggestions,.homeRoot.homeRoot.homeRoot .homeSuggestions { grid-template-columns: 1fr; gap: 7px; }
-  .workspace.workspace .suggestions button,.homeRoot.homeRoot.homeRoot .homeSuggestions > button { padding: 10px 12px; }
+  .workspace.workspace .suggestions button,.homeRoot.homeRoot.homeRoot .homeSuggestions > button { padding: 11px 16px; font-size: 13px; }
   .homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding-top: 14px; padding-bottom: 20px; }
   .homeRoot.homeRoot.homeRoot :global(.home-welcome > .study-avatar) { width: 72px; height: 72px; margin-bottom: 0; }
   .homeRoot.homeRoot.homeRoot :global(.home-welcome h2) { font-size: 22px; margin: 6px 0 16px; }

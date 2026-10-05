@@ -1,5 +1,9 @@
 # Verification and known limits
 
+## V32 suggestion styling — 6 October
+
+Home and lesson chat retain four grounded suggestion actions in stacked rounded text-and-arrow buttons. TypeScript passed. One short isolated visual check covered both screens at 1440px and 390px, with no horizontal overflow or browser errors; screenshots were inspected. It made no AI or transcription requests.
+
 ## V31 chat, mobile and audio corrections — 6 October
 
 - Targeted backend checks:49 tests in6 files pass, plus TypeScript. This is a bounded changed-path check, not a rerun of the entire release suite.
