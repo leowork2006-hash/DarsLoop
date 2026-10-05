@@ -30,7 +30,7 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
   const [activeId, setActiveId] = useState<string | null>(null);
   const [picker, setPicker] = useState(false), [search, setSearch] = useState(""), [group, setGroup] = useState("");
   const [draft, setDraft] = useState<string | null>(null), [question, setQuestion] = useState("");
-  const [pending, setPending] = useState<HomeAction | null>(null), [questionDraft, setQuestionDraft] = useState<{ text: string; nonce: number }>();
+  const [pending, setPending] = useState<HomeAction | null>(null), [questionDraft, setQuestionDraft] = useState<{ text: string; nonce: number; submit?: boolean }>();
   const [menu, setMenu] = useState(false);
   const menuRoot = useRef<HTMLDivElement>(null), menuButton = useRef<HTMLButtonElement>(null);
   const ready = workspace.lessons.filter(l => l.status === "ready" && l.segments.length > 0);
@@ -51,7 +51,7 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
   }
   function run(action: HomeAction, lesson = active) {
     if (!lesson) { selectLesson(action); return; }
-    if (action.kind === "question") setQuestionDraft({ text: action.text, nonce: Date.now() });
+    if (action.kind === "question") setQuestionDraft({ text: action.text, nonce: Date.now(), submit: true });
     else if (action.kind === "plan") onPlan(lesson);
     else if (action.kind === "notes") onOpen(lesson, "notes");
     else {
