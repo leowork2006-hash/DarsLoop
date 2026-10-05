@@ -50,6 +50,7 @@
 .starters { width: 100%; max-width: 1050px; margin: 12px auto 0; }
 .chips { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
 .workspace.workspace .chips > button,.homeRoot.homeRoot.homeRoot .chips > button { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; min-height: 44px; padding: 5px 14px 5px 6px; border: 1px solid var(--ref-line); border-radius: 999px; background: var(--ref-card); color: var(--ref-text); box-shadow: 0 1px 2px #00000008; text-align: start; font: 400 14px/1.5 var(--font-body); }
+.mobileLabel { display: none; }
 .chips > button > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .chipIcon { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #eef0ff; color: #4668ed; }
 .chipIcon[data-tone=green] { background: #edf8ef; color: #388a51; }
@@ -71,18 +72,31 @@
   scroll-margin-bottom: var(--player-clearance, 104px);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
   .workspace .caption { scroll-margin-bottom: var(--player-clearance, 230px); }
   .workspace.workspace .suggestions,.homeRoot.homeRoot.homeRoot .homeSuggestions { grid-template-columns: 1fr; gap: 7px; }
   .workspace.workspace .suggestions button,.homeRoot.homeRoot.homeRoot .homeSuggestions > button { padding: 11px 16px; font-size: 13px; }
-  .homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding-top: 14px; padding-bottom: 20px; }
+  .homeRoot.homeRoot.homeRoot :global(.home-welcome) { padding: 14px 0 18px; }
   .homeRoot.homeRoot.homeRoot :global(.home-welcome > .study-avatar) { width: 72px; height: 72px; margin-bottom: 0; }
   .homeRoot.homeRoot.homeRoot :global(.home-welcome h2) { font-size: 22px; margin: 6px 0 16px; }
   .workspace.workspace .heading h2,.homeRoot.homeRoot.homeRoot .heading h2 { font-size: 22px; margin: 0; }
-  .heading { min-height: 64px; margin-bottom: 8px; }
-  .workspace.workspace .chips > button,.homeRoot.homeRoot.homeRoot .chips > button { font-size: 13px; }
-  .homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) { height: auto; min-height: 0; }
-  .homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) :global(.home-chat-stage),.homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) :global(.home-chat-empty),.homeRoot.homeRoot.homeRoot:has(:global(.home-welcome)) .homeWorkspace { height: auto; min-height: 0; }
+  .heading { min-height: 44px; margin: 4px 0 8px; flex-shrink: 0; }
+  .starters { max-width: 620px; margin-top: 8px; flex-shrink: 0; }
+  .chips { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; align-items: stretch; }
+  .workspace.workspace .chips > button,.homeRoot.homeRoot.homeRoot .chips > button { min-height: 48px; gap: 6px; padding: 5px 8px 5px 5px; font-size: 12px; line-height: 1.4; }
+  .chipIcon { width: 24px; height: 24px; }
+  .chipIcon svg { width: 16px; height: 16px; }
+  .desktopLabel { display: none; }
+  .mobileLabel { display: inline; }
+  .workspace.workspace .more,.homeRoot.homeRoot.homeRoot .more { min-height: 44px; margin-top: 4px; font-size: 12px; }
+  .homeRoot.homeRoot.homeRoot { height: calc(var(--mobile-view-height,100dvh) - 56px); min-height: 0; }
+  :global(.has-player) .homeRoot.homeRoot.homeRoot { height: calc(var(--mobile-view-height,100dvh) - 56px - var(--player-bar-height,96px) - env(safe-area-inset-bottom)); }
+  .homeRoot.homeRoot.homeRoot :global(.home-chat-stage),.homeRoot.homeRoot.homeRoot :global(.home-chat-empty),.homeRoot.homeRoot.homeRoot .homeWorkspace { height: 100%; min-height: 0; }
+  .homeRoot.homeRoot.homeRoot :global(.home-welcome) { flex: 1 1 0; min-height: 0; overflow-y: auto; justify-content: flex-start; overscroll-behavior: contain; scrollbar-width: thin; }
+  .homeRoot.homeRoot.homeRoot :global(.home-welcome > .reference-avatar) { width: 66px; height: 66px; margin-top: auto; flex-shrink: 0; }
+  .homeRoot.homeRoot.homeRoot :global(.home-shortcuts) { margin-bottom: auto; flex-shrink: 0; }
+  .homeRoot.homeRoot.homeRoot .homeWorkspace :global(.chat-messages) { flex: 1 1 0; min-height: 0; max-height: none; }
+  .homeRoot.homeRoot.homeRoot :global(.composer-caption) { flex: 0 0 auto; margin: 6px auto 8px; font-size: 10px; line-height: 1.4; }
   .header { gap: 8px; }
   .workspace.workspace .header :global(.chat-scope) { font-size: 10px; }
   .clear { font-size: 11px; min-height: 36px; padding-inline: 4px; }

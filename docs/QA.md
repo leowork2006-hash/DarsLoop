@@ -1,5 +1,11 @@
 # Verification and known limits
 
+## V34 mobile workspace — 6 October
+
+- Mobile uses a full-height left drawer with the existing navigation, Page guide and Account/privacy. Bottom navigation and the separate header Guide/Settings are hidden. The drawer closes after navigation, on Escape/backdrop and when switching to desktop, and restores keyboard focus.
+- Home suggestions use compact two-column icon chips; mobile headings are static without a play/pause control. The compact Home composer stays beneath scrollable content and above the audio player. Desktop controls remain available.
+- TypeScript/production build and eight scoped fixture checks passed at1440/390/320px, including a short320×568 viewport. One mocked reply was used; no real provider request. The initial focus issue was fixed. This is viewport evidence, not a physical-phone or mobile-keyboard guarantee.
+
 ## V33 readable sources and recall — 6 October
 
 - PDF pages and References use compact source cards with expandable complete text and an optional original line-break view. Stored text and citations are unchanged; extraction artifacts still require checking the original PDF.

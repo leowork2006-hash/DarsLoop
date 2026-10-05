@@ -25,5 +25,6 @@ import "./account-reference.css";
 import "./recording-reference.css";
 import "./learning-reference.css";
 import "./theme.css";
+import "./mobile-workspace.css";
 export const metadata:Metadata={title:"DarsLoop — AI notes for Islamic classes",description:"Record your class. Get notes, ask questions, and revise with quizzes and flashcards. A student learning app for Islamic classes."};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeScript}}/></head><body>{children}</body></html>;}

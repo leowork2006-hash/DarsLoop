@@ -79,8 +79,8 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
     } else if (e.key === "Tab") setMenu(false);
   }
   const entryActions = <div className="home-lesson-entry" data-tour="home-entry">
-    <button type="button" className="home-record-control" data-tour="home-record" onClick={() => onAdd("record")}><Microphone size={19}/> <span>Record a lesson</span></button>
-    <button type="button" className="home-upload-control" data-tour="home-upload" onClick={() => onAdd("upload")}><UploadSimple size={19}/> <span>Upload material</span></button>
+    <button type="button" className="home-record-control" aria-label="Record a lesson" data-tour="home-record" onClick={() => onAdd("record")}><Microphone size={19}/> <span>Record a lesson</span></button>
+    <button type="button" className="home-upload-control" aria-label="Upload material" data-tour="home-upload" onClick={() => onAdd("upload")}><UploadSimple size={19}/> <span>Upload material</span></button>
   </div>;
   const tools = <div className="home-composer-tools">
     <div className="home-menu-anchor" ref={menuRoot} onKeyDown={menuKey}>

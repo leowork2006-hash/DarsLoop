@@ -12,6 +12,7 @@ import { hasSeenPageGuide, rememberPageGuide, type GuidePage } from "@/lib/page-
 import { useHelpPreference } from "./study-guide";
 import { AddLesson } from "./add-lesson";
 import { Modal } from "./modal";
+import { MobileSidebar } from "./mobile-sidebar";
 import { Player, type Seek } from "./player";
 import { LessonView, type LessonTab } from "./lesson-view";
 import { api, message } from "./client-api";
@@ -42,6 +43,16 @@ export function WorkspaceApp(){
   const [reviewExpanded,setReviewExpanded]=useState(false);
   const [profileMenu,setProfileMenu]=useState(false);
   const profileWrap=useRef<HTMLDivElement>(null),profileButton=useRef<HTMLButtonElement>(null);
+  const shell=useRef<HTMLDivElement>(null);
+  useEffect(()=>{
+    let frame=0;
+    const update=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
+      if(window.matchMedia("(max-width: 800px)").matches) shell.current?.style.setProperty("--mobile-view-height", `${window.visualViewport?.height||window.innerHeight}px`);
+      else shell.current?.style.removeProperty("--mobile-view-height");
+    });};
+    update();window.addEventListener("resize",update);window.visualViewport?.addEventListener("resize",update);
+    return()=>{cancelAnimationFrame(frame);window.removeEventListener("resize",update);window.visualViewport?.removeEventListener("resize",update);};
+  },[]);
   const [reviewAudioId,setReviewAudioId]=useState<string|null>(null);
   const seenPages=useRef(new Set<string>());
   const [onboarding,setOnboarding]=useState(false),[guideLanguage,setGuideLanguage]=useState<GuideLanguage>("en"),[addMode,setAddMode]=useState<"record"|"upload">("upload");
@@ -143,8 +154,8 @@ export function WorkspaceApp(){
     </div>
   </>;
   const sidebar=(mobile=false)=>isReferenceShell?referenceSidebar(mobile?"mobile":"desktop"):legacySidebar;
-  return <div className={`workspace-shell ${hasAudioPlayer?"has-player":""} ${isReferenceShell?"is-reference-shell":""} ${isReferenceHome?"is-reference-home":""} ${isReferenceUpload?"is-reference-upload":""} ${isReferenceInsights?"is-reference-insights":""} ${isReferenceReview?"is-reference-review":""} ${isReferenceLibrary?"is-reference-library":""} ${isReferenceClasses?"is-reference-classes":""} ${isReferencePlan?"is-reference-plan":""} ${isReferenceLesson?"is-reference-lesson":""}`}>
-<a className="skip-link" href="#workspace-main">Skip to study space</a><aside className="sidebar">{sidebar()}</aside><div className="workspace-area"><header className="workspace-header"><button className="icon-button mobile-menu-button" aria-label="Open workspace menu" onClick={()=>setMobileMenu(true)}>{isReferenceShell?<RefMenu size={22}/>:<Menu size={21}/>}</button>{isReferenceShell?<>
+  return <div ref={shell} className={`workspace-shell ${hasAudioPlayer?"has-player":""} ${isReferenceShell?"is-reference-shell":""} ${isReferenceHome?"is-reference-home":""} ${isReferenceUpload?"is-reference-upload":""} ${isReferenceInsights?"is-reference-insights":""} ${isReferenceReview?"is-reference-review":""} ${isReferenceLibrary?"is-reference-library":""} ${isReferenceClasses?"is-reference-classes":""} ${isReferencePlan?"is-reference-plan":""} ${isReferenceLesson?"is-reference-lesson":""}`}>
+<a className="skip-link" href="#workspace-main">Skip to study space</a><aside className="sidebar">{sidebar()}</aside><div className="workspace-area"><header className="workspace-header"><button className="icon-button mobile-menu-button" aria-label="Open workspace menu" aria-expanded={mobileMenu} aria-controls="workspace-drawer" onClick={()=>setMobileMenu(true)}>{isReferenceShell?<RefMenu size={22}/>:<Menu size={21}/>}</button>{isReferenceShell?<>
     <div className="breadcrumb reference-breadcrumb"><span>{isReferenceHome?"Home":isReferenceLibrary||isReferenceClasses?"Workspace":"My lessons"}</span><RefCaret size={14}/>{isReferenceLesson?<RefBook size={16}/>:isReferencePlan?<RefBook size={16}/>:isReferenceHome?<RefChat size={16}/>:isReferenceUpload?<RefUpload size={16}/>:isReferenceInsights?<RefChart size={16}/>:isReferenceClasses?<RefUsers size={16}/>:isReferenceLibrary?<RefFolder size={16}/>:<RefCards size={16}/>}<span className="breadcrumb-current">{isReferenceLesson?lesson?.title:isReferencePlan?"Study plan":isReferenceHome?"Chat":isReferenceUpload?"Upload":isReferenceInsights?"Insights":isReferenceClasses?"Private classes":isReferenceLibrary?"My lessons":view==="dictionary"?"Teacher’s terms":"Review"}</span></div>
     <div className="workspace-header-right reference-header-actions">
       <button className="reference-header-guide" onClick={()=>{setGuidePage(guideKey);setGuide(true);}}><RefQuestion size={17}/> Guide</button>
@@ -158,7 +169,7 @@ export function WorkspaceApp(){
   {guide&&<GuidedTour key={guidePage||"workspace"} page={guidePage} language={guideLanguage} onChangeLanguage={()=>{setGuide(false);setOnboarding(true);}} onClose={closeGuide}/>}
   {toast&&<div className="toast" role="alert"><span>{toast}</span><button className="icon-button" aria-label="Dismiss message" onClick={()=>setToast("")}><X size={16}/></button></div>}
   {add&&workspace&&<AddLesson userId={workspace.userId} onUpload={()=>{setAdd(false);addLesson("upload");}} initialMode={addMode} onClose={()=>{setAdd(false);setAddMode("upload");}} onAdded={l=>{setAdd(false);setAddMode("upload");setSelected(l.id);setTab("notes");setWorkspace(w=>w?{...w,lessons:[l,...w.lessons]}:w);void refresh().catch(e=>notify(message(e)));}}/>}
-  {mobileMenu&&<Modal title="Your workspace" onClose={()=>setMobileMenu(false)} className="reference-small-modal reference-menu-modal"><div className="mobile-sidebar">{sidebar(true)}</div></Modal>}
+  {mobileMenu&&<MobileSidebar onClose={()=>setMobileMenu(false)}>{sidebar(true)}</MobileSidebar>}
   {share&&lesson&&workspace&&<ShareLesson lesson={lesson} groups={workspace.groups} onClose={()=>setShare(false)} refresh={refresh} onError={notify}/>}
   {remove&&lesson&&<Modal title="Delete this lesson?" onClose={()=>setRemove(false)} className="reference-small-modal reference-delete-modal"><p>This removes the lesson, its transcript, notes, practice history and class shares from your workspace. The action cannot be undone.</p><div className="modal-actions"><button className="button secondary" onClick={()=>setRemove(false)} disabled={deleting}>Keep lesson</button><button className="button danger" onClick={()=>void deleteCurrent()} disabled={deleting}>{deleting?"Deleting…":"Delete lesson"}</button></div></Modal>}
   {invite&&<Modal title="Join a private class" onClose={()=>{setInvite(null);window.history.replaceState({},"","/learn");}} className="reference-small-modal reference-invite-modal"><p>The person who created this invitation can share permitted lessons with you. Your review responses remain private.</p><button className="button primary full" disabled={inviteBusy} onClick={async()=>{setInviteBusy(true);try{await api("/api/classes",{method:"POST",body:JSON.stringify({action:"join",token:invite})});await refresh();setInvite(null);setWelcomed(true);setView("classes");setSelected(null);window.history.replaceState({},"","/learn");}catch(e){notify(message(e));}finally{setInviteBusy(false);}}}>{inviteBusy?"Joining…":"Accept invitation"}<ArrowRight size={17}/></button></Modal>}
