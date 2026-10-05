@@ -7,6 +7,13 @@ const config: NextConfig = {
     {key:"Referrer-Policy",value:"same-origin"},
     {key:"X-Frame-Options",value:"DENY"},
     {key:"Permissions-Policy",value:"microphone=(self), camera=(), geolocation=()"},
+  ]}, {source:"/auth/confirm",headers:[
+    // Next preserves configured headers when sending a Route Handler response.
+    // This rule must follow the global referrer policy for email-token links.
+    {key:"Referrer-Policy",value:"no-referrer"},
+    {key:"Cache-Control",value:"private, no-store, max-age=0"},
+    {key:"Pragma",value:"no-cache"},
+    {key:"Expires",value:"0"},
   ]}]; },
 };
 export default config;
