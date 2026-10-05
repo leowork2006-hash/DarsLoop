@@ -5,6 +5,13 @@ import { MAX_IMPORT_BYTES, MAX_STORED_AUDIO_BYTES } from "./upload-options";
 const run=promisify(execFile);
 export const MAX_UPLOAD=MAX_IMPORT_BYTES;
 export const MAX_DURATION=60*60;
+// Encoders can report a few extra frames of padding for an exactly one-hour
+// recording. Keep its public timeline capped, without accepting extra minutes.
+export class MediaError extends Error { constructor(public code:string,message:string){super(message);} }
+export function boundedMediaDuration(value:number) {
+  if(!Number.isFinite(value)||value<=0||value>MAX_DURATION+0.25)throw new MediaError("media_duration","Choose a valid audio recording of up to one hour.");
+  return Math.min(value,MAX_DURATION);
+}
 export function mediaMime(bytes:Buffer) {
   if(bytes.subarray(0,4).toString()==="RIFF"&&bytes.subarray(8,12).toString()==="WAVE")return "audio/wav";
   if(bytes.subarray(4,8).toString()==="ftyp")return "audio/mp4";
@@ -18,14 +25,14 @@ export function mediaMime(bytes:Buffer) {
 export async function inspectMedia(file:string) {
   const {stdout}=await run(process.env.FFPROBE_BIN||"ffprobe",["-v","error","-protocol_whitelist","file,pipe","-show_entries","format=duration,format_name:stream=codec_type,codec_name","-of","json",file],{timeout:15_000,maxBuffer:100_000});
   const result=JSON.parse(stdout);let duration=Number(result.format?.duration);
-  if(!result.streams?.some((s:{codec_type:string})=>s.codec_type==="audio"))throw new Error("Choose a valid audio recording of up to one hour.");
+  if(!result.streams?.some((s:{codec_type:string})=>s.codec_type==="audio"))throw new MediaError("media_no_audio","This file has no audio track. Choose an audio recording or a video with sound.");
   // Browser WebM recordings often have no duration header. Measure the decoded
   // stream rather than rejecting valid captured audio or trusting wall-clock time.
   if(!Number.isFinite(duration)||duration<=0||result.format?.format_name==="aac"){
     const scan=await run(process.env.FFMPEG_BIN||"ffmpeg",["-nostdin","-hide_banner","-loglevel","error","-nostats","-progress","pipe:1","-protocol_whitelist","file,pipe","-i",file,"-t",String(MAX_DURATION+1),"-vn","-f","null","-"],{timeout:60_000,maxBuffer:200_000});
     const values=[...scan.stdout.matchAll(/^out_time_us=(\d+)$/gm)];duration=values.length?Number(values[values.length-1][1])/1_000_000:NaN;
   }
-  if(!Number.isFinite(duration)||duration<=0||duration>MAX_DURATION)throw new Error("Choose a valid audio recording of up to one hour.");
+  duration=boundedMediaDuration(duration);
   return {duration,hasVideo:result.streams.some((s:{codec_type:string})=>s.codec_type==="video"),codec:result.streams.find((s:{codec_type:string})=>s.codec_type==="audio").codec_name as string};
 }
 export async function inspectAudio(file:string) {return (await inspectMedia(file)).duration;}

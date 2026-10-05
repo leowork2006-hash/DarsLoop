@@ -1,7 +1,7 @@
 import { mkdir, rm, readFile } from "node:fs/promises";
 import path from "node:path";
 import { dataDir, heartbeat, jobCommit, rawLesson, prepareAudio, storeAudio, removeCloudAudio } from "./backend";
-import { audioChunk, prepareImportedAudio } from "./media";
+import { audioChunk, prepareImportedAudio, MediaError } from "./media";
 import { materializeImport, removeImport } from "./supabase/imports";
 import { adminClient } from "./supabase/admin";
 import { createArtifacts, POLICY_VERSION, ProviderError, transcribe } from "./ai";
@@ -79,5 +79,10 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
       return;
     }
     await jobCommit(job.id,job.lease,{...lesson,artifacts,status:"ready",stage:"Ready to study",error:artifacts.warnings?.join(" ")||null,providers:{asr:process.env.ASR_MODEL||"whisper-large-v3",generation:process.env.GENERATION_MODEL||"gemini-3.5-flash-lite",policy:POLICY_VERSION,...(providers.crossCheck?{checker:"whisper-large-v3-turbo"}:{})}},true);
+  }catch(error){
+    // Diagnostic codes only: never log transcript text, file names or credentials.
+    const rawCode=error instanceof Error&&"code" in error?String(error.code):"";
+    console.log(JSON.stringify({event:"lesson-processing-error",stage:lesson.stage,code:error instanceof ProviderError||error instanceof MediaError?error.code:/^[A-Z_0-9]+$/.test(rawCode)?rawCode:"internal",kind:error instanceof Error?error.constructor.name:"unknown"}));
+    throw error;
   }finally{clearInterval(timer);await rm(temp,{recursive:true,force:true});if(importStored){try{if(!await rawLesson(job.lesson_id))await removeCloudAudio(lesson);}catch{/* Deletion can retry cleanup when the storage service recovers. */}}}
 }

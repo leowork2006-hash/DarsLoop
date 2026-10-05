@@ -4,10 +4,17 @@ import { promisify } from "node:util";
 import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { prepareImportedAudio, mediaMime, inspectAudio } from "../src/lib/media";
+import { prepareImportedAudio, mediaMime, inspectAudio, boundedMediaDuration } from "../src/lib/media";
 import { readImportForm } from "../src/lib/import-form";
 const run=promisify(execFile);
 describe("streamed media imports",()=>{
+  it("allows encoder frame padding at one hour while rejecting longer recordings",()=>{
+    expect(boundedMediaDuration(3600)).toBe(3600);
+    expect(boundedMediaDuration(3600.048)).toBe(3600);
+    expect(boundedMediaDuration(3600.24)).toBe(3600);
+    expect(boundedMediaDuration(3599.9)).toBe(3599.9);
+    for(const value of [3600.251,3601,NaN,0,-1])expect(()=>boundedMediaDuration(value)).toThrow("one hour");
+  });
   it("distinguishes raw AAC and FLAC from MP3",()=>{
     expect(mediaMime(Buffer.from([0xff,0xf1,0x50,0x80]))).toBe("audio/aac");
     expect(mediaMime(Buffer.from([0xff,0xfb,0x90,0x64]))).toBe("audio/mpeg");
