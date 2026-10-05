@@ -1,0 +1,21 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { Headphones, Pause, Play, ArrowCounterClockwise as RotateCcw, ArrowClockwise as RotateCw } from "@phosphor-icons/react";
+import { formatTime, type Lesson } from "@/lib/types";
+import { exclusiveAudio } from "@/lib/audio-playback";
+export type Seek={lessonId:string;time:number;nonce:number};
+export function Player({lesson,seek,onError,audioSrc}:{lesson:Lesson;seek:Seek|null;onError:(message:string)=>void;audioSrc?:string}){
+  const ref=useRef<HTMLAudioElement>(null),pending=useRef<number|null>(null),errorCallback=useRef(onError);const [playing,setPlaying]=useState(false),[time,setTime]=useState(0),[duration,setDuration]=useState(lesson.duration),[speed,setSpeed]=useState(1);
+  useEffect(()=>{errorCallback.current=onError;},[onError]);
+  async function playAudio(a:HTMLAudioElement){try{await a.play();}catch(error){if(error instanceof DOMException&&error.name==="AbortError")return;errorCallback.current("The audio couldn’t play. Try again or check that the file is available.");}}
+  useEffect(()=>{setTime(0);setPlaying(false);setDuration(lesson.duration);pending.current=null;},[lesson.id,lesson.duration]);
+  useEffect(()=>{const a=ref.current;if(!a||seek?.lessonId!==lesson.id)return;pending.current=seek.time;if(a.readyState>=1){a.currentTime=seek.time;void playAudio(a);pending.current=null;}},[seek,lesson.id]);
+  async function toggle(){const a=ref.current;if(!a)return;if(a.paused)await playAudio(a);else a.pause();}
+  function skip(n:number){if(ref.current)ref.current.currentTime=Math.min(duration,Math.max(0,ref.current.currentTime+n));}
+  return <div className="player" aria-label={lesson.importedMedia?"Prepared lesson audio":"Original lesson audio"}><audio ref={ref} key={lesson.id} preload="metadata" src={audioSrc||`/api/lessons/${lesson.id}/audio?v=${lesson.version}`} onTimeUpdate={()=>setTime(ref.current?.currentTime||0)} onPlay={e=>{exclusiveAudio(e.currentTarget);setPlaying(true);}} onPause={()=>setPlaying(false)} onEnded={()=>setPlaying(false)} onLoadedMetadata={()=>{const a=ref.current;if(a){setDuration(Number.isFinite(a.duration)&&a.duration>0?a.duration:lesson.duration);a.playbackRate=speed;if(pending.current!==null){a.currentTime=pending.current;pending.current=null;void playAudio(a);}}}} onError={()=>errorCallback.current("The lesson audio is unavailable. Reload the lesson and try again.")}/>
+    <div className="player-lesson"><span className="player-icon"><Headphones size={20}/></span><div><strong>{lesson.title}</strong><small>{lesson.demo?"Fictional example audio":lesson.importedMedia?.preparation==="compressed"?"Smaller audio copy":lesson.importedMedia?.source==="video"?"Audio from your video":lesson.importedMedia?"Audio from your file":"Original recording"}</small></div></div>
+    <div className="player-controls"><button className="icon-button skip-button" onClick={()=>skip(-15)} aria-label="Back 15 seconds"><RotateCcw size={18}/><span>15</span></button><button className="play-button" onClick={()=>void toggle()} aria-label={playing?"Pause audio":"Play audio"}>{playing?<Pause size={18} weight="fill"/>:<Play size={18} weight="fill"/>}</button><button className="icon-button skip-button" onClick={()=>skip(15)} aria-label="Forward 15 seconds"><RotateCw size={18}/><span>15</span></button></div>
+    <div className="player-seek"><span className="timecode">{formatTime(time)}</span><input aria-label="Audio position" type="range" min={0} max={Number.isFinite(duration)?duration:0} step="0.1" value={time} onChange={e=>{const value=Number(e.target.value);setTime(value);if(ref.current)ref.current.currentTime=value;}} style={{"--progress":`${duration?time/duration*100:0}%`} as React.CSSProperties}/><span className="timecode">{formatTime(duration)}</span></div>
+    <label className="speed-control"><span className="sr-only">Playback speed</span><select value={speed} onChange={e=>{const value=Number(e.target.value);setSpeed(value);if(ref.current)ref.current.playbackRate=value;}}>{[.75,1,1.25,1.5,2].map(s=><option key={s} value={s}>{s}×</option>)}</select></label>
+  </div>;
+}

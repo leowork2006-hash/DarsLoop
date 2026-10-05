@@ -1,0 +1,3 @@
+# Fictional lesson
+
+Original demonstration script generated locally with eSpeak NG 1.52.0 (en-us synthetic voice). Timing comes from each generated audio segment, not ASR. Notes, questions and cards are prepared example material. No model or student evaluation is implied. The fixture is not religious guidance. Regeneration requires eSpeak NG, FFmpeg and FFprobe. The tool is GPL-3.0; no speech-engine code or voice model is bundled. Its output license only applies if the output is itself a covered work; the original fictional script and rendered demonstration audio are project-created content. See https://espeak.sourceforge.net/license.html .

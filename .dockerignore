@@ -1,0 +1,17 @@
+.git
+node_modules
+.next
+.data
+.env*
+verification
+research
+inputs
+output
+tests
+test-results
+playwright-report
+*.tsbuildinfo
+*.p8
+*.pem
+*.key
+.DS_Store

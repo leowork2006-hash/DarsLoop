@@ -1,0 +1,230 @@
+/* V14: the accepted cream, Inter/Bitter and quiet raised surfaces extend to a lesson. */
+.workspace-shell.is-reference-lesson .workspace-main{max-width:1340px;padding:30px 44px 140px;background:var(--ref-paper)}
+.is-reference-lesson .lesson-view{max-width:1100px;margin:auto;min-width:0;color:var(--ref-ink)}
+.is-reference-lesson .back-link{color:#85827b;font-size:12px;font-weight:400;margin:0 0 20px;gap:8px}
+.is-reference-lesson .lesson-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:0 0 25px}
+.is-reference-lesson .lesson-title-group{display:flex;align-items:center;gap:18px;min-width:0}
+.is-reference-lesson .lesson-title-group>div{min-width:0}
+.is-reference-lesson .lesson-title-icon{display:grid;place-items:center;width:70px;height:76px;flex:0 0 auto;border-radius:13px;border:1px solid #e3dbe8;background:#f0e5f6;box-shadow:0 3px 0 #e0d6e7;color:#413a46}
+.is-reference-lesson .lesson-heading h1{font:500 27px/1.35 'Bitter Variable',Georgia,serif;letter-spacing:-.035em;margin:0 0 10px;overflow-wrap:anywhere}
+.is-reference-lesson .lesson-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:#85827b}
+.is-reference-lesson .course-label{padding:3px 8px;background:#eeece4;border:1px solid #e4e1d9;border-radius:5px;color:#726e65;font:400 11px/1.5 var(--font-body)}
+.is-reference-lesson .lesson-actions{display:flex;align-items:center;gap:5px}
+.is-reference-lesson .lesson-actions .icon-button{height:36px;width:36px;color:#838079;border-radius:8px}
+.is-reference-lesson .lesson-actions .icon-button:hover{background:#eceae1;color:var(--ref-ink)}
+.is-reference-lesson .button{min-height:39px;padding:9px 16px;border-radius:22px;font:500 12px/1.5 var(--font-body);box-shadow:0 2px 0 #e8e6df;gap:8px}
+.workspace-shell.is-reference-lesson .button.primary{background:var(--ref-ink)!important;color:var(--ref-primary-text)!important;border:1px solid var(--ref-ink)!important;box-shadow:0 2px 0 #05050520!important}
+.workspace-shell.is-reference-lesson .button.secondary{background:var(--ref-card)!important;color:var(--ref-text)!important;border:1px solid var(--ref-line)!important;box-shadow:0 2px 0 #e8e6df!important}
+.is-reference-lesson .button:active:not(:disabled){transform:translateY(1px)}
+.is-reference-lesson .example-banner{background:#eeece4;border:1px solid #e3e0d8;border-radius:8px;padding:10px 14px;font:400 11px/1.6 var(--font-body);color:#77736c;gap:12px;margin:0 0 20px}
+.is-reference-lesson .example-banner>span{font-size:9px;font-weight:600;color:#69665d;letter-spacing:.055em}
+.is-reference-lesson .processing-banner{background:#f0edf6;border:1px solid #e5dfef;border-radius:12px;box-shadow:0 2px 0 #e9e4ef;margin:0 0 24px;padding:18px;gap:14px;color:#615867}
+.is-reference-lesson .processing-banner strong{font-size:13px;font-weight:550;color:var(--ref-text)}
+.is-reference-lesson .processing-banner p{font-size:12px;line-height:1.6;color:#858079}
+.is-reference-lesson .processing-failed{background:#f9eee8;border-color:#ebdbd1}
+.is-reference-lesson .lesson-tabs{display:flex;gap:26px;border-bottom:1px solid #e4e2da;margin:0;overflow-x:auto}
+.is-reference-lesson .lesson-tabs button{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;min-height:48px;padding:13px 0;background:transparent;border:0;border-bottom:2px solid transparent;color:#85827b;font:400 13px/1.5 var(--font-body);border-radius:0;box-shadow:none}
+.is-reference-lesson .lesson-tabs button[aria-selected=true]{color:var(--ref-text);border-bottom-color:var(--ref-text);font-weight:500}
+.is-reference-lesson .lesson-tabs button:hover{color:var(--ref-text)}
+.is-reference-lesson .lesson-panel{padding-top:30px}
+.is-reference-lesson .tab-intro{margin:0 0 28px}
+.is-reference-lesson .tab-intro h2{font:400 23px/1.4 'Bitter Variable',Georgia,serif;letter-spacing:-.035em;color:var(--ref-text);margin:6px 0 7px}
+.is-reference-lesson .tab-intro>p:not(.eyebrow){max-width:670px;font:400 12px/1.7 var(--font-body);color:#85827b}
+.is-reference-lesson .eyebrow,.is-reference-lesson .mini-label{font-size:9px;font-weight:500;letter-spacing:.06em;color:#969187}
+.is-reference-lesson .notes-layout{display:grid;grid-template-columns:minmax(0,1fr) 275px;gap:30px;align-items:start}
+.is-reference-lesson .notes-main{min-width:0}
+.is-reference-lesson .lesson-summary{padding:15px 19px;margin:0 0 26px;background:#eeece4;border:1px solid #e3e0d8;border-radius:10px}
+.is-reference-lesson .lesson-summary summary{display:flex;align-items:center;justify-content:space-between;list-style:none;cursor:pointer;font-size:13px;font-weight:500;gap:12px}
+.is-reference-lesson .lesson-summary summary::-webkit-details-marker{display:none}
+.is-reference-lesson .lesson-summary summary svg{color:#8d877e;transition:transform 150ms}
+.is-reference-lesson .lesson-summary[open] summary svg{transform:rotate(180deg)}
+.is-reference-lesson .lesson-summary>p{font-size:13px;line-height:1.85;margin-top:13px;color:#646059;white-space:pre-wrap}
+.is-reference-lesson .note-section{display:grid;grid-template-columns:29px minmax(0,1fr);align-items:start;gap:12px;padding:24px 0;margin:0;border-bottom:1px solid #e8e5dd;background:none;border-radius:0;box-shadow:none}
+.is-reference-lesson .note-section:first-of-type{padding-top:0}
+.is-reference-lesson .note-number{font:500 11px/1.6 var(--font-body);color:#a49b8e;padding-top:4px}
+.is-reference-lesson .note-section h3{font:500 19px/1.5 'Bitter Variable',Georgia,serif;color:var(--ref-text);letter-spacing:-.025em;margin:0 0 9px}
+.is-reference-lesson .note-section p{font:400 14px/1.85 var(--font-body);color:#55524c;white-space:pre-wrap}
+.is-reference-lesson .lesson-aside{display:flex;flex-direction:column;gap:18px;min-width:0}
+.workspace-shell.is-reference-lesson .term-panel{background:var(--ref-soft)!important;border:1px solid #e7e4dc!important;border-radius:12px!important;box-shadow:0 2px 0 #e8e5df!important;padding:21px!important}
+.is-reference-lesson .term-panel h3{font:400 18px/1.5 'Bitter Variable',Georgia,serif;letter-spacing:-.035em;margin:9px 0 12px}
+.is-reference-lesson .term-panel>.muted{font-size:11px;line-height:1.7;margin-bottom:16px;color:#8a857c}
+.is-reference-lesson .term{border-top:1px solid #e0ddd4;padding:15px 0;margin:0}
+.is-reference-lesson .term:last-child{padding-bottom:0}
+.is-reference-lesson .term strong{font-size:13px;font-weight:550;color:#34312c}
+.is-reference-lesson .term>p{font-size:12px;line-height:1.8;color:#777168;margin:5px 0 0}
+.workspace-shell.is-reference-lesson .aside-tip{padding:20px!important;background:transparent!important;border:1px solid #e4e1d9!important;border-radius:12px!important;box-shadow:none!important}
+.is-reference-lesson .aside-tip>svg{color:#9c8cab}
+.is-reference-lesson .aside-tip h3{font-size:13px;font-weight:500;letter-spacing:0;margin:9px 0 5px}
+.is-reference-lesson .aside-tip p{font-size:11px;line-height:1.75;color:#969187}
+.is-reference-lesson .evidence-row{display:flex;align-items:flex-start;flex-wrap:wrap;gap:7px;margin-top:14px}
+.is-reference-lesson .evidence-link{display:inline-flex;align-items:flex-start;gap:7px;max-width:100%;font-size:10px}
+.is-reference-lesson .timestamp{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;padding:4px 7px;min-height:26px;background:#f0edf6!important;border:1px solid #e3ddef!important;border-radius:6px;color:#867495!important;box-shadow:none;font:500 10px/1.5 var(--font-body)}
+.is-reference-lesson .timestamp:hover{background:#e9e2f1!important;color:#5b496d!important}
+.is-reference-lesson .quote-detail{font-size:10px;min-width:0;max-width:100%}
+.is-reference-lesson .quote-detail summary{display:flex;align-items:center;gap:5px;min-height:26px;padding:3px 2px;cursor:pointer;color:#969187;list-style:none}
+.is-reference-lesson .quote-detail blockquote{max-width:100%;font:400 12px/1.8 var(--font-body);color:#777168;margin:7px 0 0;padding:9px 12px;background:var(--ref-soft);border-inline-start:2px solid #d3c5de;border-radius:0 6px 6px 0}
+.is-reference-lesson .practice-workspace{max-width:800px;margin:0 auto}
+.is-reference-lesson .lesson-practice-mode{display:flex;justify-content:center;gap:5px;width:max-content;max-width:100%;padding:4px;margin:0 auto 24px;background:#eceae1;border:1px solid #e2dfd6;border-radius:24px;box-shadow:none}
+.is-reference-lesson .lesson-practice-mode button{display:inline-flex;align-items:center;justify-content:center;gap:7px;font:400 12px/1.5 var(--font-body);min-height:36px;padding:8px 15px;border:1px solid transparent;border-radius:20px;background:transparent;color:#858078;box-shadow:none}
+.is-reference-lesson .lesson-practice-mode button[aria-pressed=true]{background:white;color:var(--ref-text);border-color:var(--ref-line);box-shadow:0 1px 2px #00000008}
+.is-reference-lesson .practice-card{background:white!important;border:1px solid var(--ref-line)!important;border-radius:17px!important;box-shadow:0 5px 0 #e5e1d9,0 8px 16px #00000004!important;padding:28px!important;max-width:760px;min-height:0;margin:auto;position:relative;overflow:visible;animation:lesson-card-in 180ms ease-out}
+.is-reference-lesson .practice-card:before,.is-reference-lesson .practice-card:after{display:none}
+.is-reference-lesson .practice-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:15px}
+.is-reference-lesson .question-count{font-size:15px;font-weight:500;color:var(--ref-text);font-variant-numeric:tabular-nums}
+.is-reference-lesson .question-count i{font-size:11px;font-style:normal;font-weight:400;color:#a09b92}
+.is-reference-lesson .practice-progress{height:4px;border-radius:5px;background:#eeece4;overflow:hidden;margin-bottom:25px}
+.is-reference-lesson .practice-progress>span{display:block;height:100%;border-radius:inherit;background:#c9a8dc;transition:width 180ms}
+.is-reference-lesson .practice-card h3{font:400 23px/1.55 'Bitter Variable',Georgia,serif;letter-spacing:-.025em;color:var(--ref-text);max-width:100%;margin:0 0 25px}
+.is-reference-lesson .quiz-choices{display:flex;flex-direction:column;gap:10px;margin:0}
+.is-reference-lesson .quiz-choices button{display:flex;align-items:center;gap:13px;min-height:58px;padding:12px 16px;background:#faf9f5!important;color:#53504a;border:1px solid #e9e7e0!important;border-radius:11px!important;text-align:start;font:400 13px/1.6 var(--font-body);box-shadow:0 2px 0 #eae7df!important;transition:background 140ms,border-color 140ms,transform 140ms;opacity:1}
+.is-reference-lesson .quiz-choices button>span:first-child{display:grid;place-items:center;flex:0 0 auto;width:25px;height:25px;border-radius:6px;background:white;border:1px solid #e5e2da;color:#8d877e;font-size:10px;font-weight:500}
+.is-reference-lesson .quiz-choices button>span:nth-child(2){flex:1;min-width:0}
+.is-reference-lesson .quiz-choices button:hover:not(:disabled){border-color:#cebcda!important;transform:translateY(-1px)}
+.is-reference-lesson .quiz-choices button.chosen{background:#f7effa!important;border-color:#cfb7dd!important;color:#44334d}
+.is-reference-lesson .quiz-choices button.correct-choice{background:#f0f6ee!important;border-color:#c7d5bf!important;color:#56644b}
+.is-reference-lesson .quiz-choices button.wrong-choice{background:#fcf0eb!important;border-color:#e2c7ba!important;color:#8b6654}
+.is-reference-lesson .flashcard-answer{display:grid;align-content:center;min-height:190px;padding:27px;background:#f7f3fa;border:1px solid #e9dff0;border-radius:12px;margin:0;color:#625a68;transition:background 180ms;transform:none}
+.is-reference-lesson .flashcard-answer.is-flipped{background:#faf9f5;border-color:#e8e5dc;animation:lesson-card-in 180ms ease-out}
+.is-reference-lesson .flashcard-answer>p{font:400 18px/1.8 'Bitter Variable',Georgia,serif;white-space:pre-wrap;margin-top:12px;color:#49433d}
+.is-reference-lesson .card-back-mark{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;color:#9a85aa}
+.is-reference-lesson .card-back-mark p{font:400 12px/1.8 var(--font-body);color:#94889d}
+.is-reference-lesson .practice-feedback{padding:15px 17px;margin:20px 0 0;background:#f2f7ef;border:1px solid #dfe8d9;border-radius:10px;color:#54644b}
+.is-reference-lesson .practice-feedback.feedback-revisit{background:#fbf1ea;border-color:#ebdcd1;color:#8c6750}
+.is-reference-lesson .practice-feedback strong{font-size:12px;font-weight:600}
+.is-reference-lesson .practice-feedback .correct-answer-text{font-size:13px;line-height:1.8;color:#625c51;margin:6px 0}
+.is-reference-lesson .practice-feedback .small-text{margin-top:10px;font-size:10px;color:#8c8579}
+.is-reference-lesson .practice-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:25px;padding:0;border:0;background:none}
+.is-reference-lesson .practice-footnote{text-align:center;font-size:10px;line-height:1.7;color:#969187;margin:20px 0}
+.is-reference-lesson .lesson-test-start,.is-reference-lesson .practice-finished{display:flex;flex-direction:column;align-items:center;text-align:center;padding:35px 28px;background:white;border:1px solid var(--ref-line);border-radius:16px;box-shadow:0 4px 0 #e5e1d9}
+.is-reference-lesson .lesson-test-icon,.is-reference-lesson .success-ring{width:75px;height:75px;border-radius:18px;display:grid;place-items:center;background:#f3e9f8;border:1px solid #e5d8ed;color:#8c769b;box-shadow:0 3px 0 #e3d7eb;margin-bottom:22px}
+.is-reference-lesson .practice-finished .success-ring{background:#eff5ed;border-color:#dce5d5;color:#7a9270}
+.is-reference-lesson :is(.lesson-test-start,.practice-finished) h3{font:400 24px/1.4 'Bitter Variable',Georgia,serif;letter-spacing:-.035em;margin-bottom:10px}
+.is-reference-lesson :is(.lesson-test-start,.practice-finished) p{font-size:12px;line-height:1.8;color:#858078;max-width:440px;margin:3px 0}
+.is-reference-lesson :is(.lesson-test-start,.practice-finished) .button{margin-top:24px}
+.is-reference-lesson :is(.lesson-test-start,.practice-finished) small{font-size:10px;line-height:1.8;color:#a29a8f;max-width:440px;margin-top:18px}
+.is-reference-lesson .transcript-workspace{max-width:850px;margin:auto}
+.is-reference-lesson .transcript-workspace .search-field{background:#eeece4;border:1px solid #e5e2d9;border-radius:8px;padding:0 13px;min-height:42px;margin:0 0 19px;color:#969187}
+.is-reference-lesson .search-field input{width:100%;height:40px;font:400 12px/1.6 var(--font-body);color:#646059}
+.is-reference-lesson .transcript-list{background:white;border:1px solid var(--ref-line);border-radius:13px;overflow:hidden;box-shadow:0 2px 0 #e5e1d9}
+.is-reference-lesson .transcript-passage{display:grid;grid-template-columns:58px minmax(0,1fr);gap:16px;align-items:start;padding:22px;border-bottom:1px solid #eeece6;background:none;box-shadow:none;border-radius:0}
+.is-reference-lesson .transcript-passage:last-child{border-bottom:0}
+.is-reference-lesson .transcript-passage p{font:400 14px/1.85 var(--font-body);white-space:pre-wrap;color:#55514b}
+.is-reference-lesson .uncertain-passage{background:#fcf8ef}
+.is-reference-lesson .uncertainty-label{display:flex;align-items:flex-start;gap:7px;margin-top:10px;font-size:11px;line-height:1.7;color:#a58c63}
+.is-reference-lesson .sources-workspace{max-width:800px;margin:auto}
+.is-reference-lesson .source-form{display:flex;flex-direction:column;align-items:stretch;gap:18px;padding:25px;background:white;border:1px solid var(--ref-line);border-radius:13px;box-shadow:0 3px 0 #e5e1d9}
+.is-reference-lesson .source-form .field{font-size:12px;font-weight:500;color:#646059;gap:7px}
+.is-reference-lesson .source-form :is(select,textarea){background:#faf9f5;border:1px solid #e5e2da;border-radius:8px;padding:11px 12px;min-height:42px;font:400 12px/1.7 var(--font-body);color:#646059}
+.is-reference-lesson .source-form select{max-width:100%;text-overflow:ellipsis}
+.is-reference-lesson .source-form .button{align-self:flex-start}
+.is-reference-lesson .source-language{max-width:220px}
+.is-reference-lesson .captured-quote{padding:15px;background:var(--ref-soft);border:1px solid #e5e1d8;border-radius:9px;margin:0}
+.is-reference-lesson .captured-quote p{font-size:13px;line-height:1.85;white-space:pre-wrap;color:#69635a;margin:9px 0 12px}
+.is-reference-lesson .source-copy{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;color:#8c769b;font-size:12px;font-weight:400;padding:0}
+.is-reference-lesson .source-uncertain{display:flex;gap:9px;align-items:flex-start;color:#aa8d65;font-size:11px;line-height:1.8}
+.is-reference-lesson .source-privacy-note{color:#a19a8e;font-size:10px;line-height:1.8;max-width:620px}
+.is-reference-lesson .source-result-message{margin:24px 0 15px;font-size:12px;color:#777168}
+.is-reference-lesson .source-card{padding:24px;margin:15px 0;border:1px solid var(--ref-line);background:white;border-radius:12px;box-shadow:0 2px 0 #e5e1d9}
+.is-reference-lesson .source-card h3{font:400 21px/1.5 'Bitter Variable',Georgia,serif;margin:12px 0}
+.is-reference-lesson .source-card blockquote{font-size:14px;line-height:1.9;margin:15px 0;padding-inline-start:15px;border-inline-start:2px solid #d5c2df;color:#646059}
+.is-reference-lesson .source-card dl{font-size:12px;line-height:1.7;border-top:1px solid #eeece4;padding-top:16px}
+.is-reference-lesson .source-card dl>div{margin:11px 0}
+.is-reference-lesson .source-card dt{color:#969187;font-size:10px}
+.is-reference-lesson .source-card dd{margin:4px 0;color:#55504a}
+.is-reference-lesson .source-card .text-link{color:#8c769b;font-weight:400;font-size:12px}
+.is-reference-lesson .source-record-note{font-size:10px;color:#969187;margin-top:15px}
+.is-reference-lesson .lesson-inline-error{display:flex;align-items:flex-start;gap:8px;padding:12px 14px;background:#fcf0eb;border:1px solid #ecd4ca;border-radius:8px;margin-top:15px;color:#9b6753;font-size:12px;line-height:1.6}
+.is-reference-lesson .chat-workspace{max-width:900px;margin:auto;min-height:560px;display:flex;flex-direction:column;padding:0;background:none;border:0;box-shadow:none}
+.is-reference-lesson .chat-scope{display:flex;align-items:center;justify-content:center;gap:7px;font-size:10px;color:#9a9288;padding:0 0 15px;min-height:0;background:none;border:0}
+.is-reference-lesson .chat-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;flex:1;text-align:center;padding:42px 15px 70px;min-height:330px}
+.is-reference-lesson .chat-empty h2{font:400 23px/1.5 'Bitter Variable',Georgia,serif;letter-spacing:-.02em;margin:15px 0 7px}
+.is-reference-lesson .chat-empty>p{font-size:12px;color:#969187;max-width:440px;line-height:1.7;margin:0 0 25px}
+.is-reference-lesson .chat-empty .suggested-questions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:780px;margin:0}
+.is-reference-lesson .suggested-questions button{display:inline-flex;align-items:center;justify-content:center;gap:9px;text-align:start;border:1px solid var(--ref-line);border-radius:25px;background:white;font:400 12px/1.5 var(--font-body);min-height:37px;padding:8px 13px;color:#53504a;box-shadow:0 1px 2px #00000004}
+.is-reference-lesson .suggested-questions button:hover{border-color:#cfc4d7;transform:translateY(-1px)}
+.is-reference-lesson .chat-composer{display:flex;flex-direction:column;gap:6px;margin:0;padding:13px;background:white;border:1px solid var(--ref-line);border-radius:13px;box-shadow:0 1px 2px #00000004}
+.is-reference-lesson .chat-composer textarea{width:100%;border:0;outline:0;resize:vertical;min-height:60px;max-height:170px;background:transparent;padding:0;font:400 14px/1.7 var(--font-body);color:#55504a}
+.is-reference-lesson .home-composer-footer{display:flex;justify-content:flex-end}
+.is-reference-lesson .home-composer-actions{display:flex;gap:8px}
+.is-reference-lesson .send-button{display:grid;place-items:center;width:35px;height:35px;background:var(--ref-ink)!important;color:white!important;border:1px solid var(--ref-ink);border-radius:7px;box-shadow:none}
+.is-reference-lesson .composer-caption{text-align:center;font-size:10px;color:#a19a8e;margin:8px 0 0}
+.is-reference-lesson .chat-messages{max-height:none;padding:10px 0 25px;overflow:visible}
+.is-reference-lesson .chat-turn{padding:15px 0;border:0;margin:0}
+.is-reference-lesson .student-message{margin:0 0 22px auto;max-width:80%;background:#eeece4;border:1px solid #e5e1d8;border-radius:12px;padding:13px 17px}
+.is-reference-lesson .student-message>p{font-size:13px;line-height:1.8;margin-top:5px}
+.is-reference-lesson .assistant-message{display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;padding:0;background:none;border:0}
+.is-reference-lesson .assistant-message>div{min-width:0}
+.is-reference-lesson .answer-block{margin:8px 0 20px}
+.is-reference-lesson .answer-block>p,.is-reference-lesson .answer-message{font-size:14px;line-height:1.85;white-space:pre-wrap;color:#55504a}
+.is-reference-lesson .answer-message{font-size:12px;color:#969187;margin:15px 0}
+.is-reference-lesson .empty-state{border:1px solid #e5e2da;background:var(--ref-soft);border-radius:12px;padding:35px 24px;color:#9b9286;box-shadow:none}
+.is-reference-lesson .empty-state h3{font:400 22px/1.5 'Bitter Variable',Georgia,serif;margin:14px 0 7px;letter-spacing:-.025em;color:#646059}
+.is-reference-lesson .empty-state p{font-size:12px;line-height:1.8;color:#969187;max-width:440px;margin:auto}
+/* The original audio stays consistent on every workspace screen. */
+.workspace-shell.is-reference-shell .player{background:#faf9f5!important;border:1px solid #e2ded5!important;border-radius:12px!important;box-shadow:0 -2px 12px #00000005!important;color:#53504a;font-family:var(--font-body);gap:18px;padding:13px 20px}
+.is-reference-shell .player-icon{background:#eeece4!important;color:#8d877e!important;border-radius:8px!important;border:1px solid #e1ddd5!important;box-shadow:none!important}
+.is-reference-shell .player-lesson strong{font-size:12px;font-weight:500;color:#53504a}
+.is-reference-shell .player-lesson small{font-size:10px;color:#969187}
+.is-reference-shell .player .play-button{background:var(--ref-ink)!important;color:white!important;border:1px solid var(--ref-ink)!important;box-shadow:0 2px 0 #11111115!important;width:36px;height:36px;border-radius:50%}
+.is-reference-shell .player .timecode,.is-reference-shell .player .speed-control select{font-size:11px;color:#8d877e}
+.is-reference-shell .player-seek input{accent-color:#8f749f}
+.is-reference-shell .player .icon-button:hover{background:#eeece4}
+@keyframes lesson-card-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1050px){.is-reference-lesson .notes-layout{grid-template-columns:minmax(0,1fr) 230px;gap:24px}.workspace-shell.is-reference-lesson .workspace-main{padding-inline:28px}.is-reference-lesson .lesson-heading h1{font-size:24px}}
+@media(max-width:800px){
+.workspace-shell.is-reference-lesson .workspace-main{padding:24px 18px 205px;max-width:100%}
+.is-reference-lesson .lesson-heading{align-items:flex-start;flex-direction:column;gap:15px;margin-bottom:18px}
+.is-reference-lesson .lesson-title-group{gap:12px;width:100%}
+.is-reference-lesson .lesson-title-icon{width:51px;height:60px;border-radius:10px}
+.is-reference-lesson .lesson-title-icon svg{width:26px;height:26px}
+.is-reference-lesson .lesson-heading h1{font-size:23px;margin-bottom:8px}
+.is-reference-lesson .lesson-meta{font-size:10px;gap:8px}
+.is-reference-lesson .lesson-actions{justify-content:flex-end;width:100%}
+.is-reference-lesson .lesson-tabs{gap:22px;margin-inline:-18px;padding-inline:18px}
+.is-reference-lesson .lesson-tabs button{font-size:12px;gap:6px;min-height:45px}
+.is-reference-lesson .lesson-panel{padding-top:25px}
+.is-reference-lesson .tab-intro h2{font-size:22px}
+.is-reference-lesson .tab-intro>p:not(.eyebrow){font-size:12px}
+.is-reference-lesson .notes-layout{display:flex;flex-direction:column;gap:30px}
+.is-reference-lesson .notes-main,.is-reference-lesson .lesson-aside{width:100%}
+.is-reference-lesson .note-section{grid-template-columns:24px minmax(0,1fr);gap:8px;padding-block:22px}
+.is-reference-lesson .note-section h3{font-size:18px}
+.is-reference-lesson .note-section p{font-size:14px}
+.is-reference-lesson .example-banner{display:block;font-size:10px}.is-reference-lesson .example-banner p{margin-top:4px}
+.is-reference-lesson .processing-banner{flex-wrap:wrap}.is-reference-lesson .processing-banner>div:nth-child(2){flex:1;min-width:160px}
+.is-reference-lesson .lesson-practice-mode{width:100%;margin-bottom:20px}.is-reference-lesson .lesson-practice-mode button{flex:1;padding:8px 9px;font-size:11px;gap:5px}
+.is-reference-lesson .practice-card{padding:20px 16px!important;border-radius:13px!important}
+.is-reference-lesson .practice-card h3{font-size:21px}
+.is-reference-lesson .quiz-choices button{font-size:13px;padding:11px 12px;gap:10px}
+.is-reference-lesson .flashcard-answer{min-height:170px;padding:20px}
+.is-reference-lesson .flashcard-answer>p{font-size:17px}
+.is-reference-lesson .practice-card-top .mini-label{font-size:8px;letter-spacing:.02em}
+.is-reference-lesson .practice-actions{margin-top:22px}.is-reference-lesson .practice-actions .button{min-height:44px;padding:10px 17px}
+.is-reference-lesson :is(.lesson-test-start,.practice-finished){padding:30px 20px}.is-reference-lesson :is(.lesson-test-start,.practice-finished) h3{font-size:22px}
+.is-reference-lesson .transcript-passage{grid-template-columns:49px minmax(0,1fr);gap:10px;padding:18px 12px}
+.is-reference-lesson .transcript-passage p{font-size:13px;line-height:1.9}
+.is-reference-lesson .source-form{padding:18px 15px;gap:17px}.is-reference-lesson .source-form :is(select,textarea){font-size:16px}.is-reference-lesson .source-language{max-width:100%}
+.is-reference-lesson .source-card{padding:20px 16px}.is-reference-lesson .source-card h3{font-size:19px}
+.is-reference-lesson .chat-workspace{min-height:480px}.is-reference-lesson .chat-empty{padding:35px 0;min-height:290px}.is-reference-lesson .chat-empty h2{font-size:21px}
+.is-reference-lesson .reference-avatar{width:76px;height:76px}.is-reference-lesson .reference-avatar-small{width:32px;height:32px}
+.is-reference-lesson .chat-composer textarea{font-size:16px;min-height:48px}.is-reference-lesson .chat-scope{font-size:9px}.is-reference-lesson .suggested-questions button{font-size:11px}
+.is-reference-lesson .assistant-message{grid-template-columns:32px minmax(0,1fr);gap:10px}.is-reference-lesson .student-message{max-width:90%}
+.workspace-shell.is-reference-shell .player{padding:11px 13px;gap:11px;border-radius:10px!important}
+.is-reference-shell .player-lesson{min-width:0}.is-reference-shell .player-lesson strong{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.is-reference-lesson .practice-card,.is-reference-lesson .flashcard-answer.is-flipped{animation:none}.is-reference-lesson .practice-progress>span,.is-reference-lesson .quiz-choices button,.is-reference-lesson .lesson-summary summary svg{transition:none}}
+.is-reference-lesson .lesson-summary summary small{font-size:10px;font-weight:400;color:#a0988d}
+.example-shell.is-reference-lesson{--ink:var(--ref-ink);--muted:#85827b;--font-body:'Inter Variable','Noto Sans Arabic Variable',sans-serif;--font-editorial:'Bitter Variable',Georgia,serif;min-height:100dvh;background:var(--ref-paper);font-family:var(--font-body)}
+.example-shell.is-reference-lesson .example-header{background:var(--ref-paper);border-color:#e4e1d9}
+.example-shell.is-reference-lesson .example-intro{background:var(--ref-soft);border-color:#e4e1d9;color:#777168;font-size:12px}
+.example-shell.is-reference-lesson .example-content{max-width:1150px;padding-bottom:155px}
+.example-shell.is-reference-lesson .player{background:#faf9f5;border-color:#e4e1d9;color:#646059;font-family:var(--font-body)}
+.example-shell.is-reference-lesson .player .play-button{background:var(--ref-ink);color:white;border-color:var(--ref-ink)}
+.example-shell.is-reference-lesson .button.primary{background:var(--ref-ink);color:white;border-color:var(--ref-ink)}
+@media(max-width:800px){.example-shell.is-reference-lesson .example-content{padding:24px 18px 160px}.example-shell.is-reference-lesson .example-header{padding:14px 18px}.example-shell.is-reference-lesson .example-header .button{font-size:10px;padding:8px 11px}.example-shell.is-reference-lesson .example-intro{padding:15px 18px;font-size:11px}}
+.workspace-shell.is-reference-shell.is-reference-lesson.has-player .workspace-main{padding-bottom:145px}
+.is-reference-lesson .lesson-practice-mode button{white-space:nowrap;width:auto;flex:0 1 auto}
+.is-reference-shell .player-seek input{background:linear-gradient(to right,var(--ref-accent) 0%,var(--ref-accent) var(--progress),#e6e3db var(--progress),#e6e3db 100%)!important}
+.is-reference-shell .player-seek input::-webkit-slider-thumb{background:#9b7fac!important}
+.is-reference-shell .player-seek input::-moz-range-thumb{background:#9b7fac!important}
+@media(max-width:800px){.workspace-shell.is-reference-shell.is-reference-lesson.has-player .workspace-main{padding-bottom:215px}.is-reference-lesson .lesson-practice-mode button{flex:1;white-space:nowrap;font-size:11px}}

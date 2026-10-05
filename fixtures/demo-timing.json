@@ -1,0 +1,58 @@
+[
+  {
+    "id": "example-1",
+    "start": 0,
+    "end": 12.029938,
+    "text": "Welcome to this fictional study lesson. Today we are practising how to listen, make useful notes, and return to a lesson afterwards. This is a demonstration of a learning workflow, not religious guidance.",
+    "flags": []
+  },
+  {
+    "id": "example-2",
+    "start": 12.029938,
+    "end": 24.809626,
+    "text": "In this class I use the word adab to mean considerate conduct while learning. A practical example is letting the speaker finish before asking a question. Write your question down briefly, then return your attention to the explanation.",
+    "flags": []
+  },
+  {
+    "id": "example-3",
+    "start": 24.809626,
+    "end": 36.551689,
+    "text": "Listening and writing can compete for your attention. Do not try to copy every sentence while the teacher is speaking. First follow the explanation. Afterwards, use the recording to fill in the points you missed.",
+    "flags": []
+  },
+  {
+    "id": "example-4",
+    "start": 36.551689,
+    "end": 48.708877,
+    "text": "For revision, I use the term murajaah to mean returning to what we studied. After the lesson, close your notes and try to explain one idea in your own words. Then compare your explanation with the original passage.",
+    "flags": []
+  },
+  {
+    "id": "example-5",
+    "start": 48.708877,
+    "end": 60.501627,
+    "text": "If you were absent, start with the lesson overview. Choose the point you do not understand, and listen to that part of the recording. A summary is a starting point; it is not a replacement for the full explanation.",
+    "flags": []
+  },
+  {
+    "id": "example-6",
+    "start": 60.501627,
+    "end": 74.058815,
+    "text": "A short quiz can show you what you still need to revisit. If an answer is wrong, return to the passage before trying again. Tomorrow, review that question once more. This schedule is a practice suggestion, not a promise about memory.",
+    "flags": []
+  },
+  {
+    "id": "example-7",
+    "start": 74.058815,
+    "end": 84.766128,
+    "text": "Sometimes a narration is mentioned without a full reference. Keep the teacher's words separate from any source you look up. If the wording or intended reference is unclear, ask the teacher rather than guessing.",
+    "flags": []
+  },
+  {
+    "id": "example-8",
+    "start": 84.766128,
+    "end": 98.943378,
+    "text": "Finally, this lesson only covered listening, class conduct, catch-up, and revision. It did not discuss personal religious rulings. For interpretation or applying religious teachings to your own situation, ask a qualified teacher.",
+    "flags": []
+  }
+]
