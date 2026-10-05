@@ -4,12 +4,12 @@ import { db, safeLesson } from "./store";
 import { rawLesson } from "./backend";
 import { cloudMode } from "./supabase/config";
 import { savedVectors, saveVectors } from "./supabase/store";
-import { instructionLike, retrieve, tokens } from "./evidence";
+import { instructionLike, noteAnchors, retrieve, tokens } from "./evidence";
 import type { Lesson, Segment } from "./types";
 
 export const EMBEDDING_MODEL="gemini-embedding-001",EMBEDDING_DIMENSIONS=768;
 type Window={hash:string;indices:number[];text:string};
-export type SearchMethod="whole_lesson"|"hybrid"|"lexical_fallback";
+export type SearchMethod="whole_lesson"|"hybrid"|"lexical_fallback"|"note_anchor";
 export function unitVector(values:number[],dimensions=EMBEDDING_DIMENSIONS) {
   if(values.length!==dimensions||values.some(v=>!Number.isFinite(v)))throw new Error("Invalid embedding dimensions or values");
   const norm=Math.hypot(...values);if(norm<1e-10)throw new Error("Empty embedding");
@@ -88,6 +88,12 @@ export function rankedPassages(question:string,segments:Segment[],windows:Window
   return [...chosen].sort((a,b)=>a-b).map(i=>segments[i]);
 }
 export async function lessonPassages(question:string,lesson:Lesson):Promise<{segments:Segment[];method:SearchMethod}> {
+  const anchors=noteAnchors(question,lesson.segments,lesson.artifacts?.notes);
+  if(anchors.length){
+    const chosen=new Set(anchors.map(s=>lesson.segments.indexOf(s)));
+    for(const anchor of [...chosen])for(const neighbor of [anchor-1,anchor+1])if(neighbor>=0&&neighbor<lesson.segments.length)chosen.add(neighbor);
+    return {segments:[...chosen].sort((a,b)=>a-b).map(i=>lesson.segments[i]).filter(s=>!instructionLike(s.text)),method:"note_anchor"};
+  }
   if(lesson.segments.length<=30)return {segments:lesson.segments.filter(s=>!instructionLike(s.text)),method:"whole_lesson"};
   try {
     const windows=searchWindows(lesson.segments),vectors=await indexedVectors(lesson,windows),[query]=await embed([question],"RETRIEVAL_QUERY");

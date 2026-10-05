@@ -11,11 +11,11 @@ export async function POST(req:Request,c:{params:Promise<{id:string}>}){try{
   if(!l.segments.length)throw new HttpError(409,"Wait for the transcript before asking about this lesson.");
   if(!await takeBudget(user,"chat",6))throw new HttpError(429,"Please wait a moment before trying again.");
   let answer;
-  try{answer=!l.demo&&configured().generation?await answerLesson(parsed.data.question,l):excerptAnswer(parsed.data.question,l.segments,l.version);}catch{
+  try{answer=!l.demo&&configured().generation?await answerLesson(parsed.data.question,l):excerptAnswer(parsed.data.question,l.segments,l.version,l.artifacts?.notes);}catch{
     // Retain a clearly labelled, exact-passage path when generation is down.
     // This still runs the ruling/injection gates and excludes flagged speech.
-    const excerpts=excerptAnswer(parsed.data.question,l.segments,l.version);
-    answer={...excerpts,message:`AI answers are temporarily unavailable. ${excerpts.message}`};
+    const excerpts=excerptAnswer(parsed.data.question,l.segments,l.version,l.artifacts?.notes);
+    answer={...excerpts,message:`An explanation is temporarily unavailable. ${excerpts.message}`};
   }
   // Recheck membership and version after asynchronous provider work.
   const current=await authorizedLesson(user,l.id);if(!current)throw new HttpError(404,"Lesson access ended.");if(current.version!==l.version)throw new HttpError(409,"The lesson changed. Ask again using its current version.");

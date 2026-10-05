@@ -1,3 +1,4 @@
+import { ProviderError } from "./provider-error";
 type Job = { id: string; lesson_id: string; lease: string };
 export type WorkerActions = {
   configured: () => { asr: boolean; generation: boolean };
@@ -5,6 +6,7 @@ export type WorkerActions = {
   claim: () => Promise<Job | null>;
   process: (job: Job) => Promise<void>;
   fail: (id: string, lease: string, error: string) => Promise<unknown>;
+  defer?: (id:string,lease:string,retryAt:number,message:string)=>Promise<unknown>;
   message: (error: unknown) => string;
   log: (message: string) => void;
 };
@@ -20,7 +22,9 @@ export async function workerTick(actions: WorkerActions): Promise<"idle" | "setu
     actions.log("A lesson finished processing.");
   } catch (e) {
     // If this write fails, retain the lease/checkpoints for normal expiry recovery.
-    await actions.fail(job.id, job.lease, actions.message(e));
+    if(e instanceof ProviderError&&e.code==="quota"&&e.retryAt&&actions.defer){
+      await actions.defer(job.id,job.lease,e.retryAt,"Waiting for AI capacity · resumes automatically");
+    }else await actions.fail(job.id, job.lease, actions.message(e));
     actions.log("A lesson paused; details are visible to its owner.");
   }
   return "worked";

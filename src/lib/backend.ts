@@ -38,3 +38,6 @@ export async function storeAudio(l:Lesson,bytes:Buffer){return cloudMode()?cloud
 export async function prepareAudio(l:Lesson,file:string){return cloudMode()?cloud.prepareAudio(l,file):l.audioPath;}
 export const cloudAudioBytes=cloud.audioBytes;
 export const removeCloudAudio=cloud.removeAudio;
+
+export async function deferJob(id:string,lease:string,retryAt:number,message:string){return backend().deferJob(id,lease,retryAt,message);}
+export async function reserveAudio(models:string[],seconds:number){return backend().reserveAudio(models,seconds);}

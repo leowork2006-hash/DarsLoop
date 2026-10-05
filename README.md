@@ -4,11 +4,11 @@ Return to what your teacher taught. A student workspace for Islamic classes: rec
 
 **Live app:** [DarsLoop](https://darsloop-production.up.railway.app) · [Try the fictional example without an account](https://darsloop-production.up.railway.app/example).
 
-**Release status, 5 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed the earlier release checks. One owner-authorized signup email arrived and the account became confirmed; a clean first-click callback and general public email delivery remain unproven. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
+**Release status, 6 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed the earlier release checks. One owner-authorized signup email arrived and the account became confirmed; a clean first-click callback and general public email delivery remain unproven. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
 
 ## Try it without keys
 
-Requires Node.js 24 or later and npm. Verified on macOS with Node 26.4.0. FFmpeg and FFprobe are required for audio import/processing and the full test suite; the prepared example does not call them. A labelled fictional example is bundled; no paid AI requests or account are needed for it.
+Requires Node.js 24 or later and npm. Verified on macOS with Node 26.4.0. FFmpeg and FFprobe are required for audio import/processing and the full test suite; the prepared example does not call them. A labelled fictional example is bundled and can be explored without an account.
 
 ```sh
 npm ci
@@ -25,7 +25,7 @@ Download the repository ZIP (Code > Download ZIP), extract it and run these comm
 3. Ask “What should I do after missing a lesson?” Follow the source passage and play its audio.
 4. Ask about astronomy, which is outside the example. The app says it is not covered.
 5. Read the transcript, then try **Quiz**, **Flashcards**, **Catch me up** and **Teacher’s terms**.
-6. Sign in to find **Demo lesson · Listening & revision** in My lessons. This is a prepared fictional lesson with audio, notes and practice; it uses no fresh AI quota. It can be deleted and will not be added again to that account.
+6. Sign in to find **Demo lesson · Listening & revision** in My lessons. This is a prepared fictional lesson with audio, notes and practice; it can be deleted and will not be added again to that account.
 7. In a configured authenticated workspace, upload permitted fictional audio, choose its main spoken language and Quick, Balanced or Detailed notes. This is the fresh AI path; it is separate from the prepared example.
 
 Without AI keys, local questions use visibly labelled transcript search, and fresh audio waits for the worker connection. Prepared material is never presented as freshly generated output.
@@ -62,7 +62,7 @@ Recording saves recoverable chunks on the device, offers Pause/Stop, and automat
 
 One Docker service runs Next.js and the queue worker; Supabase holds durable private data. This avoids relying on an ephemeral host filesystem for saved lessons. See [DEPLOYMENT.md](DEPLOYMENT.md). Docker includes FFmpeg. `npm run start:cloud` validates the cloud settings and runs both processes. The `/api/health` endpoint is a cheap process health check, not an AI quality or database availability claim.
 
-Apply both SQL migrations in `supabase/migrations/` to your own Supabase project. Keep the private bucket and row access policies. Configure the HTTPS Site URL and `/auth/callback` redirect. Email delivery/social provider consent must be verified on the host; providers are shown only when configured. The public example remains available without sign-in or API keys.
+Apply all SQL migrations in `supabase/migrations/` to your own Supabase project. Keep the private bucket and row access policies. Configure the HTTPS Site URL and `/auth/callback` redirect. Email delivery/social provider consent must be verified on the host; providers are shown only when configured. The public example remains available without sign-in or API keys.
 
 ## Verify
 
@@ -81,7 +81,7 @@ Students receive automatic notes without mandatory teacher review. Evidence carr
 
 The implemented path is `processLesson` → timed/flagged segments → `createArtifacts` → literal-evidence validation → independent claim-support audit → available study material. There is no teacher approval prerequisite. The optional teacher-question handoff requires passage playback before download; it cannot approve or correct the transcript. Instruction-like passages are withheld before generation, auditing and embedding, and are rejected as evidence in old saved outputs. The original transcript/audio remains available. These are fallible controls, not a guarantee of accurate transcription or complete injection detection.
 
-Teacher review currently creates a listening-first question handoff, with no approve-all or authenticated correction/approval backend. Lesson test covers generated lesson questions; it is not an official curriculum mock exam. Exam week plans and progress are device-local suggestions based on practice, not a promise of mastery or passing. No public student competition/rank is inferred from private scores.
+Teacher review currently creates a listening-first question handoff, with no approve-all or authenticated correction/approval backend. The mock exam uses this lesson’s supported multiple-choice questions, a chosen count and an optional timer. It is practice, not an official curriculum exam. Exam week plans and progress are device-local suggestions based on practice, not a promise of mastery or passing. No public student competition/rank is inferred from private scores.
 
 ## Project map and provenance
 
@@ -95,4 +95,14 @@ Original project code is [MIT](LICENSE). Dependencies, fonts, external source co
 
 A fresh hosted fictional one-hour WAV above the old 24 MB source limit completed in 55.708 seconds upload plus 139.154 seconds processing. It produced 878 timestamped segments, six cited notes, two quizzes and two cards; supported chat, practice saves and privacy checks passed. These are synthetic English measurements, not a classroom-accuracy, concurrency or uptime guarantee. Latest build/TypeScript and 122 unit tests pass; scoped hosted/browser/safety results and remaining gates are in [docs/QA.md](docs/QA.md).
 
-Private audio replay streams requested ranges. Long-lesson search caches exact repeated wording while retaining original source references. Completed transcripts survive generation problems; available supported notes remain usable. If AI chat fails, a visibly labelled transcript-search response can return exact supported passages or abstain, with the same religious/scope boundaries. It does not invent an AI answer. Google API billing is confirmed absent, so free quotas can still pause new work. Consumer Google AI plans do not raise this app's API-key allowance; see [DEPLOYMENT.md](DEPLOYMENT.md).
+Private audio replay streams requested ranges. Long-lesson search caches exact repeated wording while retaining original source references. Completed transcripts survive generation problems; available supported notes remain usable. If AI chat fails, a visibly labelled transcript-search response can return exact supported passages or abstain, with the same religious/scope boundaries. It does not invent an AI answer. Provider quotas can pause new work; the durable queue retains audio/checkpoints and schedules quota retries. Consumer Google AI plans do not raise this app's API-key allowance; see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## Transcription resilience
+
+Groq remains the default. Operator-selected Deepgram and Speechmatics backups use private runtime keys and retain native timestamps; their single-pass limitations are visible. Speechmatics is restricted to explicit Arabic/English after unsuccessful Urdu probes. Jobs preserve complete contiguous checkpoints, wait visibly on provider quota, and never publish a half-transcribed class as complete. See [DEPLOYMENT.md](DEPLOYMENT.md) for manual switching, migration order and exact limitations.
+
+## Notes and full-screen practice
+
+Short summary, key points and detailed views reorganize the existing supported class material. They do not regenerate new content when switched. **Your notes** is a private plain-text editor, stored separately by user/lesson/transcript version; edits never become teacher quotations or AI/practice source data. Apply the personal-notes migration before deploying this revision.
+
+Quiz, flashcards and mock exams open in a full-screen practice space with pausable motion and a reduced-motion option. Source audio remains available inside quiz/card feedback; mock exams show answers and sources after submission. Question counts reflect supported items actually present in the selected lesson.

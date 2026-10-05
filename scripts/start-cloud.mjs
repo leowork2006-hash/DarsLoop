@@ -3,7 +3,9 @@ import { rm } from "node:fs/promises";
 import path from "node:path";
 import { logHostMemory } from "./host-memory.mjs";
 
-const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SECRET_KEY", "GROQ_API_KEY", "GEMINI_API_KEY"];
+const asrKey={groq:"GROQ_API_KEY",deepgram:"DEEPGRAM_API_KEY",speechmatics:"SPEECHMATICS_API_KEY"}[process.env.TRANSCRIPTION_PROVIDER||"groq"];
+if(!asrKey||!process.env[asrKey]){console.error("The selected transcription provider needs its private key.");process.exit(1);}
+const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SECRET_KEY", "GEMINI_API_KEY"];
 if (process.env.DARSLOOP_BACKEND !== "supabase" || required.some(name => !process.env[name])) {
   console.error("Cloud mode and all private service connections must be configured before hosting.");
   process.exit(1);

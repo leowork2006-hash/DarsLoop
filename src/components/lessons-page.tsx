@@ -60,7 +60,7 @@ export function LessonsPage({ workspace, course, onCourse, onOpen, onUpload, onR
   const all = [...workspace.lessons].sort((first, second) => (Date.parse(second.createdAt) || 0) - (Date.parse(first.createdAt) || 0));
   const courses = Array.from(new Set([...all.map(lesson => lesson.course), ...(course ? [course] : [])])).filter(Boolean).sort();
   const search = query.trim().toLocaleLowerCase();
-  const filtered = all.filter(lesson => (tab !== "mine" || lesson.ownerId === workspace.userId && !lesson.demo)
+  const filtered = all.filter(lesson => (tab !== "mine" || lesson.ownerId === workspace.userId)
     && (tab !== "shared" || lesson.shared === true && lesson.ownerId !== workspace.userId && !lesson.demo)
     && (!course || lesson.course === course)
     && (status === "all" || (status === "preparing" ? lesson.status === "queued" || lesson.status === "processing" : lesson.status === status))
@@ -70,7 +70,6 @@ export function LessonsPage({ workspace, course, onCourse, onOpen, onUpload, onR
 
   return <section className="lessons-reference-page">
     <header className="lessons-page-heading"><div className="lessons-heading-title"><span className="lessons-heading-icon"><BookOpen size={27} /></span><div><h1>My lessons</h1><p>Your recordings, class notes, and practice in one place.</p></div></div><div className="lessons-heading-actions"><button type="button" className="lessons-button" onClick={onRecord}><Microphone size={17} />Record a lesson</button><button type="button" className="lessons-button lessons-button-dark" onClick={onUpload}><UploadSimple size={17} />Upload audio</button></div></header>
-    <Link href="/example" className="lessons-class-link" aria-label="Open the prepared demo lesson"><FileAudio size={25}/><div><strong>Demo lesson · Listening, catch-up & revision</strong><p>Prepared fictional class with audio, notes, transcript, quiz and flashcards. Works without a live AI request.</p></div><span className="lessons-button">Open demo<ArrowRight size={15}/></span></Link>
     <div className="lessons-page-tabs" role="tablist" aria-label="Lesson collections">{([{ id: "all", label: "All lessons" }, { id: "mine", label: "My recordings" }, { id: "shared", label: "Shared with me" }] as const).map(option => <button type="button" key={option.id} id={`lessons-tab-${option.id}`} role="tab" aria-selected={tab === option.id} aria-controls="lessons-content" onClick={() => setTab(option.id)}>{option.label}</button>)}</div>
     <div className="lessons-toolbar" data-tour="lessons-toolbar">
       <div className="lessons-search"><MagnifyingGlass size={17} /><input type="search" aria-label="Search lessons" placeholder="Search your lessons…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button type="button" aria-label="Clear lesson search" onClick={() => setQuery("")}><X size={14} /></button>}</div>

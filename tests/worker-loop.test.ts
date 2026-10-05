@@ -30,3 +30,9 @@ describe("worker consumer outage recovery with injected services", () => {
     expect(actions.process).toHaveBeenLastCalledWith(recovered);
   });
 });
+
+it("defers a provider 429 instead of marking an upload failed",async()=>{
+ const {ProviderError}=await import("../src/lib/provider-error");const {workerTick}=await import("../src/lib/worker-loop");
+ const actions:WorkerActions={configured:()=>({asr:true,generation:true}),expire:async()=>{},claim:async()=>({id:"job",lesson_id:"lesson",lease:"current"}),process:async()=>{throw new ProviderError("quota","safe",1000000);},fail:vi.fn(),defer:vi.fn(async()=>{}),message:()=>"safe",log:vi.fn()};
+ await workerTick(actions);expect(actions.fail).not.toHaveBeenCalled();expect(actions.defer).toHaveBeenCalledWith("job","current",1000000,"Waiting for AI capacity · resumes automatically");
+});

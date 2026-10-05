@@ -59,7 +59,7 @@ export async function prepareImportedAudio(input:string,output:string) {
   return {mime:"audio/mpeg",duration:await inspectAudio(output),importedMedia:{source,preparation:"compressed" as const}};
 }
 export async function audioChunk(original:string,output:string,start:number,duration:number) {
-  await run(process.env.FFMPEG_BIN||"ffmpeg",["-nostdin","-hide_banner","-loglevel","error","-y","-protocol_whitelist","file,pipe","-ss",String(start),"-threads","1","-i",original,"-t",String(duration),"-vn","-ar","16000","-ac","1","-c:a","pcm_s16le",output],{timeout:60_000,maxBuffer:100_000});
+  await run(process.env.FFMPEG_BIN||"ffmpeg",["-nostdin","-hide_banner","-loglevel","error","-y","-protocol_whitelist","file,pipe","-ss",String(start),"-threads","1","-i",original,"-t",String(duration),"-vn","-ar","16000","-ac","1","-c:a","flac","-compression_level","3","-f","flac",output],{timeout:60_000,maxBuffer:100_000});
   const bytes=await readFile(output);if(bytes.length>=25_000_000)throw new Error("Audio chunk exceeds the transcription limit.");return bytes;
 }
 export function parseRange(header:string|null,size:number):{start:number;end:number}|null {

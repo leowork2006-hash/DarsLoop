@@ -68,4 +68,16 @@ describe("selected-lesson retrieval invariants; mocked embeddings",()=>{
       const r=await lessonPassages("revision",lesson);expect(r.method).toBe("lexical_fallback");expect(r.segments.length).toBeGreaterThan(0);expect(r.segments.every(p=>segments.some(s=>s.id===p.id))).toBe(true);
     }finally{if(saved===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=saved;}
   });
+  it("follows an audited English topic to Urdu quotes without an embedding call",async()=>{
+    const owner=fixtureSession(),base=s.listLessons(owner.userId)[0];
+    const segments:Segment[]=Array.from({length:40},(_,i)=>({id:`urdu-${i}`,start:i*10,end:i*10+10,text:i===20?"استاد نے چالیس دن کی مدت کے بارے میں وضاحت کی۔":"یہ کلاس کی دوسری بات ہے۔",flags:[]}));
+    const lesson:Lesson={...base,id:randomUUID(),demo:false,segments,artifacts:{overview:"",notes:[{heading:"Duration of Stay and the Torah",text:"A class explanation",evidence:[{segmentId:"urdu-20",quote:segments[20].text}]}],practice:[],terms:[]}};
+    const result=await lessonPassages('What did the teacher say about “Duration of Stay and the Torah”?',lesson);
+    expect(result.method).toBe("note_anchor");expect(result.segments.map(p=>p.id)).toEqual(["urdu-19","urdu-20","urdu-21"]);
+    const {excerptAnswer,noteAnchors}=await import("../src/lib/evidence");
+    expect(excerptAnswer('What did the teacher say about “Duration of Stay and the Torah”?',segments,1,lesson.artifacts!.notes).blocks[0].text).toBe(segments[20].text);
+    expect(noteAnchors('What did the teacher say about “Duration of Stay and the Torah”?',segments.map(p=>({...p,flags:["unclear"]})),lesson.artifacts!.notes)).toEqual([]);
+    expect(noteAnchors('What did the teacher say about “Duration of Stay and the Torah”?',segments,[{...lesson.artifacts!.notes[0],evidence:[{segmentId:"other-class",quote:segments[20].text}]}])).toEqual([]);
+    expect(excerptAnswer('Is vaping halal?',segments,1,lesson.artifacts!.notes).status).toBe("needs_teacher");
+  });
 });

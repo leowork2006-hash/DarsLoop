@@ -89,3 +89,6 @@ export async function prepareAudio(l:Lesson,file:string){const bytes=await audio
 export async function removeAudio(l:Lesson){if(l.demo)return;if(l.audioPath!==`${l.ownerId}/${l.id}`)throw new Error("Invalid private audio path");if(l.sourceImport)await removeImport(l.ownerId,l.id,l.sourceImport.parts);checked(await adminClient().storage.from("lesson-audio").remove([l.audioPath]));}
 export async function savedVectors(id:string,version:number,model:string,dimensions:number){return checked(await adminClient().from("search_vectors").select("chunk_hash,vector").eq("lesson_id",id).eq("version",version).eq("model",model).eq("dimensions",dimensions))!;}
 export async function saveVectors(id:string,version:number,model:string,dimensions:number,batch:{hash:string;vector:number[]}[],segments:Segment[]){await rpc("darsloop_vectors",{p_lesson:id,p_version:version,p_model:model,p_dimensions:dimensions,p_batch:batch,p_segments:segments});}
+
+export async function deferJob(id:string,lease:string,retryAt:number,message:string){await rpc("darsloop_defer",{p_job:id,p_lease:lease,p_until:new Date(retryAt).toISOString(),p_message:message});}
+export async function reserveAudio(models:string[],seconds:number){const result=await rpc<string|null>("darsloop_reserve_audio",{p_models:models,p_seconds:seconds});return result?Date.parse(result):null;}

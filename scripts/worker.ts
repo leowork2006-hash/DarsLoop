@@ -1,4 +1,4 @@
-import { claimJob, expireJobs, failJob } from "../src/lib/backend";
+import { claimJob, expireJobs, failJob, deferJob } from "../src/lib/backend";
 import { configured, ProviderError } from "../src/lib/ai";
 import { processLesson } from "../src/lib/processing";
 import { runWorker } from "../src/lib/worker-loop";
@@ -6,7 +6,7 @@ import { MediaError } from "../src/lib/media";
 const wait=(ms:number)=>new Promise<void>(r=>setTimeout(r,ms));
 let stopping=false;process.on("SIGINT",()=>{stopping=true;});process.on("SIGTERM",()=>{stopping=true;});
 process.stdout.write("DarsLoop worker started. Audio is sent only when server credentials are configured.\n");
-await runWorker({configured,expire:expireJobs,claim:claimJob,process:async job=>{try{await processLesson(job);}finally{global.gc?.();}},fail:failJob,
+await runWorker({configured,expire:expireJobs,claim:claimJob,process:async job=>{try{await processLesson(job);}finally{global.gc?.();}},fail:failJob,defer:deferJob,
   message:e=>e instanceof ProviderError?e.message:e instanceof MediaError?`${e.message} Your source file is saved.`:"Processing was interrupted. Your original audio is saved; please retry.",
   log:text=>process.stdout.write(`${text}\n`),
 },()=>stopping,wait);

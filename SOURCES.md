@@ -70,3 +70,17 @@ Railway actually built and ran the Linux image, including a hosted fictional one
 ## Organizer requirements
 
 The current public terms were checked 5 October: https://islamicaich.org/terms . The previously supplied official Participant Guide and Scientific Framework, plus the supplied final dashboard, inform docs/SUBMISSION.md. The guide's public fetch failed during the latest check; no unseen later notice or new portal behavior is claimed. Organizer PDFs/screenshots and private source inputs are not bundled.
+
+## Backup ASR and durable queue references
+
+Checked 6 October 2026. Deepgram Nova-3 and Speechmatics Melia-1 are hosted APIs called through native fetch; no vendor SDK, weights, documentation corpus or vendor artwork is bundled. Private keys, account balances and raw probe outputs are excluded. Actual synthetic API checks are scoped in docs/QA.md; official supported-language claims are not treated as classroom accuracy proof.
+
+- Deepgram supported models/languages and Token authentication: https://developers.deepgram.com/docs/models-languages-overview and https://developers.deepgram.com/reference/speech-to-text/listen-pre-recorded
+- Speechmatics model/language limits, batch configuration, native word output and authentication: https://docs.speechmatics.com/speech-to-text/models , https://docs.speechmatics.com/speech-to-text/languages , https://docs.speechmatics.com/speech-to-text/batch/input , https://docs.speechmatics.com/speech-to-text/batch/output and https://docs.speechmatics.com/get-started/authentication
+- Service-only Postgres functions and grants: https://supabase.com/docs/guides/database/functions
+
+## Practice interface reference — 6 October 2026
+
+The actual quiz.bato.dev interface and StudyFetch Test setup were inspected on 6 October, including material selection, question-type/count rows, preview cards and additional settings. A competitor test was not generated. These references inform the centered full-screen quiz, raised choice surfaces and restrained mock-exam rows/preview. DarsLoop retains its Inter/Bitter typography, existing SVG icons, actual supported lesson questions and source/answer APIs. Competitor assets, code and content are not included. Reference: https://quiz.bato.dev and https://www.studyfetch.com .
+
+`public/illustrations/practice-notebook-v27.png` is an original image made with OpenAI's built-in image-generation tool on 6 October 2026: an ivory notebook, pencil and audio card. It contains no competitor art or religious text. The tool did not expose a selectable model/version, so no particular image-model version is claimed. The previous bird is omitted from full-screen practice. Interface controls use the existing licensed SVG icon set; the image is decoration, not a clickable control.

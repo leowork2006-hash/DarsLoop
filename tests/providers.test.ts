@@ -116,7 +116,7 @@ describe("provider contracts using mocks, not live AI",()=>{
     vi.stubEnv("GROQ_API_KEY","test-only");const request=vi.fn(async(_url:string,_options:RequestInit)=>new Response(JSON.stringify({segments:[{start:0,end:4,text:"نہیں Arabic term"}]}),{status:200}));vi.stubGlobal("fetch",request);
     expect((await transcribe(Buffer.from("wav"))).segments[0].text).toContain("نہیں");
     const form=request.mock.calls[0][1].body as FormData;expect(form.get("language")).toBeNull();expect(form.get("response_format")).toBe("verbose_json");expect(request.mock.calls[0][0]).toContain("transcriptions");
-    request.mockResolvedValueOnce(new Response("quota",{status:429}));await expect(transcribe(Buffer.from("wav"))).rejects.toThrow("limit was reached");
+    request.mockResolvedValueOnce(new Response("quota",{status:429}));await expect(transcribe(Buffer.from("wav"))).rejects.toMatchObject({code:"quota",retryAt:expect.any(Number)});
   });
   it("identifies organization and project model blocks without leaking provider details",async()=>{
     vi.stubEnv("GROQ_API_KEY","test-only");const request=vi.fn();vi.stubGlobal("fetch",request);

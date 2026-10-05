@@ -25,6 +25,9 @@ export function db() {
     CREATE TABLE IF NOT EXISTS workspace_flags (user_id TEXT PRIMARY KEY, example_seeded INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id TEXT NOT NULL,event TEXT NOT NULL,created_at TEXT NOT NULL);
   `);
+  const columns=database.prepare("PRAGMA table_info(jobs)").all() as {name:string}[];
+  if(!columns.some(c=>c.name==="available_at"))database.exec("ALTER TABLE jobs ADD COLUMN available_at INTEGER NOT NULL DEFAULT 0");
+  database.exec("CREATE TABLE IF NOT EXISTS provider_audio (model TEXT NOT NULL,seconds REAL NOT NULL,created_at INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS provider_audio_time ON provider_audio(model,created_at)");
   return database;
 }
 const hash=(s:string)=>createHash("sha256").update(s).digest("hex");
@@ -76,7 +79,7 @@ export function updateLesson(l:Lesson,expectedVersion=l.version) {
   const result=db().prepare("UPDATE lessons SET version=?,payload=? WHERE id=? AND owner_id=? AND version=?").run(l.version,JSON.stringify(l),l.id,l.ownerId,expectedVersion);
   if(result.changes!==1)throw new Error("The lesson changed. Reload before trying again.");
 }
-export function enqueue(id:string) {db().prepare("INSERT INTO jobs(id,lesson_id,status) VALUES(?,?,'queued') ON CONFLICT(lesson_id) DO UPDATE SET status='queued',lease=NULL,lease_until=NULL,error=NULL,attempts=0 WHERE status IN ('failed','done')").run(randomUUID(),id);}
+export function enqueue(id:string) {db().prepare("INSERT INTO jobs(id,lesson_id,status) VALUES(?,?,'queued') ON CONFLICT(lesson_id) DO UPDATE SET status='queued',lease=NULL,lease_until=NULL,error=NULL,attempts=0,available_at=0 WHERE status IN ('failed','done')").run(randomUUID(),id);}
 export function queueLesson(l:Lesson,isNew=false) {
   db().exec("BEGIN IMMEDIATE");
   try{if(isNew)insertLesson(l);else updateLesson(l);enqueue(l.id);db().exec("COMMIT");}
@@ -85,10 +88,10 @@ export function queueLesson(l:Lesson,isNew=false) {
 export function claimJob() {
   const lease=randomUUID();
   // Single atomic statement provides a fencing token across worker processes.
-  const row=db().prepare("UPDATE jobs SET status='running',lease=?,lease_until=?,attempts=attempts+1 WHERE id=(SELECT id FROM jobs WHERE attempts<3 AND (status='queued' OR (status='running' AND lease_until<?)) ORDER BY rowid LIMIT 1) RETURNING id,lesson_id,lease,attempts").get(lease,Date.now()+90_000,Date.now()) as {id:string;lesson_id:string;lease:string;attempts:number}|undefined;
+  const row=db().prepare("UPDATE jobs SET status='running',lease=?,lease_until=?,attempts=attempts+1 WHERE id=(SELECT id FROM jobs WHERE available_at<=? AND attempts<3 AND (status='queued' OR (status='running' AND lease_until<?)) ORDER BY rowid LIMIT 1) RETURNING id,lesson_id,lease,attempts").get(lease,Date.now()+90_000,Date.now(),Date.now()) as {id:string;lesson_id:string;lease:string;attempts:number}|undefined;
   return row||null;
 }
-export function heartbeat(jobId:string,lease:string) {return db().prepare("UPDATE jobs SET lease_until=? WHERE id=? AND lease=? AND status='running'").run(Date.now()+90_000,jobId,lease).changes===1;}
+export function heartbeat(jobId:string,lease:string) {const now=Date.now();return db().prepare("UPDATE jobs SET lease_until=? WHERE id=? AND lease=? AND status='running' AND lease_until>?").run(now+90_000,jobId,lease,now).changes===1;}
 export function jobCommit(jobId:string,lease:string,l:Lesson,done=false) {
   db().exec("BEGIN IMMEDIATE");
   try {
@@ -106,6 +109,41 @@ export function failJob(jobId:string,lease:string,error:string) {
     if(row){const l=rawLesson(row.lesson_id);if(l)updateLesson({...l,status:"failed",stage:"Processing paused",error});}
     db().exec("COMMIT");
   }catch(e){db().exec("ROLLBACK");throw e;}
+}
+export function deferJob(jobId:string,lease:string,retryAt:number,message:string){
+  const database=db();database.exec("BEGIN IMMEDIATE");
+  try{
+    const row=database.prepare("SELECT lesson_id FROM jobs WHERE id=? AND lease=? AND status='running' AND lease_until>?").get(jobId,lease,Date.now()) as {lesson_id:string}|undefined;
+    if(!row)throw new Error("Job lease expired");
+    const l=rawLesson(row.lesson_id);if(!l)throw new Error("Lesson not found");
+    const count=(l.quotaDeferrals||0)+1;
+    if(count>48){failJobUnwrapped(jobId,lease,"The provider limit has persisted. Your audio is saved; ask the app owner to check capacity.");}
+    else{
+      const until=Math.max(Date.now()+5000,Math.min(retryAt,Date.now()+86400_000));
+      updateLesson({...l,status:"queued",stage:message,error:null,nextAttemptAt:new Date(until).toISOString(),quotaDeferrals:count});
+      database.prepare("UPDATE jobs SET status='queued',available_at=?,lease=NULL,lease_until=NULL,attempts=max(0,attempts-1) WHERE id=? AND lease=?").run(until,jobId,lease);
+    }
+    database.exec("COMMIT");
+  }catch(e){database.exec("ROLLBACK");throw e;}
+}
+function failJobUnwrapped(jobId:string,lease:string,error:string){
+  const row=db().prepare("UPDATE jobs SET status='failed',error=?,lease=NULL,lease_until=NULL WHERE id=? AND lease=? RETURNING lesson_id").get(error,jobId,lease) as {lesson_id:string}|undefined;
+  if(row){const l=rawLesson(row.lesson_id);if(l)updateLesson({...l,status:"failed",stage:"Processing paused",error,nextAttemptAt:undefined});}
+}
+export function reserveAudio(models:string[],seconds:number){
+  if(!Number.isFinite(seconds)||seconds<=0||seconds>700)throw new Error("Invalid audio reservation");
+  const database=db(),now=Date.now();database.exec("BEGIN IMMEDIATE");
+  try{
+    database.prepare("DELETE FROM provider_audio WHERE created_at<=?").run(now-86400_000);
+    let retryAt=now;
+    for(const model of new Set(models))for(const [window,limit] of [[3600_000,7100],[86400_000,28000]]){
+      const rows=database.prepare("SELECT seconds,created_at FROM provider_audio WHERE model=? AND created_at>? ORDER BY created_at").all(model,now-window) as {seconds:number;created_at:number}[];
+      let total=rows.reduce((n,r)=>n+r.seconds,seconds);
+      for(const r of rows){if(total<=limit)break;retryAt=Math.max(retryAt,r.created_at+window+1000);total-=r.seconds;}
+    }
+    if(retryAt===now)for(const model of new Set(models))database.prepare("INSERT INTO provider_audio VALUES(?,?,?)").run(model,seconds,now);
+    database.exec("COMMIT");return retryAt>now?retryAt:null;
+  }catch(e){database.exec("ROLLBACK");throw e;}
 }
 export function deleteLesson(user:string,id:string) {const l=rawLesson(id);if(!l||l.ownerId!==user)throw new Error("Lesson not found");db().prepare("DELETE FROM lessons WHERE id=? AND owner_id=?").run(id,user);return l;}
 export function listReviews(user:string):Review[] {return (db().prepare("SELECT r.payload FROM reviews r JOIN lessons l ON l.id=r.lesson_id AND l.version=r.version WHERE r.user_id=?").all(user) as {payload:string}[]).map(r=>JSON.parse(r.payload) as Review).filter(r=>authorizedLesson(user,r.lessonId)?.artifacts?.practice.some(p=>p.id===r.itemId));}

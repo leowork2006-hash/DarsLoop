@@ -38,11 +38,21 @@ export function WorkspaceApp(){
   const [guide,setGuide]=useState(false),[guidePage,setGuidePage]=useState<GuidePage|undefined>(undefined),[welcomed,setWelcomed]=useState(false),[chatLessonId,setChatLessonId]=useState<string|null>(null);
   const [reviewTab,setReviewTab]=useState<ReviewTab>("due");
   const [profileMenu,setProfileMenu]=useState(false);
+  const profileWrap=useRef<HTMLDivElement>(null),profileButton=useRef<HTMLButtonElement>(null);
   const [reviewAudioId,setReviewAudioId]=useState<string|null>(null);
   const seenPages=useRef(new Set<string>());
   const [onboarding,setOnboarding]=useState(false),[guideLanguage,setGuideLanguage]=useState<GuideLanguage>("en"),[addMode,setAddMode]=useState<"record"|"upload">("upload");
   const welcome=useHelpPreference(`workspace-welcome:${workspace?.userId||"loading"}`);
   const introduced=useRef<string|null>(null);
+  useEffect(()=>{
+    if(!profileMenu)return;
+    const outside=(event:Event)=>{if(event.target instanceof Node&&!profileWrap.current?.contains(event.target))setProfileMenu(false);};
+    const escape=(event:KeyboardEvent)=>{if(event.key==="Escape"){event.preventDefault();setProfileMenu(false);profileButton.current?.focus();}};
+    document.addEventListener("pointerdown",outside);
+    document.addEventListener("focusin",outside);
+    document.addEventListener("keydown",escape);
+    return()=>{document.removeEventListener("pointerdown",outside);document.removeEventListener("focusin",outside);document.removeEventListener("keydown",escape);};
+  },[profileMenu]);
   useEffect(()=>{
     if(!workspace||introduced.current===workspace.userId)return;
     introduced.current=workspace.userId;
@@ -79,17 +89,18 @@ export function WorkspaceApp(){
   function closeGuide(){setGuide(false);welcome.dismiss();if(workspace){const page=guidePage||guideKey;seenPages.current.add(`${workspace.userId}:${page}`);rememberPageGuide(workspace.userId,page);}}
   function addLesson(mode:"record"|"upload"){if(mode==="upload"){navigate("upload");return;}setAddMode(mode);setAdd(true);setMobileMenu(false);}
   useEffect(()=>{
-    if(!workspace||!welcomed||onboarding||add||setup||share||remove||mobileMenu||invite||guide)return;
+    if(!workspace||!welcomed||onboarding||add||setup||share||remove||mobileMenu||profileMenu||invite||guide)return;
     if(lesson&&!lesson.segments.length)return;
     const pageId=`${workspace.userId}:${guideKey}`;
     if(seenPages.current.has(pageId)||hasSeenPageGuide(workspace.userId,guideKey))return;
     const timer=setTimeout(()=>{if(document.querySelector("dialog[open]"))return;setGuidePage(guideKey);setGuide(true);},400);
     return()=>clearTimeout(timer);
-  },[workspace?.userId,welcomed,guideKey,onboarding,add,setup,share,remove,mobileMenu,invite,guide,!!lesson?.segments.length]);
+  },[workspace?.userId,welcomed,guideKey,onboarding,add,setup,share,remove,mobileMenu,profileMenu,invite,guide,!!lesson?.segments.length]);
   const courses=[...new Set(workspace?.lessons.map(l=>l.course)||[])];
   const due=workspace?studyInsights(workspace.lessons,workspace.reviews).due:0;
-  function navigate(v:View,c:string|null=null){setProfileMenu(false);setView(v);setSelected(null);setChatLessonId(null);setReviewAudioId(null);setSeek(null);setGuide(false);setCourse(c);setMobileMenu(false);}
-  function open(l:Lesson,t:LessonTab="notes",target:string|null=null){setSelected(l.id);setChatLessonId(null);setReviewAudioId(null);setGuide(false);setTab(t);setPracticeTarget(target);setSeek(null);setMobileMenu(false);window.scrollTo(0,0);}
+  const canLeaveNotes=()=>window.dispatchEvent(new Event("darsloop-before-navigation",{cancelable:true}));
+  function navigate(v:View,c:string|null=null){if(!canLeaveNotes())return;setProfileMenu(false);setView(v);setSelected(null);setChatLessonId(null);setReviewAudioId(null);setSeek(null);setGuide(false);setCourse(c);setMobileMenu(false);}
+  function open(l:Lesson,t:LessonTab="notes",target:string|null=null){if(l.id!==selected&&!canLeaveNotes())return;setSelected(l.id);setChatLessonId(null);setReviewAudioId(null);setGuide(false);setTab(t);setPracticeTarget(target);setSeek(null);setMobileMenu(false);window.scrollTo(0,0);}
   const onPlay=useCallback((time:number)=>{if(selected)setSeek({lessonId:selected,time,nonce:Date.now()});},[selected]);
   function reviewed(r:Review){setWorkspace(w=>w?{...w,reviews:[...w.reviews.filter(old=>!(old.itemId===r.itemId&&old.lessonId===r.lessonId)),r]}:w);}
   async function deleteCurrent(){if(!lesson)return;setDeleting(true);try{await api(`/api/lessons/${lesson.id}`,{method:"DELETE"});setSelected(null);setRemove(false);await refresh();notify("Lesson and its saved study material deleted.");}catch(e){notify(message(e));}finally{setDeleting(false);}}
@@ -114,7 +125,7 @@ export function WorkspaceApp(){
     <nav className="workspace-nav reference-study-nav" aria-label="Study tools">
       <button data-tour="plan" className={isReferencePlan?"active":""} aria-current={isReferencePlan?"page":undefined} onClick={()=>navigate("plan")}><RefBook size={19}/> Study plan</button>
       <button data-tour="review" className={isReferenceReview?"active":""} aria-current={isReferenceReview?"page":undefined} onClick={()=>{navigate("review");setReviewTab("due");}}><RefCards size={19}/> Review{due>0&&<span>{due}</span>}</button>
-      <div className="reference-practice-links">{([{id:"quiz",label:"Quiz",Icon:RefChecks},{id:"cards",label:"Flashcards",Icon:RefCards},{id:"test",label:"Lesson test",Icon:RefTest}] as const).map(({id,label,Icon})=><button key={id} className={isReferenceReview&&reviewTab===id?"active":""} onClick={()=>{navigate("review");setReviewTab(id);}}><Icon size={16}/>{label}</button>)}</div>
+      <div className="reference-practice-links">{([{id:"quiz",label:"Quiz",Icon:RefChecks},{id:"cards",label:"Flashcards",Icon:RefCards},{id:"test",label:"Mock exam",Icon:RefTest}] as const).map(({id,label,Icon})=><button key={id} className={isReferenceReview&&reviewTab===id?"active":""} onClick={()=>{navigate("review");setReviewTab(id);}}><Icon size={16}/>{label}</button>)}</div>
       <button className={view==="dictionary"&&!selected?"active":""} onClick={()=>navigate("dictionary")}><RefBook size={19}/>Teacher’s terms</button>
       <button data-tour="classes" className={isReferenceClasses?"active":""} aria-current={isReferenceClasses?"page":undefined} onClick={()=>navigate("classes")}><RefUsers size={19}/> Private classes</button>
       <button data-tour="insights" className={isReferenceInsights?"active":""} aria-current={isReferenceInsights?"page":undefined} onClick={()=>navigate("insights")}><RefChart size={19}/> Insights</button>
@@ -133,7 +144,7 @@ export function WorkspaceApp(){
     <div className="workspace-header-right reference-header-actions">
       <button className="reference-header-guide" onClick={()=>{setGuidePage(guideKey);setGuide(true);}}><RefQuestion size={17}/> Guide</button>
       <button className="icon-button" aria-label="Account and privacy" onClick={()=>setSetup(true)}><RefGear size={20}/></button>
-      <div className="reference-profile-wrap"><button className="reference-profile-button" aria-label="Open your account menu" aria-expanded={profileMenu} onClick={()=>setProfileMenu(!profileMenu)}>S</button>{profileMenu&&<><button className="profile-menu-dismiss" aria-label="Close account menu" onClick={()=>setProfileMenu(false)}/><div className="reference-profile-menu" onKeyDown={e=>{if(e.key==="Escape")setProfileMenu(false);}}><button onClick={()=>{setProfileMenu(false);setSetup(true);}}><RefGear size={18}/>Account & settings</button><button onClick={()=>{setProfileMenu(false);setGuidePage(guideKey);setGuide(true);}}><RefQuestion size={18}/>Page guide</button><div><span>Theme</span><ThemeControl/></div></div></>}</div>
+      <div className="reference-profile-wrap" ref={profileWrap}><button ref={profileButton} type="button" className="reference-profile-button" aria-label="Open your account menu" aria-expanded={profileMenu} aria-controls={profileMenu?"account-options":undefined} onClick={()=>setProfileMenu(value=>!value)}>S</button>{profileMenu&&<div id="account-options" role="group" aria-label="Account options" className="reference-profile-menu"><button type="button" onClick={()=>{setProfileMenu(false);setSetup(true);}}><RefGear size={18}/>Account & settings</button><button type="button" onClick={()=>{setProfileMenu(false);setGuidePage(guideKey);setGuide(true);}}><RefQuestion size={18}/>Page guide</button><div><span>Theme</span><ThemeControl/></div></div>}</div>
     </div>
   </>:<><div className="breadcrumb"><BookOpen size={16}/><span>{view==="home"?"Home":view==="upload"?"Upload lesson":view==="plan"?"Study plan":view==="review"?"Review":view==="classes"?"Classes":view==="insights"?"Insights":"My lessons"}</span>{lesson&&<><ChevronRight size={13}/><span className="breadcrumb-current">{lesson.title}</span></>}</div><div className="workspace-header-right"><span className="private-label"><LockKeyhole size={13}/> Private workspace</span><button className="icon-button help-button" aria-label="Open study guide" onClick={()=>{setGuidePage(guideKey);setGuide(true);}}><CircleHelp size={19}/></button><button className="icon-button" aria-label="Account and privacy" onClick={()=>setSetup(true)}><Settings2 size={17}/></button></div></>}</header>
   <main className="workspace-main" id="workspace-main" tabIndex={-1}>{fatal?<div className="empty-state"><ShieldCheck/><h1>Couldn’t open your workspace.</h1><p>{fatal}</p><button className="button primary" onClick={()=>void refresh().catch(e=>setFatal(message(e)))}>Try again</button></div>:!workspace?<div className="loading-workspace"><div className="loading-line"/><div className="loading-line short"/><div className="loading-block"/><p>Opening your study space…</p></div>:lesson?<LessonView key={`${lesson.id}-${lesson.version}`} lesson={lesson} tab={tab} setTab={setTab} onBack={()=>navigate("library",lesson.course)} onPlay={onPlay} onError={notify} onShare={()=>setShare(true)} onDelete={()=>setRemove(true)} onReviewed={reviewed} focusItemId={practiceTarget} configured={workspace.configured.generation}/>:view==="home"?<StudyHome workspace={workspace} onAdd={addLesson} onOpen={open} onPlay={(l,time)=>{setChatLessonId(l.id);setSeek({lessonId:l.id,time,nonce:Date.now()});}} onChatLesson={id=>{setChatLessonId(id);setSeek(null);}} onError={notify} onReview={()=>navigate("review")} onPlan={l=>navigate("plan",l?.course||null)} onClasses={()=>navigate("classes")}/>:view==="upload"?<UploadPage workspace={workspace} onRecord={()=>addLesson("record")} onSaved={l=>{setWorkspace(w=>w?{...w,lessons:[l,...w.lessons.filter(old=>old.id!==l.id)]}:w);void refresh().catch(e=>notify(message(e)));}} onOpen={open} onPlan={l=>navigate("plan",l.course)} onError={notify}/>:view==="plan"?<StudyPlanPage workspace={workspace} initialCourse={course} onUpload={()=>addLesson("upload")} onOpenLesson={l=>open(l,"notes")} onOpenSource={(l,time)=>{open(l,"transcript");setSeek({lessonId:l.id,time,nonce:Date.now()});}} onOpenPractice={(l,id)=>open(l,"practice",id)} onAsk={l=>open(l,"ask")}/>:view==="insights"?<Insights lessons={workspace.lessons} reviews={workspace.reviews} onReview={(l,id)=>open(l,"practice",id)} onPractice={()=>navigate("review")}/>:view==="classes"?<ClassesPage workspace={workspace} refresh={refresh} onOpen={open} onError={notify} onUpload={()=>navigate("upload")}/>:view==="dictionary"?<TeacherDictionary lessons={workspace.lessons} onOpen={l=>open(l,"notes")} onPlay={(l,time)=>{open(l,"transcript");setSeek({lessonId:l.id,time,nonce:Date.now()});}}/>:view==="review"?<ReviewPage initialTab={reviewTab} onTabChange={setReviewTab} lessons={workspace.lessons} reviews={workspace.reviews} onOpen={(l,id)=>open(l,"practice",id)} onReviewed={reviewed} onError={notify} onUpload={()=>navigate("upload")} onPlay={(l,time)=>{setReviewAudioId(l.id);setSeek({lessonId:l.id,time,nonce:Date.now()});}}/>:<LessonsPage workspace={workspace} course={course||""} onCourse={c=>setCourse(c||null)} onOpen={open} onUpload={()=>navigate("upload")} onRecord={()=>addLesson("record")} onClasses={()=>navigate("classes")}/>}</main>

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Answer, Artifacts, Citation, Segment, StudyNoteOptions } from "./types";
+import type { Answer, Artifacts, Citation, Note, Segment, StudyNoteOptions } from "./types";
 import { resolveNoteOptions } from "./note-options";
 const citation=z.object({segmentId:z.string().max(100),quote:z.string().min(1).max(5000)});
 const citations=z.array(citation).min(1).max(6);
@@ -86,14 +86,23 @@ export function boundedQuestion(question:string,segments:Segment[],version:numbe
   if(!matches.length)return {status:"not_covered",blocks:[],message:"That is not covered by a clear passage in this lesson. Ask your teacher.",mode,version};
   return {status:"answered",blocks:matches.map(s=>({text:s.text,evidence:[{segmentId:s.id,quote:s.text}]})),message:"These are your teacher’s captured words, not a ruling from DarsLoop. Ask your teacher about interpretation or your situation.",mode:"excerpt",version};
 }
-export function excerptAnswer(question:string,segments:Segment[],version:number):Answer {
+/** A saved topic suggestion is a pointer to audited quotes, never extra evidence. */
+export function noteAnchors(question:string,segments:Segment[],notes:Note[]=[]) {
+  const topic=/^What did the teacher say about [“"](.{1,160})[”"]\?$/u.exec(question.trim())?.[1];
+  if(!topic||instructionLike(question))return [];
+  const note=notes.find(n=>normalise(n.heading).trim()===normalise(topic).trim()&&evidenceValid(n.evidence,segments));
+  if(!note)return [];
+  return segments.filter(s=>note.evidence.some(c=>c.segmentId===s.id));
+}
+export function excerptAnswer(question:string,segments:Segment[],version:number,notes:Note[]=[]):Answer {
   const bounded=boundedQuestion(question,segments,version,"excerpt");if(bounded)return bounded;
   if(needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher about applying religious teachings to your own situation.",mode:"excerpt",version};
-  const related=retrieve(question,segments).filter(s=>tokens(question).some(t=>tokens(s.text).includes(t))).slice(0,2);
-  if(!related.length)return {status:"not_covered",blocks:[],message:"I couldn’t find a matching passage. Live AI chat isn’t connected yet; try a word from the transcript.",mode:"excerpt",version};
+  const anchors=noteAnchors(question,segments,notes);
+  const related=(anchors.length?anchors:retrieve(question,segments).filter(s=>tokens(question).some(t=>tokens(s.text).includes(t)))).slice(0,2);
+  if(!related.length)return {status:"not_covered",blocks:[],message:"I couldn’t find a supporting passage in this lesson. Try a more specific question or ask your teacher.",mode:"excerpt",version};
   const clear=related.filter(s=>!s.flags.length);
   if(!clear.length)return {status:"unclear_audio",blocks:[],message:"The matching passage is marked unclear. Please replay it.",mode:"excerpt",version};
-  return {status:"answered",blocks:clear.map(s=>({text:s.text,evidence:[{segmentId:s.id,quote:s.text}]})),message:"Matching teacher passages · text search, not an AI answer",mode:"excerpt",version};
+  return {status:"answered",blocks:clear.map(s=>({text:s.text,evidence:[{segmentId:s.id,quote:s.text}]})),message:"These are the teacher’s captured words. Replay the audio to check the explanation.",mode:"excerpt",version};
 }
 export function segmentFlags(d:{avg_logprob?:number;no_speech_prob?:number;compression_ratio?:number},text:string) {
   const flags:string[]=[];

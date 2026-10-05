@@ -1,0 +1,15 @@
+.workspace { min-width: 0; }
+.workspace .caption {
+  display: block;
+  width: min(100%, 920px);
+  margin: 12px auto 0;
+  text-align: center;
+  align-self: center;
+  padding-inline: 12px;
+  box-sizing: border-box;
+  scroll-margin-bottom: 104px;
+}
+
+@media (max-width: 760px) {
+  .workspace .caption { scroll-margin-bottom: 230px; }
+}
