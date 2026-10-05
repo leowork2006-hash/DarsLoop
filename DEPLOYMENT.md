@@ -88,3 +88,31 @@ Railway soft email alerts leave workloads running; compute hard limits stop them
 - [ ] Keep a clean product-only repository and release archive. The fresh anonymous remote clone was installed/built and its unit/API/example checks passed on 5 October. Recheck these steps after later code changes.
 - [ ] Verify signup email or an enabled social sign-in separately. Disposable password-account tests do not prove email delivery or provider consent.
 - [ ] Keep a dated record of the actual hosted test outcomes, cleanup, remaining credit and unresolved limitations. No real classroom audio or private research belongs in the public repository.
+
+
+## AI capacity for the next 20 days — checked 5 October 2026
+
+The app uses Groq Whisper large-v3 plus a turbo comparison for audio, and Gemini 3.5 Flash-Lite for study material and class answers. Google's current deprecation page lists no announced shutdown for 3.5 Flash-Lite. A claim about a 2.5 shutdown is not evidence about this configured model. [Google deprecations](https://ai.google.dev/gemini-api/docs/deprecations).
+
+The owner-provided account screenshots show Gemini Free at **15 requests/minute, 250,000 input tokens/minute and 500 requests/day**; the historical peak reached 17 RPM. These are peak usage charts, not current remaining allowance. Limits are project-wide, including other keys and development use. Official documentation directs users to their account for exact limits; daily requests reset at midnight Pacific. [Gemini limits](https://ai.google.dev/gemini-api/docs/rate-limits).
+
+Groq's screenshots show Free Whisper limits of **7,200 audio seconds/hour and 28,800/day per model**, 20 RPM and 2,000 requests/day. Our six overlapping chunks for a one-hour recording consume about **3,680 seconds per model**. Thus only one complete hour-long lesson fits a rolling hour; seven fit a day, with no other consumption. Unused allowances do not accumulate across 20 days. The shown $0.26 is projected cost, not prepaid balance. [Groq limits](https://console.groq.com/docs/rate-limits).
+
+For several judges, use **Gemini API billing** and **Groq Developer pay-as-you-go**. Google AI consumer subscriptions do not raise this external application's API quota. Gemini prepay minimum is $5; a positive balance is necessary. Standard 3.5 Flash-Lite pricing is $0.30/million input and $2.50/million output tokens. Audits, retries, chat and embeddings consume additional quota. [Google AI plans](https://ai.google.dev/gemini-api/docs/google-ai-plans), [API billing](https://ai.google.dev/gemini-api/docs/billing), [pricing](https://ai.google.dev/gemini-api/docs/pricing).
+
+Groq Developer needs a payment method, has no immediate charge for upgrading, and charges usage at month-end or progressive billing thresholds. The current two-ASR path costs about **$0.154 per one-hour lesson** including overlap: 20 lessons ≈ $3.09; 40 lessons ≈ $6.18, excluding retries. This is a pricing calculation, not a measured invoice. Configure budget alerts and leave headroom for judging. [Groq billing](https://console.groq.com/docs/billing-faqs), [speech pricing](https://console.groq.com/docs/speech-to-text).
+
+Railway's actual 5 October reading was **$4.967 trial credit and 30 reported trial days remaining**. A 20-day scenario of 0.30 GB average RAM, 0.05 vCPU and 2 GB egress costs about $2.77; higher activity can exceed this. Review the actual forecast daily. Supabase Free includes 1 GB file storage and 5 GB uncached egress. Long recordings and unfinished imports share that capacity. Watch project Usage and remove only disposable tests; do not delete user lessons to make room. [Railway plans/pricing](https://docs.railway.com/pricing/plans), [Supabase pricing](https://supabase.com/pricing).
+
+No upgrade, payment or card has been added by the agent. Free limits can support light testing, but cannot guarantee arbitrary judge traffic. The prepared fictional example remains available without a live AI request. Complete fresh-generation capacity checks after billing is enabled.
+
+If a connector-authored GitHub push is held for approval, approve the specific reviewed deployment in Railway. A successful GitHub commit does not prove a live deployment. [Railway deployment approval](https://docs.railway.com/guides/lock-down-production-project).
+
+
+### Required model permissions
+
+Allow both `whisper-large-v3` and `whisper-large-v3-turbo` at Groq organization and project level. A model can appear in the rate-limit table while being denied by the Allowed Models setting. The API returns 403 for a restricted model. The app now identifies this error specifically and preserves the recording. A small actual fictional-clip check on 5 October succeeded on the primary model and initially failed on Turbo; after the owner changed permissions, both succeeded. This is model-access evidence, not a billing balance or classroom-accuracy test. [Groq model permissions](https://console.groq.com/docs/model-permissions).
+
+### Study material recovery
+
+Concept questions may mention a teacher-defined term; literal name/spelling memorization remains excluded. Missing practice no longer discards a completed transcript or supported notes. When possible, a flashcard reuses the complete text of an independently checked note and its captured evidence. Overlong notes are not truncated to fit a card. Remaining missing material is shown honestly, and retry reuses the saved transcript. Two ASR requests run together for one bounded audio section at a time.

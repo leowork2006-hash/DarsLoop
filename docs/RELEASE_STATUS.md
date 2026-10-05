@@ -38,3 +38,10 @@ Direct-storage upload changes passed 23 actual cloud/host assertions with a 38 M
 ## Public repository verification
 
 Published 183 scanned product-only files through the owner-authorized GitHub connector. The computer's separate Git credential still rejected push; no credential was requested or exposed. The remote file tree exactly matched the scanned local release. A fresh anonymous GitHub clone installed with no reported vulnerabilities, built without keys, passed TypeScript and 87 unit tests, 18 isolated local API checks and 14 example boundaries from its own production server. Private research/reports/credentials/real recordings remain excluded. Railway main-branch source connection succeeded.
+
+
+## Latest recovery fix — deployment pending
+
+The 5 October study-material fix preserves completed transcripts and independently supported notes when practice generation is incomplete. It retains conceptual practice, reuses audited notes for supported flashcards, identifies model permission failures and offers a prepared demo in the lesson library. The latest local build/typecheck, 111 unit tests and 18 isolated API checks passed. The safety update broadens deterministic routing and withholds instruction-like transcript passages from AI/evidence while retaining the source. Six owner-approved saved transcripts were repaired separately; four have notes plus both practice types, and two short clips show a missing-quiz warning. Their audio was not retranscribed.
+
+Groq comparison access initially failed and was then successfully rechecked after the owner's permission change. The existing live release and no-account example still respond. Railway's reported build incident is delaying the new code rollout. Do not interpret the local checks or saved-data repair as proof that the latest code is already live. The one-hour hosted benchmark and updated startup memory reading are pending. Current provider quotas, billing choices and remaining limitations are documented in [DEPLOYMENT.md](../DEPLOYMENT.md).

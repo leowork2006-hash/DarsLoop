@@ -4,7 +4,7 @@ import { db } from "./store";
 import { rawLesson } from "./backend";
 import { cloudMode } from "./supabase/config";
 import { savedVectors, saveVectors } from "./supabase/store";
-import { retrieve, tokens } from "./evidence";
+import { instructionLike, retrieve, tokens } from "./evidence";
 import type { Lesson, Segment } from "./types";
 
 export const EMBEDDING_MODEL="gemini-embedding-001",EMBEDDING_DIMENSIONS=768;
@@ -19,6 +19,7 @@ export function searchWindows(segments:Segment[]):Window[] {
   const result:Window[]=[];let text="",indices:number[]=[];
   const flush=()=>{if(text){result.push({hash:createHash("sha256").update(JSON.stringify({indices,text,ids:indices.map(i=>segments[i].id)})).digest("hex"),indices:[...indices],text});text="";indices=[];}};
   segments.forEach((s,i)=>{
+    if(instructionLike(s.text))return;
     // Split representation for the embedding endpoint only. Source passages are never rewritten.
     const parts=s.text.match(/[\s\S]{1,1400}/gu)||[];
     for(const part of parts){if(indices.length>=5||text.length+part.length+1>1400)flush();text+=(text?"\n":"")+part;if(!indices.includes(i))indices.push(i);}
@@ -78,10 +79,10 @@ export function rankedPassages(question:string,segments:Segment[],windows:Window
   return [...chosen].sort((a,b)=>a-b).map(i=>segments[i]);
 }
 export async function lessonPassages(question:string,lesson:Lesson):Promise<{segments:Segment[];method:SearchMethod}> {
-  if(lesson.segments.length<=30)return {segments:lesson.segments,method:"whole_lesson"};
+  if(lesson.segments.length<=30)return {segments:lesson.segments.filter(s=>!instructionLike(s.text)),method:"whole_lesson"};
   try {
     const windows=searchWindows(lesson.segments),vectors=await indexedVectors(lesson,windows),[query]=await embed([question],"RETRIEVAL_QUERY");
-    return {segments:rankedPassages(question,lesson.segments,windows,vectors,query),method:"hybrid"};
+    return {segments:rankedPassages(question,lesson.segments,windows,vectors,query).filter(s=>!instructionLike(s.text)),method:"hybrid"};
   }catch{
     // Provider failure never expands the corpus or enables an outside answer.
     return {segments:retrieve(question,lesson.segments,12),method:"lexical_fallback"};

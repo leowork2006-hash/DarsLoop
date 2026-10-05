@@ -29,7 +29,7 @@ Features alone do not establish a score. Local/runtime checks are not beneficiar
 ## Other required submission materials
 
 - Project name, description and accepted challenge path.
-- One presentation file in the observed final form: PDF/PPT/PPTX, maximum 10 MB. Cover the problem, solution, mechanism, value, technology and actual screenshots. Retain the planned <=10 slides from the registration limit; the final supplied screenshot does not itself show a slide limit.
+- One presentation file in the observed final form: PDF/PPT/PPTX, maximum 10 MB. Cover the problem, solution, mechanism, value, technology and actual screenshots. Ten slides is our planning choice, not a verified official slide-count rule. Recheck any later portal notice before submission.
 - Explanatory video link, no longer than two minutes; judges must be able to view it.
 - Working live product URL and public GitHub URL.
 - Submit through the official portal and retain confirmation. This repository does not itself submit the entry.
@@ -38,7 +38,7 @@ Published deadline in the supplied guide: 6 October 2026, 23:59 Riyadh / 7 Octob
 
 ## Release status
 
-Clean-copy installation/build and bounded local/cloud checks passed as recorded in QA.md. Public repository publication, remote fresh-clone verification, hosted Linux/runtime checks, final email/social consent, presentation/video and portal receipt remain pending. Measured student-learning benefit and physical locked-phone recording have not been established.
+Public repository publication, anonymous fresh-clone checks and the previous hosted release passed as recorded in QA.md. The latest recovery/safety update still needs hosted deployment verification. Final email/social consent, presentation/video and portal receipt remain pending. Measured student-learning benefit and physical locked-phone recording have not been established.
 
 ## Primary references
 

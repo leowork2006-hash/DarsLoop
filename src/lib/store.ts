@@ -3,7 +3,7 @@ import { randomUUID, createHash, randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { demoArtifacts, demoScript } from "./demo";
-import { safePractice } from "./evidence";
+import { evidenceValid, instructionLike, safePractice } from "./evidence";
 import { nextReview } from "./review-activity";
 import type { ClassGroup, Lesson, Review, Segment } from "./types";
 
@@ -48,7 +48,15 @@ export function seedDemo(userId:string) {
 }
 export function insertLesson(l:Lesson) {db().prepare("INSERT INTO lessons VALUES(?,?,?,?)").run(l.id,l.ownerId,l.version,JSON.stringify(l));}
 export function rawLesson(id:string):Lesson|null {const row=db().prepare("SELECT payload FROM lessons WHERE id=?").get(id) as {payload:string}|undefined;return row?JSON.parse(row.payload):null;}
-export function safeLesson(l:Lesson):Lesson {return l.demo||!l.artifacts?l:{...l,artifacts:{...l.artifacts,practice:safePractice(l.artifacts)}};}
+export function safeLesson(l:Lesson):Lesson {
+  // Also guard older saved transcripts without rewriting their stored text/audio.
+  const segments=l.segments.map(s=>instructionLike(s.text)?{...s,flags:[...new Set([...s.flags,"Instruction-like wording: excluded from AI study material; replay the audio"])]}:s);
+  if(!l.artifacts)return {...l,segments};
+  const notes=l.artifacts.notes.filter(n=>evidenceValid(n.evidence,segments));
+  const terms=l.artifacts.terms.filter(t=>evidenceValid(t.evidence,segments));
+  const a={...l.artifacts,notes,terms,overview:notes.slice(0,3).map(n=>n.text).join(" "),practice:l.artifacts.practice.filter(p=>evidenceValid(p.evidence,segments))};
+  return {...l,segments,artifacts:{...a,practice:l.demo?a.practice:safePractice(a)}};
+}
 export function authorizedLesson(user:string,id:string):Lesson|null {
   const l=rawLesson(id); if(!l)return null;
   if(l.ownerId===user)return safeLesson(l);

@@ -31,7 +31,7 @@ Without AI keys, local questions use visibly labelled transcript search, and fre
 
 ## Connect fresh transcription and generation
 
-Install [FFmpeg and FFprobe](https://ffmpeg.org/download.html) and check `ffmpeg -version` and `ffprobe -version` in your terminal. Copy `.env.example` to `.env.local` only if that file does not already exist. Then create your own [Groq key](https://console.groq.com/keys) and [Google AI Studio key](https://aistudio.google.com/apikey). Put them in `.env.local`, restart the app, then run `npm run worker` in a second terminal. Defaults are `whisper-large-v3` and `gemini-3.5-flash-lite`; availability and quota depend on your account. A second Whisper pass checks disagreements, and a generation audit checks support. Agreement does not guarantee correctness.
+Install [FFmpeg and FFprobe](https://ffmpeg.org/download.html) and check `ffmpeg -version` and `ffprobe -version` in your terminal. Copy `.env.example` to `.env.local` only if that file does not already exist. Then create your own [Groq key](https://console.groq.com/keys) and [Google AI Studio key](https://aistudio.google.com/apikey). Put them in `.env.local`, restart the app, then run `npm run worker` in a second terminal. Defaults are `whisper-large-v3` and `gemini-3.5-flash-lite`; availability and quota depend on your account. A second Whisper pass checks disagreements, and a generation audit checks support. Agreement does not guarantee correctness. Enable both `whisper-large-v3` and `whisper-large-v3-turbo` in Groq → Organization → Limits → Allowed Models, and check project restrictions too. A denied comparison model stops fresh transcription; API keys cannot override that setting.
 
 | Variable | Required for | Obtain / default |
 | --- | --- | --- |
@@ -75,6 +75,8 @@ The API command starts an isolated temporary server and removes its fictional da
 ## Product boundaries
 
 Students receive automatic notes without mandatory teacher review. Evidence carries captured quotes and audio times. Uncertain/disagreed passages are visibly marked and excluded from generated study material, but not every transcription error is detected. No fatwas, personal religious decisions or AI hadith grading. Candidate external source matches are separate from the lesson and require teacher checking.
+
+The implemented path is `processLesson` → timed/flagged segments → `createArtifacts` → literal-evidence validation → independent claim-support audit → available study material. There is no teacher approval prerequisite. The optional teacher-question handoff requires passage playback before download; it cannot approve or correct the transcript. Instruction-like passages are withheld before generation, auditing and embedding, and are rejected as evidence in old saved outputs. The original transcript/audio remains available. These are fallible controls, not a guarantee of accurate transcription or complete injection detection.
 
 Teacher review currently creates a listening-first question handoff, with no approve-all or authenticated correction/approval backend. Lesson test covers generated lesson questions; it is not an official curriculum mock exam. Exam week plans and progress are device-local suggestions based on practice, not a promise of mastery or passing. No public student competition/rank is inferred from private scores.
 
