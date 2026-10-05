@@ -22,7 +22,7 @@ describe("audio disagreement boundary",()=>{
   });
   it("keeps concept practice while withholding unreviewed literal term spellings",()=>{
     const base={id:"a",kind:"flashcard" as const,question:"What helps revision?",answer:"Return to the explanation.",choices:[],evidence:[]};
-    const a:Artifacts={overview:"",notes:[],terms:[{term:"adapt",definition:"As transcribed",evidence:[]}],practice:[base,{...base,id:"b",question:"What is the word adapt?"}]};
-    expect(safePractice(a).map(p=>p.id)).toEqual(["a"]);
+    const a:Artifacts={overview:"",notes:[],terms:[{term:"adapt",definition:"As transcribed",evidence:[]}],practice:[base,{...base,id:"b",question:"What is the word adapt?"},{...base,id:"c",question:"How can adapt help us revise the lesson?"}]};
+    expect(safePractice(a).map(p=>p.id)).toEqual(["a","c"]);
   });
 });

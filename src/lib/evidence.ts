@@ -13,10 +13,15 @@ export function evidenceValid(evidence:Citation[],segments:Segment[]) {
   });
 }
 export function safePractice(artifacts:Artifacts) {
-  // A fluent-looking term spelling can be wrong even when multiple ASR models agree.
-  // Keep concepts available, but don't rehearse an unreviewed literal name as a fact.
-  const terms=artifacts.terms.flatMap(t=>tokens(t.term));
-  return artifacts.practice.filter(p=>!tokens(`${p.question} ${p.answer}`).some(w=>terms.includes(w)));
+  // A concept can mention a term without testing its spelling. Withhold literal
+  // name/word questions and answers whose entire content is an unchecked term.
+  const terms=artifacts.terms.map(t=>normalise(t.term).trim()).filter(Boolean);
+  return artifacts.practice.filter(p=>{
+    const answer=normalise(p.answer).trim();
+    if(terms.includes(answer))return false;
+    const literal=/\b(?:spell(?:ing)?|what is (?:the |this )?(?:word|term|name)|which (?:word|term|name)|what (?:word|term|name)|(?:use|define|explain) (?:the |this )?(?:word|term)|name the term)\b|ہجے|کون سا لفظ|لفظ کیا|تهجئة|ما (?:هو )?(?:اللفظ|المصطلح)/iu.test(p.question);
+    return !literal;
+  });
 }
 export function validateArtifacts(input:unknown,segments:Segment[],options?:StudyNoteOptions):Artifacts {
   const a=artifactSchema.parse(input);

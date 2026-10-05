@@ -6,6 +6,7 @@ import path from "node:path";
 process.env.DARSLOOP_DATA_DIR=mkdtempSync(path.join(os.tmpdir(),"darsloop-pipeline-"));
 const s=await import("../src/lib/store");
 const {chunkPlan,timedSegments,processLesson}=await import("../src/lib/processing");
+import { ProviderError } from "../src/lib/ai";
 import { demoArtifacts } from "../src/lib/demo";
 afterAll(()=>{s.db().close();rmSync(process.env.DARSLOOP_DATA_DIR!,{recursive:true,force:true});});
 describe("durable processing with injected mock providers",()=>{
@@ -29,4 +30,13 @@ describe("durable processing with injected mock providers",()=>{
     expect(s.publicLesson(s.rawLesson(l.id)!).noteOptions).toEqual(l.noteOptions);
     expect(s.db().prepare("SELECT status FROM jobs WHERE id=?").get(job.id)).toEqual({status:"done"});
   });
+  it("publishes the transcript when generation is unavailable and retries without ASR",async()=>{
+    const session=s.createSession();s.seedDemo(session.userId);const base=s.listLessons(session.userId)[0];
+    const l={...base,id:randomUUID(),demo:false,status:"queued" as const,artifacts:null,segments:[],transcriptionComplete:false};s.insertLesson(l);s.enqueue(l.id);
+    const providers={audioChunk:vi.fn(async()=>Buffer.from("mock")),transcribe:vi.fn(async()=>({segments:base.segments.map(x=>({start:x.start,end:x.end,text:x.text}))})),createArtifacts:vi.fn(async()=>{throw new ProviderError("quota","AI limit reached");})};
+    await processLesson(s.claimJob()!,providers);expect(s.rawLesson(l.id)?.status).toBe("ready");expect(s.rawLesson(l.id)?.error).toBe("AI limit reached");expect(s.rawLesson(l.id)?.segments.length).toBe(8);
+    s.enqueue(l.id);await processLesson(s.claimJob()!,{...providers,createArtifacts:async segments=>demoArtifacts(segments)});
+    expect(providers.transcribe).toHaveBeenCalledTimes(1);expect(s.rawLesson(l.id)?.error).toBeNull();expect(s.rawLesson(l.id)?.artifacts?.practice.length).toBeGreaterThan(0);
+  });
+
 });

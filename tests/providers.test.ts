@@ -46,7 +46,7 @@ describe("provider contracts using mocks, not live AI",()=>{
   it("notes off does not bypass the independent support audit",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.notes=[];a.overview="";
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce({output_text:JSON.stringify({checks:[]})});
-    await expect(createArtifacts(segments,{enabled:false,detail:"short"})).rejects.toMatchObject({code:"incomplete_practice"});
+    const result=await createArtifacts(segments,{enabled:false,detail:"short"});expect(result.practice).toEqual([]);expect(result.warnings?.[0]).toContain("could not be prepared");
   });
   it("sends a lean provider schema but keeps strict response limits",async()=>{
     const wire=generationSchema(z.object({maxLength:z.string().max(5),items:z.array(z.string()).max(4)}));
@@ -75,9 +75,9 @@ describe("provider contracts using mocks, not live AI",()=>{
     interaction.mockResolvedValueOnce({output_text:JSON.stringify({status:"answered",message:"",blocks:[{text:"An outside claim",evidence:[{segmentId:"s0",quote:segments[0].text}]}]})}).mockResolvedValueOnce({output_text:JSON.stringify({checks:[{index:0,supported:false,preservesQualifications:false,lessonScopeOnly:false}]})});
     const result=await answerLesson("revision",{segments,version:1} as Lesson);expect(result.blocks).toEqual([]);expect(result.status).toBe("unclear_audio");
   });
-  it("rejects incomplete generated practice instead of calling the lesson ready",async()=>{
+  it("keeps audited notes when missing practice cannot be repaired",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.practice=[];
-    interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(6));await expect(createArtifacts(segments)).rejects.toThrow("quizzes and flashcards");
+    interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(6));const result=await createArtifacts(segments);expect(result.notes.length).toBeGreaterThan(0);expect(result.practice).toEqual([]);expect(result.warnings?.[0]).toContain("transcript is ready");
   });
   it("uses transcription, keeps language unset, and reports quota failure",async()=>{
     vi.stubEnv("GROQ_API_KEY","test-only");const request=vi.fn(async(_url:string,_options:RequestInit)=>new Response(JSON.stringify({segments:[{start:0,end:4,text:"نہیں Arabic term"}]}),{status:200}));vi.stubGlobal("fetch",request);

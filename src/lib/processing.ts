@@ -56,13 +56,14 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
       for(const chunk of chunks.slice(lesson.processedChunks||0)){
         if(!held)throw new Error("Lease lost");
         const bytes=await providers.audioChunk(original,path.join(temp,`${chunk.index}.wav`),chunk.start,chunk.span);
-        const result=await providers.transcribe(bytes);let segments=timedSegments(result,chunk,lesson.duration,lesson.version);
-        if(providers.crossCheck){
-          lesson={...lesson,stage:`Checking key wording in section ${chunk.index+1}`};await jobCommit(job.id,job.lease,lesson);
-          // Failure pauses the job; restart uses the original preserved recording.
-          const secondary=await providers.crossCheck(bytes);
-          segments=compareTranscriptions(segments,secondary.segments,chunk.start);
-        }
+        lesson={...lesson,stage:`Transcribing section ${chunk.index+1} of ${chunks.length}`};await jobCommit(job.id,job.lease,lesson);
+        // Independent ASR requests run together; keep a single bounded audio buffer.
+        // Await both so a failed request cannot leak into the next job.
+        const heard=await Promise.allSettled([providers.transcribe(bytes),...(providers.crossCheck?[providers.crossCheck(bytes)]:[])]);
+        const rejected=heard.find(r=>r.status==="rejected");if(rejected?.status==="rejected")throw rejected.reason;
+        const result=(heard[0] as PromiseFulfilledResult<Awaited<ReturnType<typeof transcribe>>>).value;
+        let segments=timedSegments(result,chunk,lesson.duration,lesson.version);
+        if(providers.crossCheck){const secondary=(heard[1] as PromiseFulfilledResult<Awaited<ReturnType<typeof transcribe>>>).value;segments=compareTranscriptions(segments,secondary.segments,chunk.start);}
         lesson={...lesson,segments:[...lesson.segments,...segments],processedChunks:chunk.index+1,stage:`Transcribed section ${chunk.index+1} of ${chunks.length}`};await jobCommit(job.id,job.lease,lesson);
       }
       if(!lesson.segments.length)throw new ProviderError("no_speech","No usable speech was found. Try a clearer recording.");
@@ -70,7 +71,13 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
     }
     const noteOptions=resolveNoteOptions(lesson.noteOptions);
     lesson={...lesson,noteOptions,stage:noteOptions.enabled?"Making notes, quizzes & flashcards":"Making quizzes & flashcards"};await jobCommit(job.id,job.lease,lesson);
-    const artifacts=await providers.createArtifacts(lesson.segments,noteOptions);
-    await jobCommit(job.id,job.lease,{...lesson,artifacts,status:"ready",stage:"Ready to study",providers:{asr:process.env.ASR_MODEL||"whisper-large-v3",generation:process.env.GENERATION_MODEL||"gemini-3.5-flash-lite",policy:POLICY_VERSION,...(providers.crossCheck?{checker:"whisper-large-v3-turbo"}:{})}},true);
+    let artifacts;
+    try{artifacts=await providers.createArtifacts(lesson.segments,noteOptions);}
+    catch(error){
+      if(!(error instanceof ProviderError))throw error;
+      await jobCommit(job.id,job.lease,{...lesson,status:"ready",stage:"Transcript ready · study material paused",error:error.message},true);
+      return;
+    }
+    await jobCommit(job.id,job.lease,{...lesson,artifacts,status:"ready",stage:"Ready to study",error:artifacts.warnings?.join(" ")||null,providers:{asr:process.env.ASR_MODEL||"whisper-large-v3",generation:process.env.GENERATION_MODEL||"gemini-3.5-flash-lite",policy:POLICY_VERSION,...(providers.crossCheck?{checker:"whisper-large-v3-turbo"}:{})}},true);
   }finally{clearInterval(timer);await rm(temp,{recursive:true,force:true});if(importStored){try{if(!await rawLesson(job.lesson_id))await removeCloudAudio(lesson);}catch{/* Deletion can retry cleanup when the storage service recovers. */}}}
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, BookOpen, Cards, CheckCircle, CircleNotch, FileAudio, Headphones, List, ListChecks, Microphone, MagnifyingGlass, SquaresFour, UploadSimple, Users, WarningCircle, X } from "@phosphor-icons/react";
 import { availablePractice } from "@/lib/insights";
@@ -23,6 +24,7 @@ function addedDate(lesson: Lesson) {
 }
 
 function LessonStatus({ lesson }: { lesson: Lesson }) {
+  if (lesson.status === "ready" && lesson.error) return <span className="lessons-status lessons-status-failed"><Headphones size={13} /> Transcript ready</span>;
   if (lesson.status === "ready") return <span className="lessons-status lessons-status-ready"><CheckCircle size={13} /> Ready</span>;
   if (lesson.status === "failed") return <span className="lessons-status lessons-status-failed"><WarningCircle size={13} /> Needs attention</span>;
   return <span className="lessons-status lessons-status-preparing"><CircleNotch size={13} className="lessons-preparing-icon" /> {lesson.status === "queued" ? "Queued" : "Preparing"}</span>;
@@ -68,6 +70,7 @@ export function LessonsPage({ workspace, course, onCourse, onOpen, onUpload, onR
 
   return <section className="lessons-reference-page">
     <header className="lessons-page-heading"><div className="lessons-heading-title"><span className="lessons-heading-icon"><BookOpen size={27} /></span><div><h1>My lessons</h1><p>Your recordings, class notes, and practice in one place.</p></div></div><div className="lessons-heading-actions"><button type="button" className="lessons-button" onClick={onRecord}><Microphone size={17} />Record a lesson</button><button type="button" className="lessons-button lessons-button-dark" onClick={onUpload}><UploadSimple size={17} />Upload audio</button></div></header>
+    <Link href="/example" className="lessons-class-link" aria-label="Open the prepared demo lesson"><FileAudio size={25}/><div><strong>Demo lesson · Listening, catch-up & revision</strong><p>Prepared fictional class with audio, notes, transcript, quiz and flashcards. Works without a live AI request.</p></div><span className="lessons-button">Open demo<ArrowRight size={15}/></span></Link>
     <div className="lessons-page-tabs" role="tablist" aria-label="Lesson collections">{([{ id: "all", label: "All lessons" }, { id: "mine", label: "My recordings" }, { id: "shared", label: "Shared with me" }] as const).map(option => <button type="button" key={option.id} id={`lessons-tab-${option.id}`} role="tab" aria-selected={tab === option.id} aria-controls="lessons-content" onClick={() => setTab(option.id)}>{option.label}</button>)}</div>
     <div className="lessons-toolbar" data-tour="lessons-toolbar">
       <div className="lessons-search"><MagnifyingGlass size={17} /><input type="search" aria-label="Search lessons" placeholder="Search your lessons…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button type="button" aria-label="Clear lesson search" onClick={() => setQuery("")}><X size={14} /></button>}</div>
