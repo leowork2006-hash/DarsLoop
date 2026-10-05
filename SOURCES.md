@@ -81,6 +81,13 @@ Checked 6 October 2026. Deepgram Nova-3 and Speechmatics Melia-1 are hosted APIs
 
 ## Practice interface reference — 6 October 2026
 
-The actual quiz.bato.dev interface and StudyFetch Test setup were inspected on 6 October, including material selection, question-type/count rows, preview cards and additional settings. A competitor test was not generated. These references inform the centered full-screen quiz, raised choice surfaces and restrained mock-exam rows/preview. DarsLoop retains its Inter/Bitter typography, existing SVG icons, actual supported lesson questions and source/answer APIs. Competitor assets, code and content are not included. Reference: https://quiz.bato.dev and https://www.studyfetch.com .
+The actual quiz.bato.dev interface and StudyFetch Test setup were inspected on 6 October, including material selection, question-type/count rows, preview cards and additional settings. One four-format reference practice test was created from an existing reference-account material and taken through submission, results and answer review using dummy responses. This is interaction evidence, not competitor grading-accuracy evidence. These references inform the centered full-screen quiz, raised choice surfaces and restrained mock-exam rows/preview. DarsLoop retains its Inter/Bitter typography, existing SVG icons, actual supported lesson questions and source/answer APIs. Competitor assets, code and content are not included. Reference: https://quiz.bato.dev and https://www.studyfetch.com .
 
 `public/illustrations/practice-notebook-v27.png` is an original image made with OpenAI's built-in image-generation tool on 6 October 2026: an ivory notebook, pencil and audio card. It contains no competitor art or religious text. The tool did not expose a selectable model/version, so no particular image-model version is claimed. The previous bird is omitted from full-screen practice. Interface controls use the existing licensed SVG icon set; the image is decoration, not a clickable control.
+
+
+## Mock exam formats — 6 October 2026
+
+The actual StudyFetch test journey informed question-count rows, live previews, navigation and post-submission feedback. Official creation documentation: https://www.studyfetch.com/docs/docs/product-docs/6a63bfe5ee9569d818eecc3c . DarsLoop derives true/false, literal-word blanks and written recall from existing supported lesson questions/cards. Written recall uses a student self-check; no AI religious interpretation grade is supplied.
+
+Retrieval-format/feedback research informed this design, without claiming measured DarsLoop learning benefit: Smith & Karpicke (2014), Memory 22(7), 784–802, DOI 10.1080/09658211.2013.831454, https://learninglab.psych.purdue.edu/downloads/2014/2014_Smith_Karpicke_Memory.pdf ; feedback study https://pubmed.ncbi.nlm.nih.gov/18491500/ . These sources are credited, not redistributed.

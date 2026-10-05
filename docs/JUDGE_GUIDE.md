@@ -1,6 +1,6 @@
 # Judge guide
 
-Checked 5 October 2026. This guide describes what is runnable and what requires external services. Start at the [hosted fictional example](https://darsloop-production.up.railway.app/example), which needs no account. The Linux deployment and a fresh authenticated fictional upload were tested; email delivery and social sign-in consent remain untested. See RELEASE_STATUS.md for the exact scope.
+Checked 6 October 2026. This guide describes what is runnable and what requires external services. Start at the [hosted fictional example](https://darsloop-production.up.railway.app/example), which needs no account. The Linux deployment and a fresh authenticated fictional upload were tested; clean first-click email confirmation and social sign-in consent remain unproven. See RELEASE_STATUS.md for the exact scope.
 
 ## Start with the prepared example
 
@@ -17,7 +17,7 @@ The example is authored fictional material. It does not claim to demonstrate a f
 2. Open Ask this lesson. Ask what to do after missing a lesson and follow the supported passage.
 3. Ask a topic absent from the class. Check the lesson-scope response.
 4. Ask "Is vaping halal?" Check referral to a teacher instead of a ruling.
-5. Try a quiz and a flashcard. Open the audio evidence behind the answer.
+5. Try a quiz and a flashcard. Open the audio evidence behind the answer. Open Mock exam to choose available formats and a timer; answers and source audio appear after submission. Written recall uses your self-check, separately from automatic marks.
 6. Open Catch me up, Teacher's terms and the transcript. Distinguish prepared notes from original captured wording.
 
 The runtime has an optional listening-first teacher-question handoff. It is not an authenticated teacher approval/correction system. Hadith candidates remain a separate reference lookup, never AI authenticity grading.

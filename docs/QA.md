@@ -40,3 +40,12 @@ The combined reliability/private-note source passed 160 unit tests in 27 files a
 Scoped mocked-browser checks covered private-note save/reopen/conflicts, view switching and evidence preservation at desktop/390px in light/dark themes; anchored profile dismissal and dark upload/settings; full-screen quiz/cards/exam, countdown expiry, unanswered items, interrupted-save retry, source audio and 320px layout. These are controlled UI/API contracts, not a learner pilot or external-provider test. Final visual refinement uses the existing product type/icons, an original notebook image, a centered raised quiz action and actual-count mock-exam rows/preview.
 
 Private personal notes are separate from captured teacher material and generated practice. Editing a note cannot rewrite transcript evidence or quiz answers. Quick, key-point and detailed views reuse the already prepared cited material; switching those views does not regenerate the class.
+
+
+## Mixed-format mock exam — 6 October 2026
+
+The source passed 169 unit tests in 27 files. Nine added helper cases cover non-duplicating count allocation, valid canonical True / False review mapping, exact quote cloze and critical-passage exclusion in English/Arabic/Urdu fixtures, and written self-check separation. This is not a native-language accuracy evaluation.
+
+Six controlled mixed-format browser journeys covered real count caps/live previews, MCQ/True / False/blank/written input, pre-submit source exclusion, interrupted-save retry without resubmitting acknowledged responses, source playback, separate written self-check retry and deadline expiry with unanswered items. An initial-paused follow-up confirmed newly mounted format rows/previews and navigated questions remain visible. Desktop and phone screenshots were inspected. An extra authored supported card exists only in this private UI harness, so all four formats could be exercised together without altering the bundled demo or actual lessons.
+
+All formats reuse existing supported lesson items; no new AI generation request is made when selecting formats. Written text remains within the open attempt and receives no AI correctness grade. Count/time drafts persist only in this tab, scoped to account, lesson and source version.
