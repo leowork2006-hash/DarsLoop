@@ -23,6 +23,7 @@ export function generationSchema(schema:z.ZodType):Record<string,unknown> {
 }
 export function generationFailure(error:unknown):ProviderError {
   if(error instanceof ProviderError)return error;
+  if(error instanceof z.ZodError)console.log(JSON.stringify({event:"generation-schema-error",issues:error.issues.slice(0,8).map(i=>({code:i.code,path:i.path.map(p=>String(p).replace(/[^a-zA-Z0-9_]/g,"").slice(0,40)),...("maximum" in i?{maximum:i.maximum}:{}),...("minimum" in i?{minimum:i.minimum}:{})}))}));
   if(error instanceof z.ZodError||error instanceof SyntaxError)return new ProviderError("invalid_response","The AI returned study material in an invalid format. Your transcript is saved; please retry.");
   const e=error as {status?:unknown;statusCode?:unknown;name?:unknown}|null;
   const status=typeof e?.status==="number"?e.status:e?.statusCode;
@@ -38,11 +39,23 @@ export function generationFailure(error:unknown):ProviderError {
 async function generate<T>(system:string,input:unknown,schema:z.ZodType<T>):Promise<T> {
   const key=process.env.GEMINI_API_KEY;if(!key)throw new ProviderError("not_configured","Connect Google AI Studio to use automatic notes and live chat.");
   const client=new GoogleGenAI({apiKey:key,httpOptions:{timeout:60_000}});
-  try {
-    const result=await client.interactions.create({model:process.env.GENERATION_MODEL||"gemini-3.5-flash-lite",store:false,system_instruction:system,input:JSON.stringify(input),response_format:{type:"text",mime_type:"application/json",schema:generationSchema(schema)},generation_config:{temperature:0.1,max_output_tokens:8000}});
-    if(!result.output_text)throw new ProviderError("empty","The AI returned no usable response.");
-    return schema.parse(JSON.parse(result.output_text));
-  }catch(e){throw generationFailure(e);}
+  let problems:unknown;
+  for(let attempt=0;attempt<2;attempt++){
+    try {
+      const result=await client.interactions.create({model:process.env.GENERATION_MODEL||"gemini-3.5-flash-lite",store:false,system_instruction:system+(attempt?" The previous response failed structural validation. Regenerate a compact response that fits every schema bound. Use fewer supported points instead of truncating wording or qualifications. Do not repeat equivalent points. All original safety and evidence rules still apply.":""),input:JSON.stringify(attempt?{originalTask:input,formatProblems:problems}:input),response_format:{type:"text",mime_type:"application/json",schema:generationSchema(schema)},generation_config:{temperature:0.1,max_output_tokens:8000}});
+      if(!result.output_text)throw new ProviderError("empty","The AI returned no usable response.");
+      return schema.parse(JSON.parse(result.output_text));
+    }catch(e){
+      // One format repair only. Never retry exhausted credit or an unavailable
+      // service in a tight loop, and never silently trim unvalidated claims.
+      if(attempt===0&&(e instanceof z.ZodError||e instanceof SyntaxError)){
+        problems=e instanceof z.ZodError?e.issues.slice(0,12).map(i=>({code:i.code,path:i.path,...("maximum" in i?{maximum:i.maximum}:{}),...("minimum" in i?{minimum:i.minimum}:{})})):"Return complete, valid JSON within the output budget.";
+        continue;
+      }
+      throw generationFailure(e);
+    }
+  }
+  throw new ProviderError("invalid_response","Study material could not be formatted. Your transcript is saved.");
 }
 const supportSchema=z.object({checks:z.array(z.object({index:z.number().int().min(0),supported:z.boolean(),preservesQualifications:z.boolean(),lessonScopeOnly:z.boolean()}))});
 async function supportedIndices(blocks:{text:string;evidence:{segmentId:string;quote:string}[]}[],segments:Segment[]) {

@@ -23,7 +23,9 @@ const dataDir = process.env.DARSLOOP_DATA_DIR || path.join(process.cwd(), ".data
 await Promise.all(["jobs", "imports"].map(name => rm(path.join(dataDir, name), { recursive: true, force: true })));
 const children = [
   spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "--hostname", "0.0.0.0", "--port", port], { stdio: "inherit", env }),
-  spawn(process.execPath, ["--import", "tsx", "scripts/worker.ts"], { stdio: "inherit", env }),
+  // External multipart audio buffers need timely collection on a 1 GB host.
+  // This is a per-worker V8 budget, not a claim to cap whole-container memory.
+  spawn(process.execPath, ["--max-old-space-size=192", "--max-semi-space-size=8", "--expose-gc", "--import", "tsx", "scripts/worker.ts"], { stdio: "inherit", env }),
 ];
 await logHostMemory("spawned");
 for (const seconds of [5, 30]) setTimeout(() => void logHostMemory(`startup-${seconds}s`), seconds * 1000).unref();

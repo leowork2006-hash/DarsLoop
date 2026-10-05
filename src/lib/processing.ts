@@ -55,6 +55,9 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
       const chunks=chunkPlan(lesson.duration);
       for(const chunk of chunks.slice(lesson.processedChunks||0)){
         if(!held)throw new Error("Lease lost");
+        // Previous completed multipart requests may retain external buffers until
+        // V8's next major collection. At a durable section boundary they are free.
+        global.gc?.();
         const bytes=await providers.audioChunk(original,path.join(temp,`${chunk.index}.wav`),chunk.start,chunk.span);
         lesson={...lesson,stage:`Transcribing section ${chunk.index+1} of ${chunks.length}`};await jobCommit(job.id,job.lease,lesson);
         // Independent ASR requests run together; keep a single bounded audio buffer.

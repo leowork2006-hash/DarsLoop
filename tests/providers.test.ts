@@ -32,16 +32,24 @@ describe("provider contracts using mocks, not live AI",()=>{
   });
   it("detail selection changes generation instructions and enforces different output bounds",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.notes[0].text="A".repeat(700);
-    interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)});
+    interaction.mockResolvedValue({output_text:JSON.stringify(a)});
     await expect(createArtifacts(segments,{enabled:true,detail:"short"})).rejects.toMatchObject({code:"invalid_response"});
     expect(interaction.mock.calls[0][0].system_instruction).toContain("at most 6 notes");
-    expect(interaction).toHaveBeenCalledTimes(1);
+    expect(interaction).toHaveBeenCalledTimes(2);
+    interaction.mockReset();
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(9));
     const result=await createArtifacts(segments,{enabled:true,detail:"detailed"});
     expect(result.notes[0].text).toHaveLength(700);
-    expect(interaction.mock.calls[1][0].system_instruction).toContain("detailed section-by-section");
-    expect(interaction.mock.calls[1][0].system_instruction).toContain("Never add religious knowledge");
-    expect(JSON.parse(interaction.mock.calls[2][0].input).claims[0].text).toContain(a.notes[0].heading);
+    expect(interaction.mock.calls[0][0].system_instruction).toContain("detailed section-by-section");
+    expect(interaction.mock.calls[0][0].system_instruction).toContain("Never add religious knowledge");
+    expect(JSON.parse(interaction.mock.calls[1][0].input).claims[0].text).toContain(a.notes[0].heading);
+  });
+  it("repairs a malformed response once, then still audits all claims",async()=>{
+    vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);
+    interaction.mockResolvedValueOnce({output_text:'{"notes":'}).mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(10));
+    const r=await createArtifacts(segments);expect(r.notes.length).toBeGreaterThan(0);
+    expect(interaction).toHaveBeenCalledTimes(3);expect(interaction.mock.calls[1][0].system_instruction).toContain("failed structural validation");
+    expect(interaction.mock.calls[2][0].system_instruction).toContain("Audit claims");
   });
   it("notes off does not bypass the independent support audit",async()=>{
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.notes=[];a.overview="";
@@ -54,9 +62,9 @@ describe("provider contracts using mocks, not live AI",()=>{
     expect(wire.properties).toHaveProperty("maxLength");
     expect((wire.properties as Record<string,unknown>).items).not.toHaveProperty("maxItems");
     vi.stubEnv("GEMINI_API_KEY","test-only");const a=demoArtifacts(segments);a.notes=Array.from({length:41},()=>a.notes[0]);
-    interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)});
+    interaction.mockResolvedValue({output_text:JSON.stringify(a)});
     await expect(createArtifacts(segments)).rejects.toMatchObject({code:"invalid_response"});
-    expect(interaction).toHaveBeenCalledTimes(1);
+    expect(interaction).toHaveBeenCalledTimes(2);
     expect(generationSchema(artifactSchema).properties).toHaveProperty("practice");
   });
   it("returns useful provider failures without leaking provider messages",()=>{
