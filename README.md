@@ -4,7 +4,7 @@ Return to what your teacher taught. A student workspace for Islamic classes: rec
 
 **Live app:** [DarsLoop](https://darsloop-production.up.railway.app) · [Try the fictional example without an account](https://darsloop-production.up.railway.app/example).
 
-**Release status, 5 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. Fourteen public-example checks and 26 authenticated hosted assertions passed; disposable accounts were removed and their absence confirmed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); fresh-clone verification is recorded in the release status. Email delivery and social sign-in consent still need owner verification. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
+**Release status, 5 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. Fourteen public-example checks and 26 authenticated hosted assertions passed; disposable accounts were removed and their absence confirmed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed 87 unit tests, 18 isolated API checks and 14 example boundaries. Email delivery and social sign-in consent still need owner verification. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
 
 ## Try it without keys
 

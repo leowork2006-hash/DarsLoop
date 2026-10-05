@@ -32,7 +32,7 @@ Official docs checked 5 October 2026:
 
 [DarsLoop is live](https://darsloop-production.up.railway.app), with a [no-account fictional example](https://darsloop-production.up.railway.app/example). Railway built the Linux Docker image and started both web and worker processes. A fresh fictional upload passed the hosted two-ASR/generation workflow, source-linked practice and private-access checks. The local worker was stopped during that test so it could not process the hosted job.
 
-The account was eligible for a full trial; the account check showed $5 credit and 30 trial days before usage. Sleeping is disabled and the service has one replica. Those are dated observations, not a future uptime guarantee. Credentials were configured privately with the owner's explicit approval; none are included in the repository or build arguments. GitHub publication/autodeploy and fresh-clone verification still need repository write access. The owner reported adding the production Supabase URL settings; email delivery and social consent remain untested. No paid upgrade, card addition or final contest submission was performed.
+The account was eligible for a full trial; the account check showed $5 credit and 30 trial days before usage. Sleeping is disabled and the service has one replica. Those are dated observations, not a future uptime guarantee. Credentials were configured privately with the owner's explicit approval; none are included in the repository or build arguments. The product code is public on GitHub, its main branch is connected to this Railway service, and a fresh anonymous clone installed/built and passed the documented bounded checks. The owner reported adding the production Supabase URL settings; email delivery and social consent remain untested. No paid upgrade, card addition or final contest submission was performed.
 
 
 ## Judging-week deployment checklist
@@ -85,6 +85,6 @@ Railway soft email alerts leave workloads running; compute hard limits stop them
 - [ ] If health fails, check deployment logs and Railway status. Roll back to the last successful release when appropriate; keep private variables intact. Supabase retains lesson state independently of the container.
 - [ ] If provider quota is exhausted, keep the preserved lesson and retry later. The bundled example remains usable. It is not a replacement for fresh-generation claims.
 - [ ] If the credit forecast approaches the grant, ask the owner to choose a paid plan or an alternative host before the deadline. No zero-downtime or free migration promise.
-- [ ] Keep a clean product-only repository and release archive. Verify a fresh remote clone once GitHub grants write access; account authorization alone is insufficient.
+- [ ] Keep a clean product-only repository and release archive. The fresh anonymous remote clone was installed/built and its unit/API/example checks passed on 5 October. Recheck these steps after later code changes.
 - [ ] Verify signup email or an enabled social sign-in separately. Disposable password-account tests do not prove email delivery or provider consent.
 - [ ] Keep a dated record of the actual hosted test outcomes, cleanup, remaining credit and unresolved limitations. No real classroom audio or private research belongs in the public repository.

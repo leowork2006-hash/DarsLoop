@@ -30,3 +30,7 @@ Checks covered permissions/size bounds, incomplete-finalization rejection, cross
 Actual cgroup logs measured 175.9 MB at five-second startup, a 292.4 MB whole-container peak after this job, a 999,997,440-byte limit and zero OOM kills. The peak includes the media child process. This does not establish maximum-file/concurrent load performance. Fourteen actual HTTPS example/boundary checks passed again after deployment. The main application production build/typecheck and 87 unit tests passed.
 
 The desktop hosting follow-up is scheduled twice daily through the judging window. It is conditional on desktop availability. Railway rejected compute email-alert setup on the trial, so no host email alert or hard spending cutoff is claimed. See the dated checklist in [DEPLOYMENT.md](../DEPLOYMENT.md).
+
+## Actual public GitHub clone
+
+An anonymous shallow clone of commit 58b79807a73be184bcbc04bedb5a8b26db3a7b96 matched the scanned 183-file tree exactly. npm ci reported zero vulnerabilities; production build without keys, TypeScript, 87 unit tests, 18 isolated local API checks and 14 boundaries from the clone's own production example server passed. These are fresh-clone results; cloud provider work is covered separately above. The final documentation/PDF follow-up changes no runtime code.

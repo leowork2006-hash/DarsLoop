@@ -1,6 +1,6 @@
 # Release status
 
-Checked 5 October 2026. [DarsLoop is live](https://darsloop-production.up.railway.app). [Try the fictional example](https://darsloop-production.up.railway.app/example) without an account. The product repository is [DarsLoop on GitHub](https://github.com/leowork2006-hash/DarsLoop); fresh-clone verification remains a release gate.
+Checked 5 October 2026. [DarsLoop is live](https://darsloop-production.up.railway.app). [Try the fictional example](https://darsloop-production.up.railway.app/example) without an account. The product repository is [DarsLoop on GitHub](https://github.com/leowork2006-hash/DarsLoop); a fresh anonymous clone installed/built and passed the documented unit/API/example checks.
 
 ## Verified on the actual host
 
@@ -22,7 +22,6 @@ Checked 5 October 2026. [DarsLoop is live](https://darsloop-production.up.railwa
 
 ## Pending verification
 
-- An actual remote fresh-clone installation/build.
 - In-flight worker process-kill recovery. Upload-session persistence across an actual deployment passed; this does not prove every crash window.
 - Public signup/recovery delivery and any advertised social consent.
 - Final starting-version/reused-work disclosure, deck/video and portal receipt.
@@ -35,3 +34,7 @@ Repository packaging pass, 5 October: curated the public runtime/check scripts a
 ## Updated hosting release
 
 Direct-storage upload changes passed 23 actual cloud/host assertions with a 38 MB fictional source, resumed across a deployment after more than five minutes. Detailed notes, timestamps, quizzes/cards, private replay and cleanup passed. Actual whole-container cgroup readings: 175.9 MB at startup, 292.4 MB peak, about 1 GB limit, zero OOM kills. The main build/typecheck and 87 unit tests passed; 14 HTTPS example checks passed again. Sources, budget scenarios and monitoring limits are in [DEPLOYMENT.md](../DEPLOYMENT.md). No current evidence guarantees continuous uptime through 15 October.
+
+## Public repository verification
+
+Published 183 scanned product-only files through the owner-authorized GitHub connector. The computer's separate Git credential still rejected push; no credential was requested or exposed. The remote file tree exactly matched the scanned local release. A fresh anonymous GitHub clone installed with no reported vulnerabilities, built without keys, passed TypeScript and 87 unit tests, 18 isolated local API checks and 14 example boundaries from its own production server. Private research/reports/credentials/real recordings remain excluded. Railway main-branch source connection succeeded.
