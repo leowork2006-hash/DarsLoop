@@ -9,7 +9,9 @@ export async function logHostMemory(phase = "manual") {
   const [currentBytes, peakBytes, limitBytes] = await Promise.all([number("memory.current"), number("memory.peak"), number("memory.max")]);
   let oomKills = null;
   try { oomKills = Number((await readFile("/sys/fs/cgroup/memory.events", "utf8")).match(/^oom_kill (\d+)$/m)?.[1] ?? 0); } catch { /* cgroup v2 may be unavailable locally. */ }
-  const reading = { event: "host-memory", phase, checkedAt: new Date().toISOString(), currentBytes, peakBytes, limitBytes, oomKills, supervisorRssBytes: process.memoryUsage().rss };
+  let anonymousBytes=null,fileCacheBytes=null;
+  try { const stat=await readFile("/sys/fs/cgroup/memory.stat","utf8");anonymousBytes=Number(stat.match(/^anon (\d+)$/m)?.[1]??0);fileCacheBytes=Number(stat.match(/^file (\d+)$/m)?.[1]??0); } catch { /* Optional Linux details. */ }
+  const reading = { anonymousBytes,fileCacheBytes,event: "host-memory", phase, checkedAt: new Date().toISOString(), currentBytes, peakBytes, limitBytes, oomKills, supervisorRssBytes: process.memoryUsage().rss };
   console.log(JSON.stringify(reading));
   return reading;
 }

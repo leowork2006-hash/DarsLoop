@@ -3,9 +3,16 @@ import { authenticate, fail, HttpError } from "@/lib/http";
 import { authorizedLesson, cloudAudioBytes } from "@/lib/backend";
 import { cloudMode } from "@/lib/supabase/config";
 import { parseRange } from "@/lib/media";
+import { cloudAudioStream } from "@/lib/supabase/audio-stream";
 export const runtime="nodejs";
 export async function GET(req:Request,c:{params:Promise<{id:string}>}){try{
   const user=await authenticate(req),l=await authorizedLesson(user,(await c.params).id);if(!l)throw new HttpError(404,"Lesson not found.");
+  if(cloudMode()&&!l.demo){
+    const response=await cloudAudioStream(req,l);
+    const current=await authorizedLesson(user,l.id);
+    if(!current||current.version!==l.version){await response.body?.cancel();throw new HttpError(current?409:404,current?"This recording changed. Reload the lesson.":"Lesson access ended.");}
+    return response;
+  }
   if(cloudMode()){
     const bytes=await cloudAudioBytes(l),size=bytes.length;
     const current=await authorizedLesson(user,l.id);if(!current)throw new HttpError(404,"Lesson access ended.");if(current.version!==l.version)throw new HttpError(409,"This recording changed. Reload the lesson.");
