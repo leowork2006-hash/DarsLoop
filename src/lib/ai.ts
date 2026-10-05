@@ -6,7 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { answerSchema, artifactSchema, boundedQuestion, evidenceValid, excerptAnswer, instructionLike, needsPersonalReferral, noteAnchors, safePractice, validateAnswer, validateArtifacts } from "./evidence";
 import { lessonPassages } from "./semantic-search";
-import { chatQuestion, contextPassages, overviewPassages, savedLessonAnswer, type ChatContext } from "./chat-context";
+import { chatQuestion, contextPassages, overviewPassages, questionLanguage, savedLessonAnswer, type ChatContext } from "./chat-context";
 import { NOTE_DETAIL_LIMITS, resolveNoteOptions } from "./note-options";
 import { capturedMaterialLanguage, textUsesRequestedScript, filterMaterialLanguage, languageAuditInstruction, resolveMaterialLanguage, studyMaterialInstruction, supportedNoteCardQuestion, type PreparedMaterialLanguage } from "./study-material-language";
 import type { Answer, Artifacts, Lesson, StudyPassage, StudyNoteOptions } from "./types";
@@ -151,7 +151,7 @@ export async function answerLesson(question:string,l:Lesson,previous?:ChatContex
   const passages=sourcePassages(l);
   const bounded=boundedQuestion(question,passages,l.version,"ai");if(bounded)return bounded;
   if(needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"For religious interpretation or advice about your own situation, please ask a qualified teacher.",mode:"ai",version:l.version};
-  const plan=chatQuestion(question,l,previous),language=capturedMaterialLanguage([{text:question}]);
+  const plan=chatQuestion(question,l,previous),language=questionLanguage(question);
   let selected:StudyPassage[],method:Answer["retrieval"],complete=true;
   if(plan.overview){const selection=overviewPassages(l);selected=selection.passages;complete=selection.complete;method="whole_lesson";}
   else if(plan.followup&&plan.previous&&contextPassages(l,plan.previous).length){selected=contextPassages(l,plan.previous);method="note_anchor";}

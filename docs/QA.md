@@ -2,11 +2,13 @@
 
 ## V31 chat, mobile and audio corrections — 6 October
 
-- Targeted backend checks:48 tests in6 files pass, plus TypeScript. This is a bounded changed-path check, not a rerun of the entire release suite.
+- Targeted backend checks:49 tests in6 files pass, plus TypeScript. This is a bounded changed-path check, not a rerun of the entire release suite.
 - Isolated sidebar/player UI:49 fixture checks pass at1440/390/320px. Desktop player64px and mobile96px preserve44px controls and matching content clearance. This is viewport evidence, not physical-phone proof.
 - Actual Gemini check on four authored Urdu study-routine passages: the final overview and misspelled detail follow-up each returned four supported English explanation blocks with unchanged Urdu citations. Initial support-audit rejections are retained privately. It is not a native-language accuracy benchmark or a promise that every model reply passes.
 - Chat now carries bounded prior-question/source-ID context, handles whole-lesson coverage and conservative lexical typos, matches explanation language to the question, and retains messages in account/source-scoped browser memory. Clear chat is explicit. Unsupported claims remain withheld; independently accepted points can be shown as partial, and already prepared source-backed notes can serve as a labelled fallback.
 - Audio playback/download limits now share the48,000,000-byte prepared-audio limit. Previously the private playback endpoint still refused files above24MiB. Playback metadata caching retains neither audio bytes nor authorization, and membership/source checks still run for each request. Timestamp clicks call an existing player directly to preserve the browser gesture; newly mounted players can still require a Play tap on strict mobile browsers.
+- Hosted playback delta:seven checks including cleanup passed on a44MB synthetic byte fixture; cold/warm1KiB ranges returned206 in4.004/3.773s, exact sizes,416 bounds and signed-out401. This verifies delivery, not decoding or physical-phone playback.
+- Chat UI14fixturechecks/four layout measurements passed with0browsererrors; source/account scope, tab retention, Clear,+menu, centred Home, latest-response scroll and RTL were checked.
 - No new full-hour transcription, real-class publication, paid plan or purchase was used for these corrections.
 
 
