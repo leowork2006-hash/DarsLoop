@@ -26,9 +26,9 @@
   .intro :global(.brand-wordmark) { font-size: 20px; }
   .wordmark { padding: 24px 0; min-height: 100px; }
   .wordmark :global(.brand-wordmark) { font-size: clamp(31px,7.8vw,58px); }
-  .bottom { font-size: 9px; gap: 13px; padding-top: 15px; }
+  .bottom { font-size: 10px; gap: 13px; padding-top: 15px; }
 }
-@media (max-width: 360px) { .links { gap: 20px 15px; } .wordmark :global(.brand-wordmark) { font-size: 31px; } .bottom { align-items: flex-start; font-size: 8px; } .bottom>span:last-child { max-width: 130px; text-align: right; } }
+@media (max-width: 360px) { .links { gap: 20px 15px; } .wordmark :global(.brand-wordmark) { font-size: 31px; } .bottom { align-items: flex-start; font-size: 10px; } .bottom>span:last-child { max-width: 130px; text-align: right; } }
 @media (prefers-reduced-motion: reduce) {
   .wordmark[data-entered] :global(.brand-wordmark), .wordmark[data-entered] :global(.brand-ai) { opacity: 1; transform: none; filter: none; animation: none; }
 }
