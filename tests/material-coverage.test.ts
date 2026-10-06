@@ -64,7 +64,7 @@ describe("bounded source coverage, fictional text and mocked generation",()=>{
     expect(result.notes.length).toBeLessThanOrEqual(40);expect(result.terms.length).toBeLessThanOrEqual(30);expect(result.practice.length).toBeLessThanOrEqual(40);expect(new Set(result.practice.map(p=>p.id)).size).toBe(result.practice.length);
     expect(passages).toEqual(before);expect(fixture.maximum).toBeLessThanOrEqual(2);expect(fixture.interaction).toHaveBeenCalledTimes(12);expect(fixture.permit).toHaveBeenCalledTimes(12);expect(fixture.release).toHaveBeenCalledTimes(12);expect(fixture.permit.mock.calls.every(call=>call[1]==="queued")).toBe(true);
     for(const [request] of fixture.interaction.mock.calls){expect(request.system_instruction).toContain("conditions");if(!JSON.parse(request.input).claims)expect(request.system_instruction).toContain("never targets or minimums");}
-    expect(POLICY_VERSION).toBe("teacher-fidelity-v7");
+    expect(POLICY_VERSION).toBe("teacher-fidelity-v8");
   });
   it("records proposed/evidence/language/audit counts separately without source content in logs",async()=>{
     const passages=[source(0),source(1),source(2)];

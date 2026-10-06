@@ -15,12 +15,21 @@ export function trustedOAuthUrl(value:string,projectUrl:string,provider:SocialPr
  try{const url=new URL(value),project=new URL(projectUrl);return url.origin===project.origin&&url.protocol==="https:"&&url.pathname==="/auth/v1/authorize"&&url.searchParams.get("provider")===provider&&url.searchParams.get("code_challenge_method")==="s256"&&!!url.searchParams.get("code_challenge");}catch{return false;}
 }
 
-export function accountProblem(error:{code?:string;status?:number},action:"signin"|"signup"|"oauth"){
+export function accountProblem(error:{code?:string;status?:number;name?:string},action:"signin"|"signup"|"oauth"){
+ // Use documented codes/classes only. Never reflect a provider's raw message,
+ // which can contain an address, request details or private configuration.
  if(error.code==="email_not_confirmed")return {status:403,message:"Confirm your email before signing in. Check your inbox and spam folder."};
+ if(error.code==="email_address_invalid")return {status:400,message:"That email address was not accepted. Check its spelling, or use another address where you can receive email."};
+ if(error.code==="validation_failed"&&action==="signup")return {status:400,message:"Check your email address and password, then try creating your account again."};
+ if(error.code==="weak_password"&&action==="signup")return {status:400,message:"Choose a stronger password with at least 12 characters. Try a longer mix of letters, numbers and symbols."};
  if(error.code==="over_email_send_rate_limit")return {status:429,message:"Confirmation emails are temporarily limited. Please wait before trying again, or use a social sign-in option if one is shown."};
- if(error.status===429)return {status:429,message:"Too many attempts. Please wait before trying again."};
- if((error.status||0)>=500||error.code==="unexpected_failure")return {status:503,message:"Sign-in is temporarily unavailable. Please try again shortly."};
- if(error.code==="email_address_not_authorized")return {status:503,message:"Email sign-up is not available for this address yet. Use a social sign-in option if one is shown."};
+ if(error.status===429||error.code==="over_request_rate_limit")return {status:429,message:"Too many attempts. Please wait before trying again."};
+ if(error.code==="signup_disabled")return {status:503,message:"New account creation is currently unavailable. You can sign in if you already have a DarsLoop account."};
+ if(error.code==="email_provider_disabled")return {status:503,message:"Email account creation is unavailable. Use a social sign-in option if one is shown, or try again later."};
+ if(error.code==="email_address_not_authorized")return {status:503,message:"Confirmation email cannot be sent to this address right now. Use a social sign-in option if one is shown, or try again later."};
+ if(error.code==="request_timeout"||error.status===408||error.status===504)return {status:503,message:"The account request took too long. Please wait a moment, then try again."};
+ if(error.name==="AuthRetryableFetchError"&&error.status===0)return {status:503,message:"The account service could not be reached. Please try again shortly."};
+ if((error.status||0)>=500||error.code==="unexpected_failure"||error.name==="AuthRetryableFetchError")return {status:503,message:`${action==="signup"?"Account creation":"Sign-in"} is temporarily unavailable. Please try again shortly.`};
  if(action==="signin")return {status:400,message:"That email and password combination did not work. Use the password you created for DarsLoop."};
  if(action==="oauth")return {status:503,message:"This sign-in option is unavailable. Please try another option."};
  return {status:400,message:"Account creation could not finish. Please try again later, or sign in if you already have an account."};

@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Lesson, Segment } from "../src/lib/types";
+import { studySkillsLesson } from "./fixtures/study-skills";
 process.env.DARSLOOP_DATA_DIR=mkdtempSync(path.join(os.tmpdir(),"darsloop-search-"));
 const s=await import("../src/lib/store");
 const {unitVector,searchWindows,rankedPassages,indexedVectors,lessonPassages}=await import("../src/lib/semantic-search");
@@ -63,7 +64,7 @@ describe("selected-lesson retrieval invariants; mocked embeddings",()=>{
   it("falls back to scoped keyword passages when embeddings are unavailable",async()=>{
     const saved=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY="";
     try {
-      const owner=fixtureSession(),base=s.listLessons(owner.userId)[0],segments=Array.from({length:31},(_,i)=>({...base.segments[i%8],id:`extended-${i}`,start:i*12,end:(i+1)*12}));
+      const owner=fixtureSession(),base=s.listLessons(owner.userId)[0],source=studySkillsLesson().segments,segments=Array.from({length:31},(_,i)=>({...source[i%source.length],id:`extended-${i}`,start:i*12,end:(i+1)*12}));
       const lesson:Lesson={...base,id:randomUUID(),demo:false,segments};s.insertLesson(lesson);
       const r=await lessonPassages("revision",lesson);expect(r.method).toBe("lexical_fallback");expect(r.segments.length).toBeGreaterThan(0);expect(r.segments.every(p=>segments.some(s=>s.id===p.id))).toBe(true);
     }finally{if(saved===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=saved;}

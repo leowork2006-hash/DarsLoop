@@ -7,7 +7,7 @@ import { removeImport } from "./imports";
 import { MAX_STORED_AUDIO_BYTES } from "../upload-options";
 import { safeLesson } from "../store";
 import { nextReview } from "../review-activity";
-import { demoArtifacts, demoScript } from "../demo";
+import { demoArtifacts, demoScript, demoTitle, demoCourse } from "../demo";
 import type { ClassGroup, Lesson, Review, Segment } from "../types";
 import { MATERIAL_GENERATION_REVISION, detailedOptions, sourceReadyForMaterial } from "../material-sections";
 import { checkMaterialRequest, materialSourceSnapshot, MaterialQueueError, type DetailedQueueResult, type MaterialQueueCode } from "../material-queue";
@@ -38,9 +38,9 @@ export async function seedDemo(user:string){
  const client=adminClient(),account=await client.auth.admin.getUserById(user);
  if(account.error||!account.data.user)throw new Error("Account unavailable");
  if(account.data.user.user_metadata?.darsloop_example_added)return;
- const segments:Segment[]=JSON.parse(await readFile(path.join(process.cwd(),"fixtures/demo-timing.json"),"utf8"));if(segments.length!==demoScript.length||segments.some((s,i)=>s.text!==demoScript[i]||!Number.isFinite(s.start)||!Number.isFinite(s.end)||s.end<=s.start))throw new Error("Example audio manifest is invalid");
+ const segments:Segment[]=JSON.parse(await readFile(path.join(process.cwd(),"fixtures/demo-five-pillars-timing.json"),"utf8"));if(segments.length!==demoScript.length||segments.some((s,i)=>s.text!==demoScript[i]||!Number.isFinite(s.start)||!Number.isFinite(s.end)||s.end<=s.start))throw new Error("Example audio manifest is invalid");
  const h=hash(`darsloop-demo:${user}`),id=`${h.slice(0,8)}-${h.slice(8,12)}-5${h.slice(13,16)}-8${h.slice(17,20)}-${h.slice(20,32)}`;
- const l:Lesson={id,ownerId:user,title:"Demo lesson · Listening & revision",course:"Adab of learning",createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:"fixtures/demo.mp3",mime:"audio/mpeg"};
+ const l:Lesson={id,ownerId:user,title:`Demo lesson · ${demoTitle}`,course:demoCourse,createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:"fixtures/demo-five-pillars.mp3",mime:"audio/mpeg"};
  checked(await client.from("lessons").upsert(row(l),{onConflict:"id",ignoreDuplicates:true}));
  const updated=await client.auth.admin.updateUserById(user,{user_metadata:{...account.data.user.user_metadata,darsloop_example_added:true}});
  if(updated.error)throw new Error("Example preference could not be saved");
@@ -103,7 +103,7 @@ export async function listGroups(user:string):Promise<ClassGroup[]>{
 export async function takeBudget(user:string,event:string,limit:number){return rpc<boolean>("darsloop_budget",{p_user:user,p_event:event,p_limit:limit});}
 export async function storeAudio(l:Lesson,bytes:Buffer){const audioPath=`${l.ownerId}/${l.id}`;checked(await adminClient().storage.from("lesson-audio").upload(audioPath,bytes,{contentType:l.mime,upsert:false}));return {...l,audioPath};}
 export async function audioBytes(l:Lesson){
- if(l.demo)return readFile(path.join(process.cwd(),"fixtures/demo.mp3"));
+ if(l.demo)return readFile(path.join(process.cwd(),l.audioPath.endsWith("demo-five-pillars.mp3")?"fixtures/demo-five-pillars.mp3":"fixtures/demo.mp3"));
  if(l.audioPath!==`${l.ownerId}/${l.id}`)throw new Error("Invalid private audio path");
  const blob=checked(await adminClient().storage.from("lesson-audio").download(l.audioPath));if(!blob||blob.size>MAX_STORED_AUDIO_BYTES)throw new Error("Audio is unavailable");return Buffer.from(await blob.arrayBuffer());
 }

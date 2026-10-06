@@ -6,7 +6,7 @@ import styles from "./landing-narrative.module.css";
 const lines = ["Find the point you missed. 🎧", "Make sense of your notes. 📖", "Recall. Check. Try again. ✨"];
 const statement = lines.join(" ");
 const words = statement.split(" ");
-const audiences = ["Alimiyyah students", "Arabic classes", "Halaqahs", "Online classes"];
+const audiences = ["Students of Islamic knowledge", "Arabic classes", "Study circles", "Online classes"];
 
 export function LandingNarrative() {
   const root = useRef<HTMLElement>(null);
@@ -61,7 +61,7 @@ export function LandingNarrative() {
         const index = lines.slice(0, lineIndex).join(" ").split(" ").filter(Boolean).length + wordIndex;
         return <span key={index} className={styles.word} style={{ opacity: !enhanced || staticMotion ? 1 : Math.round((.22 + .78 * Math.max(0, Math.min(1, progress * (words.length + 3) - index))) * 1000) / 1000 }}>{word}{" "}</span>;
       })}</span>)}</span></p>
-      <div className={styles.badges} aria-label="Built for students of Islamic knowledge"><span className={styles.sticker}>Built for <strong>Alimiyyah students.</strong></span><span className={styles.sticker}>Halaqahs</span><span className={styles.sticker}>Online classes</span></div>
+      <div className={styles.badges} aria-label="Built for students of Islamic knowledge"><span className={styles.sticker}>Built for <strong>students of Islamic knowledge.</strong></span><span className={styles.sticker}>Study circles</span><span className={styles.sticker}>Online classes</span></div>
       <div ref={ticker} className={styles.ticker} aria-label={`Built for ${audiences.join(", ")}`} data-audience-ticker data-running={enhanced && !reduced && tickerVisible && pageVisible}>
         <div className={styles.track} aria-hidden="true">{[0, 1].map(copy => <div key={copy} className={styles.tickerGroup}><span className={styles.tickerLabel}>Built for</span>{audiences.map(audience => <span key={audience} className={styles.tickerAudience}>{audience}<span className={styles.tickerStar}>✦</span></span>)}</div>)}</div>
       </div>

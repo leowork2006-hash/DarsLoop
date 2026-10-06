@@ -17,10 +17,10 @@ describe("evidence boundary",()=>{
     const a=demoArtifacts(segments);
     a.overview="Uncited outside claim";
     a.notes.push({...a.notes[0],text:"Unsupported",evidence:[{segmentId:"missing",quote:"Not in this lesson"}]});
-    a.practice.push({...a.practice[0]}, {...a.practice[1],id:"bad-choice",answer:"Not a choice"});
+    a.practice.push({...a.practice[0]}, {id:"literal-name",kind:"flashcard",question:"What is the term?",answer:"Shahadah",choices:[],evidence:a.terms[0].evidence}, {...a.practice[1],id:"bad-choice",answer:"Not a choice"});
     const valid=validateArtifacts(a,segments);
-    expect(valid.notes).toHaveLength(4);expect(valid.practice).toHaveLength(3);
-    expect(valid.practice.some(p=>p.id==="card-adab")).toBe(false);
+    expect(valid.notes).toHaveLength(4);expect(valid.practice).toHaveLength(4);
+    expect(valid.practice.some(p=>p.id==="literal-name")).toBe(false);
     expect(valid.overview).not.toContain("Uncited");
   });
   it("rejects a generated answer with invalid evidence and sanitizes refusal prose",()=>{

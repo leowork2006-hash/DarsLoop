@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { studyInsights } from "../src/lib/insights";
-import { exampleLesson } from "../src/lib/example";
+import { studySkillsLesson as exampleLesson } from "./fixtures/study-skills";
 import type { Review } from "../src/lib/types";
 const lesson={...exampleLesson(),id:"owned-lesson",demo:false};
 const review:Review={lessonId:lesson.id,itemId:lesson.artifacts!.practice[0].id,version:1,attempts:3,lastResult:false,dueAt:"2026-10-04T12:00:00Z",intervalDays:0};

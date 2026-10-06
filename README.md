@@ -25,7 +25,7 @@ Download the repository ZIP (Code > Download ZIP), extract it and run these comm
 3. Ask “What should I do after missing a lesson?” Follow the source passage and play its audio.
 4. Ask about astronomy, which is outside the example. The app says it is not covered.
 5. Read the transcript, then try **Quiz**, **Flashcards**, **Catch me up** and **Teacher’s terms**.
-6. Sign in to find **Demo lesson · Listening & revision** in My lessons. This is a prepared fictional lesson with audio, notes and practice; it can be deleted and will not be added again to that account.
+6. Sign in to find **Demo lesson · The five pillars of Islam** in My lessons. This is a prepared fictional lesson with audio, notes and practice; it can be deleted and will not be added again to that account.
 7. In a configured authenticated workspace, upload permitted fictional audio or an authored PDF, choose the main spoken language for audio and choose Auto, Arabic, Urdu or English study material with Quick, Balanced or Detailed notes. This is the fresh AI path; it is separate from the prepared example.
 
 Without AI keys, local questions use visibly labelled transcript search, and fresh audio waits for the worker connection. Prepared material is never presented as freshly generated output.
@@ -112,3 +112,7 @@ Short summary, key points and detailed views reorganize the existing supported c
 Long sources are divided into bounded chronological sections, with neighboring passages retained for qualifications. Each section receives literal-evidence and independent support checks; a failed section cannot become a complete replacement. **Your notes** is a private plain-text editor, stored separately by user/lesson/transcript version; edits never become teacher quotations or AI/practice source data. Apply all migrations before deploying this revision.
 
 Quiz, flashcards and mock exams open in a full-screen practice space with pausable motion and a reduced-motion option. Source audio remains available inside quiz/card feedback; mock exams show answers and sources after submission. Question counts reflect supported items actually present in the selected lesson.
+
+## Demo content and trust limits
+
+The public example uses an original, synthetic introductory lesson on the five pillars of Islam. Audio timings are generated locally, not an ASR test. Notes and practice are prepared, not live AI output or a scholarly review. [Religious sources and scope](RELIGIOUS-SOURCES.md) records the primary references and limits. Detailed rulings, personal advice and hadith grading are referred to a qualified teacher. Arabic/Urdu/English can be tried with limitations; native classroom quality has not been established.

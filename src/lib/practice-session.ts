@@ -1,5 +1,27 @@
 import { availablePractice } from "./insights";
+import { evidenceValid, normalise } from "./evidence";
+import { sourcePassages } from "./source-passages";
 import type { Lesson, PracticeItem } from "./types";
+
+/** Reuse a saved explanation only where both its wording and citations support this answer.
+ * A shared segment alone is not enough: the item's displayed quotation must cover
+ * every note citation, and the note must explicitly contain the answer phrase.
+ * Require captured wording for this label; citation presence alone cannot prove
+ * that a generated paraphrase explains the answer without changing its meaning.
+ */
+export function practiceAnswerNote(lesson: Lesson, item: PracticeItem) {
+  const passages = sourcePassages(lesson);
+  if (!evidenceValid(item.evidence, passages)) return null;
+  const phrase = normalise(item.answer).trim().replace(/\s+/g, " ");
+  if (phrase.length < 8) return null;
+  return lesson.artifacts?.notes.find(note => {
+    if (!evidenceValid(note.evidence, passages)) return false;
+    const text = normalise(note.text).trim().replace(/\s+/g, " ");
+    return ` ${text} `.includes(` ${phrase} `)
+      && note.evidence.some(citation => ` ${normalise(citation.quote).trim().replace(/\s+/g, " ")} `.includes(` ${text} `))
+      && note.evidence.every(citation => item.evidence.some(source => source.segmentId === citation.segmentId && source.quote.includes(citation.quote)));
+  }) ?? null;
+}
 
 /** Resolve requested IDs back to this lesson's supported current material. */
 export function sessionPractice(lesson: Lesson, requested: PracticeItem[], test = false) {
@@ -91,6 +113,15 @@ export function updateExamPlan(items: PracticeItem[], plan: ExamPlan, format: Ex
   return { ...plan, [format]: Math.max(0, Math.min(examFormatLimit(items, plan, format), Math.trunc(Number.isFinite(value) ? value : 0))) };
 }
 
+/** Mix the complete ID, so sequential IDs do not expose an alternating answer pattern. */
+function itemHash(id: string) {
+  let hash = 2166136261;
+  for (let position = 0; position < id.length; position++) hash = Math.imul(hash ^ id.charCodeAt(position), 16777619);
+  hash = Math.imul(hash ^ (hash >>> 16), 0x7feb352d);
+  hash = Math.imul(hash ^ (hash >>> 15), 0x846ca68b);
+  return (hash ^ (hash >>> 16)) >>> 0;
+}
+
 /** Each canonical source item appears once. The format key stays stable across navigation and retries. */
 export function buildExam(items: PracticeItem[], requested: ExamPlan,sourceKind?:"audio"|"pdf",language?:"ar"|"ur"|"en"): ExamQuestion[] {
   const pools = examPools(items), count = (value: number, max: number) => Math.max(0, Math.min(max, Math.trunc(Number.isFinite(value) ? value : 0)));
@@ -102,9 +133,10 @@ export function buildExam(items: PracticeItem[], requested: ExamPlan,sourceKind?
   const question = (source: PracticeItem, format: ExamFormat, extra: Partial<ExamQuestion> = {}): ExamQuestion => ({ key: `${format}:${source.id}`, source, format, prompt: source.question, choices: [], ...extra });
   return [
     ...pools.quiz.slice(0, mcqCount).map(source => question(source, "multiple-choice", { choices: source.choices })),
-    ...pools.quiz.slice(mcqCount, mcqCount + tfCount).map((source, position) => {
-      const candidate = position % 2 === 0 ? source.choices.find(choice => choice !== source.answer)! : source.answer;
-      return question(source, "true-false", { prompt: language==="ar"?`هل هذه إجابة ${sourceKind==="pdf"?"المصدر":"المعلم"} عن السؤال «${source.question}»؟`:language==="ur"?`کیا یہ ${sourceKind==="pdf"?"ماخذ":"استاد"} کا سوال “${source.question}” کا جواب ہے؟`:`Is this the ${sourceKind==="pdf"?"source-supported answer":"teacher’s answer"} to “${source.question}”?`, choices: language==="ar"?["صحيح","خطأ"]:language==="ur"?["درست","غلط"]:["True", "False"], candidate });
+    ...pools.quiz.slice(mcqCount, mcqCount + tfCount).map(source => {
+      const hash = itemHash(source.id), alternatives = source.choices.filter(choice => choice !== source.answer).sort();
+      const candidate = (hash & 1) !== 0 || !alternatives.length ? source.answer : alternatives[(hash >>> 1) % alternatives.length];
+      return question(source, "true-false", { prompt: language==="ar"?`هل يدعم الدرس هذه الإجابة عن السؤال «${source.question}»؟`:language==="ur"?`کیا سبق اس سوال کے جواب کی تائید کرتا ہے: “${source.question}”؟`:`Is this the supported answer to “${source.question}”?`, choices: language==="ar"?["صحيح","خطأ"]:language==="ur"?["درست","غلط"]:["True", "False"], candidate });
     }),
     ...cloze.map(source => question(source, "fill-blank", { prompt: language==="ar"?"تذكر الكلمة الأصلية الناقصة من الاقتباس.":language==="ur"?"اقتباس میں خالی جگہ کا اصل لفظ یاد کریں۔":"Recall the missing word from the captured wording.", ...literalCloze(source)! })),
     ...written.map(source => question(source, "written")),

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
-import { exampleLesson } from "../src/lib/example";
+import { studySkillsLesson as exampleLesson } from "./fixtures/study-skills";
 import type { Lesson, Review } from "../src/lib/types";
 
 const cloud=vi.hoisted(()=>({lesson:null as Lesson|null,review:null as Review|null,writes:[] as URL[]}));

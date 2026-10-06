@@ -13,7 +13,7 @@ import styles from "./landing-hero.module.css";
 const questions = [
   ["How do I start?", "Start with a recording you have permission to use. Upload audio or video, add a selectable-text PDF, or record with this page open. DarsLoop prepares the available text, notes, questions and flashcards. Check important wording against the original lesson."],
   ["What files and lesson lengths can I upload?", "Audio and video imports can be up to 2 hours and 500 MiB. Supported formats include MP3, AAC/M4A, MP4, WAV, Ogg, WebM and FLAC. PDFs must contain selectable text, with a limit of 8 MB and 40 pages. Scanned image-only PDFs are not supported."],
-  ["Can I use Arabic, Urdu or English?", "Yes. Choose the spoken-language hint when adding audio, and the notes language when preparing a lesson. Speech recognition can miss words, especially in noisy or mixed-language classes. Preparing notes in another language makes a new AI request; changing between Summary and Detailed does not."],
+  ["Can I use Arabic, Urdu or English?", "You can try Arabic, Urdu or English with the spoken-language hint. Speech recognition can miss meaning in noisy or mixed-language audio. Backup services cover fewer languages; native classroom quality is not yet verified. Choose a study-material language before preparation. Another language needs processing and does not translate the whole interface; source quotations keep their original words."],
   ["Can I record on my phone?", "Yes, with the browser page open. Browser recordings are limited to one hour, and locking your phone can pause recording. For a longer class, use your phone’s recorder, then upload the permitted file."],
   ["What if a lesson stops preparing or has missing words?", "Open the lesson to see its progress and any action needed. The original file and available text remain accessible. Long files can take longer; unclear speech may be missed, and partial notes only cover the prepared passages. Follow the lesson’s retry or preparation controls and check the original."],
   ["Does DarsLoop give religious rulings?", "Class answers stay within your selected lesson and show supporting passages where available. DarsLoop can make mistakes. Ask a qualified teacher for religious guidance, interpretation or advice for your own situation."],
@@ -33,6 +33,7 @@ export default function Landing() {
           <p className={styles.overline}><span/> For students of Islamic knowledge</p>
           <h1 id="hero-title" className={styles.title}>AI notes &amp; practice<br/><em>for Islamic classes.</em></h1>
           <p className={styles.lead}>Stay with the explanation. Read clear notes, ask about your lesson and practise what was covered.</p>
+          <p className={styles.private}>Class answers with source passages. Ask a qualified teacher for wider religious guidance.</p>
           <div className={styles.actions}><Link href="/signin" className={styles.primary}>Start learning <ArrowRight size={18}/></Link><Link href="/example" className={styles.secondary}><Play size={14} fill="currentColor"/> Explore the app</Link></div>
           <p className={styles.private}><LockKeyhole size={13}/> Your lessons are private until you share them.</p>
         </div>

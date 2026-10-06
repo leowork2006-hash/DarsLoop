@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 async function audio(req: Request, head = false) {
   try {
     localRequest(req);
-    const bytes = await readFile(path.join(process.cwd(), "fixtures/demo.mp3")), size = bytes.length;
+    const bytes = await readFile(path.join(process.cwd(), "fixtures/demo-five-pillars.mp3")), size = bytes.length;
     let range;
     try { range = parseRange(req.headers.get("range"), size); }
     catch { return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${size}`, "Cache-Control": "no-store" } }); }

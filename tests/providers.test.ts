@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { demoArtifacts } from "../src/lib/demo";
+import { studySkillsArtifacts as demoArtifacts } from "./fixtures/study-skills";
 import type { Lesson, Segment } from "../src/lib/types";
 const interaction=vi.hoisted(()=>vi.fn());
 vi.mock("@google/genai",()=>({GoogleGenAI:class{interactions={create:interaction};}}));
@@ -35,6 +35,8 @@ describe("provider contracts using mocks, not live AI",()=>{
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(checks(5));
     const result=await createArtifacts(segments,{enabled:false,detail:"detailed"});
     expect(result.notes).toEqual([]);expect(result.overview).toBe("");expect(result.practice).toHaveLength(3);
+    expect(result.practice.some(item=>item.question===a.practice.find(item=>item.id==="card-adab")!.question)).toBe(false); // Unsafe literal-term card is explicitly excluded, even when output IDs are canonicalized.
+    expect(result.practice.map(item=>item.question)).toEqual(a.practice.filter(item=>item.id!=="card-adab").map(item=>item.question));
     expect(JSON.parse(interaction.mock.calls[0][0].input).studyNotes).toEqual({enabled:false,detail:"detailed",language:"auto"});
     expect(JSON.parse(interaction.mock.calls[1][0].input).claims).toHaveLength(5);
     expect(interaction.mock.calls[0][0].system_instruction).toContain("Return notes and overview empty");

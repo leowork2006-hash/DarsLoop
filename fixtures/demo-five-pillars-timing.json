@@ -1,0 +1,58 @@
+[
+  {
+    "id": "example-1",
+    "start": 0,
+    "end": 15.320313,
+    "text": "Welcome to this fictional introductory lesson about the five pillars of Islam. The voice, class and study material are prepared for a product demonstration. This is an overview of basic terms, not a religious ruling or advice about anyone's situation.",
+    "flags": []
+  },
+  {
+    "id": "example-2",
+    "start": 15.320313,
+    "end": 31.243751000000003,
+    "text": "The five pillars named in this lesson are the testimony of faith, prayer, zakah, fasting in Ramadan, and pilgrimage. These are distinct parts of the overview. This short lesson introduces their meanings; it does not explain all their conditions or detailed rulings.",
+    "flags": []
+  },
+  {
+    "id": "example-3",
+    "start": 31.243751000000003,
+    "end": 46.671126,
+    "text": "Shahadah refers to the testimony of faith. In this overview, it concerns belief in Allah as the only one worthy of worship and Muhammad as His Messenger. The lesson describes the testimony as one pillar; it does not count its two parts as two separate pillars.",
+    "flags": []
+  },
+  {
+    "id": "example-4",
+    "start": 46.671126,
+    "end": 61.483939,
+    "text": "Salah refers to prayer. The overview describes five daily prayers. Prayer is presented separately from fasting and charity. This lesson does not cover how to perform a prayer, what makes it valid, or exceptions for a particular person.",
+    "flags": []
+  },
+  {
+    "id": "example-5",
+    "start": 61.483939,
+    "end": 75.213877,
+    "text": "Zakah is an obligatory financial act of worship. It is distinct from voluntary charity. Detailed rules depend on matters that this introduction has not covered. No amount due from an individual is calculated in this lesson.",
+    "flags": []
+  },
+  {
+    "id": "example-6",
+    "start": 75.213877,
+    "end": 89.792065,
+    "text": "Sawm refers here to fasting during Ramadan. The basic description is abstaining from food and drink from dawn until sunset as worship. This introduction does not decide whether someone's fast is valid or discuss personal exemptions.",
+    "flags": []
+  },
+  {
+    "id": "example-7",
+    "start": 89.792065,
+    "end": 105.27919,
+    "text": "Hajj refers to pilgrimage to Makkah. The overview describes it as a duty for those who are able. It does not assess an individual's ability or describe the pilgrimage rituals. Questions about those details require a qualified teacher and an appropriate source.",
+    "flags": []
+  },
+  {
+    "id": "example-8",
+    "start": 105.27919,
+    "end": 121.796628,
+    "text": "To review this lesson, distinguish the five pillars and return to the original passage for each definition. The notes and practice only use this script. For religious interpretation, detailed rulings or applying a teaching to your own situation, ask a qualified teacher.",
+    "flags": []
+  }
+]

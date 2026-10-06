@@ -10,10 +10,10 @@ describe("manual ASR adapter contracts with mocked HTTP",()=>{
   expect(result.segments[0]).toMatchObject({start:1,end:2.2,text:"Today فاعل."});expect(result.segments[0].words?.map(w=>w.language)).toEqual(["en","ar"]);
  });
  it("fails invalid word timing rather than clamping it",()=>{expect(()=>wordsToSegments([{start:-1,end:1,text:"bad"}])).toThrow();expect(()=>wordsToSegments([{start:1,end:1,text:"bad"}])).toThrow();});
- it("Deepgram requires a main language, uses Token auth and binary audio, never multi",async()=>{
+ it("Deepgram requires a main language, opts out of model improvement and uses Token auth/binary audio, never multi",async()=>{
   vi.stubEnv("DEEPGRAM_API_KEY","test-private-key");const fetcher=vi.fn(async(_url:string,_init:{headers:Record<string,string>})=>json({results:{channels:[{alternatives:[{words:[{start:0.2,end:1,word:"لفظ",punctuated_word:"لفظ۔"}]}]}]}}));vi.stubGlobal("fetch",fetcher);
   await expect(transcribeDeepgram(Buffer.from("mock"),undefined,"auto")).rejects.toThrow("main spoken language");expect(fetcher).not.toHaveBeenCalled();
-  const result=await transcribeDeepgram(Buffer.from("fLaC mock"),undefined,"ur");expect(fetcher.mock.calls[0][0]).toContain("language=ur");expect(fetcher.mock.calls[0][1].headers.Authorization).toBe("Token test-private-key");expect(result.segments[0].words?.[0].language).toBe("ur");
+  const result=await transcribeDeepgram(Buffer.from("fLaC mock"),undefined,"ur");expect(fetcher.mock.calls[0][0]).toContain("language=ur");expect(new URL(fetcher.mock.calls[0][0]).searchParams.get("mip_opt_out")).toBe("true");expect(fetcher.mock.calls[0][1].headers.Authorization).toBe("Token test-private-key");expect(result.segments[0].words?.[0].language).toBe("ur");
  });
  it("Groq carries a real Retry-After into a durable delay",async()=>{vi.stubEnv("GROQ_API_KEY","fake");vi.stubGlobal("fetch",vi.fn(async()=>json({},429,{"retry-after":"3600"})));const before=Date.now();await expect(transcribeGroq(Buffer.from("mock"))).rejects.toMatchObject({code:"quota",retryAt:expect.any(Number)});try{await transcribeGroq(Buffer.from("mock"));}catch(e){expect((e as {retryAt:number}).retryAt-before).toBeGreaterThanOrEqual(3600000);}});
  it("Speechmatics submits a Melia multilingual batch, polls, reads JSON, deletes only its job",async()=>{

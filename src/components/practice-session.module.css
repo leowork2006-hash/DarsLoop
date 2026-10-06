@@ -134,6 +134,10 @@
 .sourcePassage blockquote { font-size: 12px; line-height: 1.9; margin: 0 0 11px; padding-inline-start: 15px; border-inline-start: 2px solid #c7c3b1; color: #686251; overflow-wrap: anywhere; }
 .sourceTime { display: inline-flex; gap: 7px; align-items: center; border: 1px solid #d6ceba; background: #fffdf4; border-radius: 99px; color: #6b5a38; padding: 9px 13px; font-size: 10px; min-height: 36px; box-shadow: 0 2px 0 #ddd4c1; }
 .sourceTime bdi { font-weight: 600; font-variant-numeric: tabular-nums; }
+.rationale { margin-bottom: 19px; }
+.rationale > p:last-child { margin: 0; font-size: 12px; line-height: 1.85; color: #686251; }
+.sourceAction { margin-bottom: 15px; min-height: 42px; font-size: 11px; flex-wrap: wrap; gap: 8px; }
+.sourceAction bdi { font-size: 10px; font-weight: 500; }
 .feedback .nextDue { font-size: 10px; color: #8a806d; margin: 18px 0 0; }
 .recallCard { padding: 34px 28px; min-height: 245px; border-radius: 23px; background: #ece5f4; border: 1px solid #d1c3df; box-shadow: 0 7px 0 #cbbddb, inset 0 1px 0 #fff; display: flex; align-items: center; flex-direction: column; justify-content: center; text-align: center; color: #6b587b; transition: transform .3s ease; }
 .recallCard > p:not(.kicker) { font-size: 14px; line-height: 1.9; margin: 18px 0 0; }

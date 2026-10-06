@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseNoteOptions, resolveNoteOptions } from "../src/lib/note-options";
 import { validateArtifacts } from "../src/lib/evidence";
-import { demoArtifacts, demoScript } from "../src/lib/demo";
+import { studySkillsArtifacts as demoArtifacts, studySkillsScript as demoScript } from "./fixtures/study-skills";
 import type { Segment } from "../src/lib/types";
 
 describe("upload note preferences",()=>{

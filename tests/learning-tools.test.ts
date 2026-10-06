@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { exampleLesson } from '../src/lib/example';
+import { studySkillsLesson as exampleLesson } from './fixtures/study-skills';
 import { catchUpPoints, examWeek, teacherTerms } from '../src/lib/learning-tools';
 import { boundedQuestion } from '../src/lib/evidence';
 import type { Lesson, Review } from '../src/lib/types';

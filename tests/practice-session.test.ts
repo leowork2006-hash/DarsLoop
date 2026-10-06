@@ -1,7 +1,33 @@
 import { describe, expect, it } from "vitest";
-import { exampleLesson } from "../src/lib/example";
+import { studySkillsLesson as exampleLesson } from "./fixtures/study-skills";
 import { availablePractice } from "../src/lib/insights";
-import { automaticExamResult, buildExam, defaultExamPlan, examFormatLimit, examHasAnswer, examPools, examReviewPayload, examSecondsLeft, literalCloze, mixedExamScore, normalizeLiteralAnswer, sessionPractice, sessionScore, updateExamPlan } from "../src/lib/practice-session";
+import { automaticExamResult, buildExam, defaultExamPlan, examFormatLimit, examHasAnswer, examPools, examReviewPayload, examSecondsLeft, literalCloze, mixedExamScore, normalizeLiteralAnswer, practiceAnswerNote, sessionPractice, sessionScore, updateExamPlan } from "../src/lib/practice-session";
+import type { PracticeItem } from "../src/lib/types";
+
+describe("saved practice answer explanations", () => {
+  const item: PracticeItem = { id: "roots", kind: "quiz", question: "What do roots do?", answer: "Absorb water from the soil", choices: ["Absorb water from the soil", "Receive sunlight"], evidence: [{ segmentId: "rationale-source", quote: "Roots absorb water from the soil." }] };
+  const note = { heading: "Roots", text: "Roots absorb water from the soil.", evidence: item.evidence };
+  const base = exampleLesson();
+  const lesson = { ...base, segments: [{ ...base.segments[0], id: "rationale-source", text: "Roots absorb water from the soil. Leaves receive sunlight.", flags: [] }], artifacts: { ...base.artifacts!, notes: [note], practice: [item] } };
+  it("reuses existing note wording when the answer phrase and displayed quote support it", () => {
+    expect(practiceAnswerNote(lesson, item)).toBe(note);
+    expect(practiceAnswerNote({ ...lesson, artifacts: { ...lesson.artifacts, notes: [{ ...note, text: "absorb water from the soil", evidence: [{ ...item.evidence[0], quote: "absorb water from the soil" }] }] } }, item)?.text).toBe("absorb water from the soil");
+  });
+  it("a common source ID or broad topic is insufficient to label a note as the reason", () => {
+    const unrelated = { ...note, evidence: [{ segmentId: "rationale-source", quote: "Leaves receive sunlight." }] };
+    expect(practiceAnswerNote({ ...lesson, artifacts: { ...lesson.artifacts, notes: [unrelated] } }, item)).toBeNull();
+    expect(practiceAnswerNote({ ...lesson, artifacts: { ...lesson.artifacts, notes: [{ ...note, text: "Leaves receive sunlight." }] } }, item)).toBeNull();
+    expect(practiceAnswerNote({ ...lesson, artifacts: { ...lesson.artifacts, notes: [{ ...note, text: "Roots do not absorb water from the soil." }] } }, item)).toBeNull();
+    expect(practiceAnswerNote({ ...lesson, artifacts: { ...lesson.artifacts, notes: [{ ...note, text: "Absorb water from the soil because of an invented reason." }] } }, item)).toBeNull();
+    expect(practiceAnswerNote({ ...lesson, artifacts: { ...lesson.artifacts, notes: [{ ...note, evidence: [{ ...item.evidence[0], quote: lesson.segments[0].text }] }] } }, item)).toBeNull();
+  });
+  it("missing or invalid saved support falls back to the original passage without inventing a rationale", () => {
+    expect(practiceAnswerNote({ ...lesson, artifacts: { ...lesson.artifacts, notes: [] } }, item)).toBeNull();
+    expect(practiceAnswerNote({ ...lesson, segments: lesson.segments.map(segment => ({ ...segment, flags: ["unclear"] })) }, item)).toBeNull();
+    expect(practiceAnswerNote(lesson, { ...item, answer: "Water" })).toBeNull();
+    expect(practiceAnswerNote({ ...lesson, sourceKind: "pdf", segments: [], pdfPages: [{ id: "rationale-source", page: 1, text: lesson.segments[0].text, flags: [] }] }, item)).toBe(note);
+  });
+});
 
 describe("supported practice sessions", () => {
   const lesson = exampleLesson(), supported = availablePractice(lesson), quiz = supported.filter(item => item.kind === "quiz");
@@ -60,6 +86,24 @@ describe("source-bound mixed mock exams", () => {
       expect("answer" in payload && payload.answer === question.source.answer).toBe(automaticExamResult(question, response));
     }
     expect(examReviewPayload(questions[0], "Invented", lesson.version)).toBeNull();
+  });
+  it("True/False candidates depend on item identity rather than position or choice order", () => {
+    const sources = Array.from({ length: 32 }, (_, index) => ({ ...pools.quiz[0], id: `quiz-${index}` }));
+    const plan = { "multiple-choice": 0, "true-false": sources.length, "fill-blank": 0, written: 0 };
+    const forward = buildExam(sources, plan), reversed = buildExam([...sources].reverse().map(source => ({ ...source, choices: [...source.choices].reverse() })), plan);
+    const candidates = new Map(forward.map(question => [question.source.id, question.candidate]));
+    expect(reversed.every(question => candidates.get(question.source.id) === question.candidate)).toBe(true);
+    const afterMcq = buildExam(sources, { ...plan, "multiple-choice": 1, "true-false": sources.length - 1 }).filter(question => question.format === "true-false");
+    expect(afterMcq.every(question => candidates.get(question.source.id) === question.candidate)).toBe(true);
+    const directions = forward.map(question => question.candidate === question.source.answer);
+    expect(new Set(directions).size).toBe(2);
+    expect(directions.some((direction, index) => index > 0 && direction === directions[index - 1])).toBe(true);
+    for (const question of forward) {
+      const correct = question.candidate === question.source.answer ? "True" : "False";
+      expect(automaticExamResult(question, correct)).toBe(true);
+      expect(examReviewPayload(question, correct, 7)).toEqual({ itemId: question.source.id, version: 7, answer: question.source.answer });
+      expect(automaticExamResult(question, correct === "True" ? "False" : "True")).toBe(false);
+    }
   });
   it("cloze removes one unique word from an exact captured quote and checks formatting, not synonyms", () => {
     const question = buildExam(supported, { "multiple-choice": 0, "true-false": 0, "fill-blank": 1, written: 0 })[0];

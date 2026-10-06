@@ -3,6 +3,7 @@ import type { Answer, Artifacts, Citation, Note, StudyPassage, StudyNoteOptions 
 import { isPdfPage, sourceCitations, validSourcePassage } from "./source-passages";
 import { resolveNoteOptions } from "./note-options";
 import { supportedOverview } from "./material-overview";
+import { localizeTrustAnswer } from "./trust-copy";
 const citation=z.object({segmentId:z.string().max(100),quote:z.string().min(1).max(5000),page:z.number().int().positive().optional()});
 const citations=z.array(citation).min(1).max(6);
 const supported=z.object({heading:z.string().min(1).max(160),text:z.string().min(1).max(1800),evidence:citations});
@@ -83,15 +84,21 @@ export function queryTokenMatches(query:string,word:string){
 }
 /** Conservative routing aid, not a complete injection detector. Keep source audio/text intact. */
 export function instructionLike(text:string) {
-  const t=text.normalize("NFKC").replace(/\s+/g," ");
+  const t=normalise(text).replace(/\s+/g," ");
   return /\b(?:ignore|disregard|override|bypass)\b.{0,60}\b(?:instructions?|rules?|polic(?:y|ies)|system|developer)\b/i.test(t)
     || /\b(?:repeat|print|show|output|display|reveal|dump|recite)\s+(?:(?:me|us|out|all|your|the|system|developer|hidden|internal|secret)\s+)*(?:prompt|instructions?|credentials?|api\s*keys?)\b/i.test(t)
+    || /\b(?:forget|ignore|disregard)\b.{0,60}\b(?:teacher|lesson|source|transcript|class)\b/i.test(t)
+    || /\b(?:answer|respond|reply|use|rely|draw)\b.{0,55}\b(?:your (?:own |general )?knowledge|outside (?:knowledge|sources?)|general knowledge|what you (?:already )?know)\b/i.test(t)
+    || /\b(?:tell|describe|summari[sz]e|disclose|explain)\b.{0,35}\b(?:hidden|internal|system|developer)\b.{0,25}\b(?:prompt|instructions?|rules?|polic(?:y|ies))\b/i.test(t)
     || /\bwhat (?:are|is) (?:your|the system|the developer) (?:instructions?|prompt)\b/i.test(t)
     || /(?:^|\n)\s*(?:\[|<\|)?(?:system|developer|assistant)(?:\]|\|>)?\s*:/im.test(text)
     || /\byou are now (?:a |an |the )?(?:mufti|system|developer|unrestricted|administrator)\b/i.test(t)
-    || /(?:تجاهل|تجاوز).{0,30}(?:التعليمات|القواعد)|(?:ہدایات|قواعد).{0,30}(?:نظر انداز|بھول)|(?:سسٹم پرامپٹ|اپنی ہدایات).{0,30}(?:دکھاؤ|بتاؤ)/u.test(t);
+    || /(?:تجاهل|تجاوز|انس).{0,45}(?:التعليمات|القواعد|المعلم|الدرس|المصدر)|(?:اجب|استخدم).{0,40}(?:معرفتك|معلوماتك)|(?:ہدایات|قواعد|استاد|سبق).{0,45}(?:نظر انداز|بھول)|(?:اپنے علم|اپنی معلومات).{0,40}(?:جواب|بتا)|(?:سسٹم پرامپٹ|اپنی ہدایات).{0,30}(?:دکھاؤ|بتاؤ)/u.test(t);
 }
-const religiousTopic=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|fast(?:ing)?|w[ou]d[uh]u?|ablution|prayers?|pray(?:ing)?|marriage|divorce)\b|حلال|حرام|فتوى|فتوی|وضوء|وضو|صلاة|نماز|صيام|روزہ/iu;
+// Routing cues are narrower than a religious-topic classifier. Descriptive
+// lesson questions remain available as literal source excerpts.
+const rulingRequest=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|sin(?:s|ful|ning)?|reward|punish(?:ment|ed)?)\b|(?:حكم|حکم|يجوز|جايز|جائز|فتوى|فتوی|حلال|حرام|گناہ|ثواب|عذاب|عقاب|معصية)/iu;
+const religiousTopic=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|fast(?:ing)?|w[ou]d[uh]u?|ablution|prayers?|pray(?:ing)?|marriage|divorce|salah|sawm|zakah|zakat|shahadah|hajj|pillars of islam|testimony of faith)\b|حلال|حرام|فتوى|فتوی|وضوء|وضو|صلاة|نماز|صيام|روزہ|الصوم|الصلاه|الزكاة|زکوۃ|الحج|اركان الاسلام|ارکان اسلام/iu;
 export function lexicalPassageRanks(question:string,segments:StudyPassage[]):{index:number;score:number}[] {
   const q=tokens(question);if(!q.length)return [];
   const cache=new Map<string,boolean>(),matches=(term:string,word:string)=>{
@@ -123,20 +130,29 @@ export function retrieve(question:string,segments:StudyPassage[],limit=8):StudyP
   return retrievalContext(segments,anchors,limit);
 }
 export function needsPersonalReferral(question:string) {
-  return /\b((give|issue) (me |a )?fatwa|fatwa for (me|my)|is it (halal|haram) for me|am i (allowed|permitted)|what should i do about my|should i (divorce|marry)|(is )?my (divorce|marriage|prayer|fast) (is )?(valid|invalid)|(?:can|may|should) i (?:pray|fast|marry|divorce)|(?:do|must) i (?:need |have to )?(?:make |do )?(?:w[ou]d[uh]u?|ablution))\b/i.test(question)||/أفتني|افتني|فتوى لي|میرے لیے فتوی|میری نماز درست|کیا میری طلاق|کیا میں.{0,30}نماز/.test(question);
+  const q=normalise(question);
+  const personal=/\b(?:i|my|me|mine|our|we)\b|(?:^|\s)(?:انا|لي|صلاتي|صومي|زوجي|زوجتي|میری|میرا|میرے|میں|ہم)(?=\s|$)/u.test(q);
+  return /\b(?:give|issue) (?:me |a )?fatwa|fatwa for (?:me|my)|is it (?:halal|haram) for me|am i (?:allowed|permitted)|what should i do about my|should i (?:divorce|marry)/iu.test(q)
+    || /افتني|فتوى لي|میرے لیے فتوی/u.test(q)
+    || personal&&(religiousTopic.test(q)||rulingRequest.test(q))&&/\b(?:valid|invalid|allowed|permitted|halal|haram|sin|invalidate)\b|\b(?:can|may|should|must|need) (?:i|we) (?:pray|fast|marry|divorce|do|make|give|pay)\b|حكم|يجوز|جائز|درست|صحیح|گناہ|کیا|هل|يصح|باطل/u.test(q);
 }
 export function boundedQuestion(question:string,segments:StudyPassage[],version:number,mode:Answer["mode"]):Answer|null {
-  if(instructionLike(question))return {status:"not_covered",blocks:[],message:"I can only help with this lesson. Instructions in a question cannot change that.",mode,version};
-  const religious=religiousTopic.test(question);
-  const authenticity=/(?:\b(?:hadith|hadeeth|narration|isnad|matn)\b|حديث|حدیث)/iu.test(question)&&/(?:\b(?:authentic(?:ity)?|grad(?:e|ing)|sahih|saheeh|hasan|hassan|weak|daif|fabricated|reliable|true|isnad|matn)\b|صحيح|صحیح|حسن|ضعيف|ضعیف|سند)/iu.test(question);
-  if(authenticity)return {status:"needs_teacher",blocks:[],message:"I cannot grade a hadith. A source lookup can show a possible match; verify with your teacher. The publisher’s record stays separate from this lesson.",mode,version};
+  const q=normalise(question),finish=(answer:Answer)=>localizeTrustAnswer(answer,question);
+  if(instructionLike(question))return finish({status:"not_covered",blocks:[],message:"I can only help with this lesson. Instructions in a question cannot change that.",mode,version});
+  const religious=religiousTopic.test(q)||rulingRequest.test(q);
+  const authenticity=(/(?:\b(?:hadith|hadeeth|narration|isnad|matn)\b|حديث|حدیث)/iu.test(q)&&/(?:\b(?:authentic(?:ity)?|grad(?:e|ing)|sahih|saheeh|hasan|hassan|weak|strong|genuine|real|sound|valid|verif(?:y|ied|ication)|classif(?:y|ication)|rate|daif|fabricated|reliable|true|isnad|matn)\b|صحيح|صحیح|حسن|ضعيف|ضعیف|قوي|اصلي|مستند|سند)/iu.test(q))
+    || /\b(?:did|does) (?:the )?(?:prophet|messenger)(?: muhammad)? (?:really|actually) say\b/iu.test(q)
+    || /(?:هل|کیا).{0,35}(?:النبي|الرسول|نبی|رسول).{0,35}(?:حقا|واقعی|قال|فرمایا)/u.test(q);
+  if(authenticity)return finish({status:"needs_teacher",blocks:[],message:"I cannot grade a hadith. A source lookup can show a possible match; verify with your teacher. The publisher’s record stays separate from this lesson.",mode,version});
   if(!religious&&!needsPersonalReferral(question))return null;
-  const reporting=/\b(?:(?:what|where|how) (?:did|does) (?:our |my |the |this )?teacher|did (?:our |my |the )?teacher|according to (?:our |my |the )?teacher|teacher (?:say|said|teach|explain)|in (?:this |the )?(?:class|lesson))\b|استاد نے|معلم|المعلم/iu.test(question);
-  if(!(reporting||(segments.some(isPdfPage)&&/according to (?:this |the )?(?:pdf|source|book)|what does (?:this |the )?(?:pdf|source|book) (?:say|state)|in (?:this |the )?(?:pdf|source|book)/iu.test(question)))||needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher for religious guidance. I cannot give a halal/haram ruling or advice about your own situation.",mode,version};
+  const reporting=/\b(?:(?:what|where|how) (?:did|does) (?:our |my |the |this )?teacher|did (?:our |my |the )?teacher|according to (?:our |my |the )?teacher|teacher (?:say|said|teach|explain)|(?:in|from|using) (?:this |the )?(?:class|lesson))\b|استاد نے|(?:اس|یہ) سبق|معلم|المعلم|(?:هذا|في) الدرس/iu.test(q);
+  const pdfReporting=segments.some(isPdfPage)&&/according to (?:this |the )?(?:pdf|source|book)|what does (?:this |the )?(?:pdf|source|book) (?:say|state)|in (?:this |the )?(?:pdf|source|book)/iu.test(q);
+  const descriptive=!rulingRequest.test(q)&&/^(?:what (?:is|are)|define|describe|explain|list|name)\b|^(?:ما (?:هو|هي)|اشرح|عرف)|^(?:کیا ہے|وضاحت کریں)/iu.test(q);
+  if(!(reporting||pdfReporting||descriptive)||needsPersonalReferral(question))return finish({status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher for religious guidance. I cannot give a halal/haram ruling or advice about your own situation.",mode,version});
   const meaningful=tokens(question).filter(t=>!["whether","ruling","teach","say","according"].includes(t));
-  const matches=segments.filter(s=>evidenceValid([{segmentId:s.id,quote:s.text}],segments)&&meaningful.some(t=>tokens(s.text).includes(t))&&religiousTopic.test(s.text)).slice(0,2);
-  if(!matches.length)return {status:"not_covered",blocks:[],message:"That is not covered by a clear passage in this lesson. Ask your teacher.",mode,version};
-  return {status:"answered",blocks:matches.map(s=>({text:s.text,evidence:sourceCitations([{segmentId:s.id,quote:s.text}],segments)})),message:segments.some(isPdfPage)?"This is a source excerpt. DarsLoop does not give religious rulings; ask a qualified teacher about interpretation.":"These are your teacher’s captured words, not a ruling from DarsLoop. Ask your teacher about interpretation or your situation.",mode:"excerpt",version};
+  const matches=segments.filter(s=>evidenceValid([{segmentId:s.id,quote:s.text}],segments)&&meaningful.some(t=>tokens(s.text).some(word=>queryTokenMatches(t,word)))).slice(0,2);
+  if(!matches.length)return finish({status:"not_covered",blocks:[],message:"That is not covered by a clear passage in this lesson. Ask your teacher.",mode,version});
+  return finish({status:"answered",blocks:matches.map(s=>({text:s.text,evidence:sourceCitations([{segmentId:s.id,quote:s.text}],segments)})),message:segments.some(isPdfPage)?"This is a source excerpt. DarsLoop does not give religious rulings; ask a qualified teacher about interpretation.":"These are captured source words, not a ruling from DarsLoop. Check the original and ask your teacher about interpretation or your situation.",mode:"excerpt",version});
 }
 /** A saved topic suggestion is a pointer to audited quotes, never extra evidence. */
 export function noteAnchors(question:string,segments:StudyPassage[],notes:Note[]=[]) {
@@ -154,7 +170,7 @@ export function excerptAnswer(question:string,segments:StudyPassage[],version:nu
   if(!related.length)return {status:"not_covered",blocks:[],message:"I couldn’t find a supporting passage in this lesson. Try a more specific question or ask your teacher.",mode:"excerpt",version};
   const clear=related.filter(s=>!s.flags.length);
   if(!clear.length)return {status:"unclear_audio",blocks:[],message:segments.some(isPdfPage)?"The matching page is flagged. Check the original PDF.":"The matching passage is marked unclear. Please replay it.",mode:"excerpt",version};
-  return {status:"answered",blocks:clear.map(s=>({text:s.text,evidence:sourceCitations([{segmentId:s.id,quote:s.text}],segments)})),message:segments.some(isPdfPage)?"These are exact extracted source excerpts. Open the cited PDF page to check the wording and layout.":"These are the teacher’s captured words. Replay the audio to check the explanation.",mode:"excerpt",version};
+  return {status:"answered",blocks:clear.map(s=>({text:s.text,evidence:sourceCitations([{segmentId:s.id,quote:s.text}],segments)})),message:segments.some(isPdfPage)?"These are exact extracted source excerpts. Open the cited PDF page to check the wording and layout.":"These are captured source words, not a ruling from DarsLoop. Replay the audio and ask your teacher about interpretation or your situation.",mode:"excerpt",version};
 }
 export function segmentFlags(d:{avg_logprob?:number;no_speech_prob?:number;compression_ratio?:number},text:string) {
   const flags:string[]=[];

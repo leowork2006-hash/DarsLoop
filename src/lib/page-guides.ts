@@ -26,3 +26,17 @@ export const pageGuides:Record<GuidePage,GuideStep[]>={
 const key=(userId:string,page:GuidePage)=>`darsloop-page-guide-${page==="plan"||page.startsWith("lesson-")?"v14":page==="library"||page==="classes"?"v13":page==="review"||page==="dictionary"?"v15":page==="insights"?"v12":"v7"}:${userId}:${page}`;
 export function hasSeenPageGuide(userId:string,page:GuidePage):boolean{try{return localStorage.getItem(key(userId,page))==="seen";}catch{return false;}}
 export function rememberPageGuide(userId:string,page:GuidePage){try{localStorage.setItem(key(userId,page),"seen");}catch{}}
+const dismissedAutomaticGuides = new Set<string>();
+const automaticGuideKey = (userId:string) => `darsloop-automatic-guide-dismissed-v1:${userId}`;
+export function hasDismissedAutomaticGuides(userId:string):boolean {
+ if(dismissedAutomaticGuides.has(userId))return true;
+ try{
+  if(localStorage.getItem(automaticGuideKey(userId))==="dismissed")return true;
+  // Respect an earlier dismissal, including a welcome skipped on this device.
+  return (Object.keys(pageGuides) as GuidePage[]).some(page=>hasSeenPageGuide(userId,page));
+ }catch{return false;}
+}
+export function dismissAutomaticGuides(userId:string) {
+ dismissedAutomaticGuides.add(userId);
+ try{localStorage.setItem(automaticGuideKey(userId),"dismissed");}catch{/* Keep the dismissal in this session when storage is unavailable. */}
+}

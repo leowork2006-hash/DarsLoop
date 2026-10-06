@@ -10,13 +10,13 @@ import { selectedProvider, transcribeDeepgram, transcribeSpeechmatics, type Tran
 import { extractPdf } from "./pdf";
 import { PdfError } from "./pdf-options";
 import { pdfBytes, pdfExists, storePdf, removePdf } from "./pdf-storage";
-import { sourcePassages } from "./source-passages";
-import { segmentFlags } from "./evidence";
+import { sourcePassages, validSourcePassage } from "./source-passages";
+import { instructionLike, segmentFlags } from "./evidence";
 import { compareTranscriptions } from "./audio-guard";
 import { resolveNoteOptions } from "./note-options";
 import { cloudMode } from "./supabase/config";
 import { TRANSCRIPT_CACHE_REVISION, transcriptContext, checkpointMatches, captureCheckpoint, completeCheckpoint, validCompleteCheckpoint, validCaptureProgress, reusableTranscript, type TranscriptContext } from "./transcript-cache";
-import type { Segment } from "./types";
+import type { Lesson, Segment } from "./types";
 import { revisionPractice, sourceReadyForMaterial } from "./material-sections";
 export function chunkPlan(duration:number) {
   if(!Number.isFinite(duration)||duration<=0||duration>MAX_DURATION)throw new Error("Invalid recording duration");
@@ -36,6 +36,11 @@ export function timedSegments(result:Awaited<ReturnType<typeof transcribe>>,chun
   });
 }
 type ProcessingProviders={transcribe:typeof transcribe;createArtifacts:typeof createArtifacts;audioChunk:typeof audioChunk;crossCheck?:(bytes:Buffer,language?:SpokenLanguage)=>ReturnType<typeof transcribe>;reserve?:(span:number)=>Promise<number|null>;provider?:TranscriptionProvider;model?:string;concurrency?:number;cacheRevision?:string;cacheSecret?:string;checkerModel?:string;region?:string};
+function requireUsableAudioSource(segments:Segment[]) {
+  const captured=segments.filter(segment=>segment.text.trim());
+  if(!captured.length||captured.every(segment=>segment.flags.includes("Possible silence or unclear speech")))throw new ProviderError("no_speech","No usable speech was found. Try a clearer recording.");
+  if(!captured.some(segment=>validSourcePassage(segment)&&!segment.flags.length&&!instructionLike(segment.text)))throw new ProviderError("unclear_audio","No clear passage is available for study material. Your original audio and captured transcript are saved; check the recording or try a clearer one.");
+}
 export function productionProviders(provider:TranscriptionProvider):ProcessingProviders {
   const model=provider==="groq"?(process.env.ASR_MODEL||"whisper-large-v3"):provider==="deepgram"?"nova-3":"melia-1";
   const width=Number(process.env.TRANSCRIPTION_CONCURRENCY||2);
@@ -44,12 +49,26 @@ export function productionProviders(provider:TranscriptionProvider):ProcessingPr
     ...(provider==="groq"?{checkerModel:"whisper-large-v3-turbo",crossCheck:(bytes:Buffer,language?:SpokenLanguage)=>transcribe(bytes,"whisper-large-v3-turbo",language),reserve:(span:number)=>reserveAudio([...new Set([model,"whisper-large-v3-turbo"])],span)}:{})};
 }
 export async function processLesson(job:{id:string;lesson_id:string;lease:string},injected?:ProcessingProviders) {
-  let lesson=await rawLesson(job.lesson_id);if(!lesson)return;
+  const initialLesson=await rawLesson(job.lesson_id);if(!initialLesson)return;
+  let lesson:Lesson=initialLesson;
   const provider=lesson.transcriptionProvider||(lesson.materialPreparation?"groq":selectedProvider()),providers=injected||productionProviders(provider);
   const temp=path.join(dataDir,"jobs",job.id,job.lease);let held=true,importStored=false;
   const timer=setInterval(()=>{void heartbeat(job.id,job.lease).then(ok=>{held=ok;}).catch(()=>{held=false;});},20_000);
+  const checkAudioSource=async()=>{
+    try{requireUsableAudioSource(lesson.segments);}
+    catch(error){
+      if(!held)throw new Error("Lease lost");
+      // Keep the literal capture and recovery checkpoint, but do not present an
+      // entirely excluded source as completed usable speech (including old hits).
+      const noSpeech=error instanceof ProviderError&&error.code==="no_speech";
+      lesson={...lesson,transcriptionComplete:false,artifacts:null,stage:noSpeech?"No usable speech found":"Audio source needs attention",error:error instanceof Error?error.message:"The audio source needs attention."};
+      await jobCommit(job.id,job.lease,lesson);
+      throw error;
+    }
+  };
   try {
     await mkdir(temp,{recursive:true,mode:0o700});
+    if(lesson.sourceKind!=="pdf"&&(lesson.transcriptionComplete||lesson.materialPreparation))await checkAudioSource();
     if(lesson.materialPreparation){
       const preparation=lesson.materialPreparation;
       if(preparation.kind!=="detailed"||preparation.revision!==(lesson.materialRevision||0)+1||!sourceReadyForMaterial(lesson))throw new ProviderError("invalid_material_request","Detailed notes need a saved, completed source. Your existing notes are preserved.");
@@ -123,6 +142,7 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
         if(!lesson.transcriptionComplete)lesson={...lesson,transcriptCache:captureCheckpoint(lesson,context)};
       }
     }
+    if(lesson.transcriptionComplete)await checkAudioSource();
     const asrProvenance=lesson.transcriptionComplete&&lesson.providers?lesson.providers:{provider,asr:providers.model||"test-provider",checkMode:providers.crossCheck?"dual-pass" as const:"single-pass" as const,...(providers.crossCheck?{checker:providers.checkerModel||"whisper-large-v3-turbo"}:{})};
     lesson={...lesson,transcriptionProvider:provider,nextAttemptAt:undefined,status:"processing",error:null,stage:lesson.transcriptionComplete?"Transcript saved · preparing study material":"Transcribing your lesson",providers:{...asrProvenance,generation:process.env.GENERATION_MODEL||"gemini-3.5-flash-lite",policy:POLICY_VERSION}};await jobCommit(job.id,job.lease,lesson);
     if(!lesson.transcriptionComplete){
@@ -150,7 +170,7 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
           lesson={...lesson,segments:[...lesson.segments,...result.value],processedChunks:batch[i].index+1,stage:`Transcribed section ${batch[i].index+1} of ${chunks.length}`};await jobCommit(job.id,job.lease,lesson);
         }
       }
-      if(!lesson.segments.length)throw new ProviderError("no_speech","No usable speech was found. Try a clearer recording.");
+      await checkAudioSource();
       lesson={...lesson,transcriptionComplete:true};
       if(context&&checkpointMatches(lesson,context))lesson={...lesson,transcriptCache:completeCheckpoint(lesson,context)};
       await jobCommit(job.id,job.lease,lesson);

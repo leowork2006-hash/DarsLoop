@@ -23,13 +23,14 @@ describe("private lessons and job durability",()=>{
   });
   it("makes invites one-use and 24-hour; revocation removes access and keeps reviews private",()=>{
     const a=fixtureSession(),b=fixtureSession(),c=fixtureSession(),l=s.listLessons(a.userId)[0],g=s.createGroup(a.userId,"Saturday class");
+    const itemId=l.artifacts!.practice.find(item=>item.kind==="quiz")!.id;
     const token=s.invite(a.userId,g);
     const expiry=s.db().prepare("SELECT expires_at FROM invites ORDER BY rowid DESC LIMIT 1").get() as {expires_at:number};
     expect(expiry.expires_at-Date.now()).toBeGreaterThan(86_390_000);expect(expiry.expires_at-Date.now()).toBeLessThanOrEqual(86_400_000);
     s.join(b.userId,token);expect(()=>s.join(c.userId,token)).toThrow();
     s.share(a.userId,g,l.id);expect(s.authorizedLesson(b.userId,l.id)?.shared).toBe(true);
     expect(s.authorizedLesson(c.userId,l.id)).toBeNull();
-    s.saveReview(b.userId,l,"quiz-listening",false);
+    s.saveReview(b.userId,l,itemId,false);
     expect(s.listReviews(a.userId)).toEqual([]);expect(s.listReviews(b.userId)).toHaveLength(1);
     s.revokeShare(a.userId,g,l.id);expect(s.authorizedLesson(b.userId,l.id)).toBeNull();expect(s.listReviews(b.userId)).toEqual([]);
     const expired=s.invite(a.userId,g);s.db().prepare("UPDATE invites SET expires_at=? WHERE used=0").run(Date.now()-1);expect(()=>s.join(c.userId,expired)).toThrow();
@@ -47,11 +48,11 @@ describe("private lessons and job durability",()=>{
     expect(s.authorizedLesson(b.userId,l.id)).toBeNull();expect(()=>s.updateLesson(l)).toThrow();
   });
   it("persists repeated actual review events in the existing JSON payload without dating legacy attempts",()=>{
-    const a=fixtureSession(),l=s.listLessons(a.userId)[0];vi.useFakeTimers();vi.setSystemTime(new Date("2026-10-05T01:00:00Z"));
+    const a=fixtureSession(),l=s.listLessons(a.userId)[0],itemId=l.artifacts!.practice.find(item=>item.kind==="quiz")!.id;vi.useFakeTimers();vi.setSystemTime(new Date("2026-10-05T01:00:00Z"));
     try {
-      const first=s.saveReview(a.userId,l,"quiz-listening",false);
-      s.db().prepare("UPDATE reviews SET payload=? WHERE user_id=? AND lesson_id=? AND item_id=?").run(JSON.stringify({...first,attempts:5,activity:undefined}),a.userId,l.id,"quiz-listening");
-      s.saveReview(a.userId,l,"quiz-listening",true);const third=s.saveReview(a.userId,l,"quiz-listening",true);
+      const first=s.saveReview(a.userId,l,itemId,false);
+      s.db().prepare("UPDATE reviews SET payload=? WHERE user_id=? AND lesson_id=? AND item_id=?").run(JSON.stringify({...first,attempts:5,activity:undefined}),a.userId,l.id,itemId);
+      s.saveReview(a.userId,l,itemId,true);const third=s.saveReview(a.userId,l,itemId,true);
       expect(third.attempts).toBe(7);expect(third.activity).toEqual([{day:"2026-10-05",attempts:2}]);expect(s.listReviews(a.userId)[0]).toEqual(third);
     } finally {vi.useRealTimers();}
   });

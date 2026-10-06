@@ -5,6 +5,7 @@ import { authorizedLesson, takeBudget } from "@/lib/backend";
 import { answerLesson, configured } from "@/lib/ai";
 import { savedLessonAnswer } from "@/lib/chat-context";
 import { excerptAnswer } from "@/lib/evidence";
+import { localizeTrustAnswer } from "@/lib/trust-copy";
 import { ProviderError } from "@/lib/provider-error";
 export const runtime="nodejs";
 export async function POST(req:Request,c:{params:Promise<{id:string}>}){try{
@@ -25,5 +26,5 @@ export async function POST(req:Request,c:{params:Promise<{id:string}>}){try{
   }
   // Recheck membership and version after asynchronous provider work.
   const current=await authorizedLesson(user,l.id);if(!current)throw new HttpError(404,"Lesson access ended.");if(current.version!==l.version)throw new HttpError(409,"The lesson changed. Ask again using its current version.");
-  return json(answer);
+  return json(localizeTrustAnswer(answer,parsed.data.question));
 }catch(e){return fail(e);}}

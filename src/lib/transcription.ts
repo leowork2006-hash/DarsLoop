@@ -45,7 +45,9 @@ export async function transcribeDeepgram(bytes:Buffer,_model?:string,language:Sp
   // Nova-3's `multi` language set excludes Arabic and Urdu. Never silently send
   // mixed Islamic classes as English or claim automatic code-switch recognition.
   if(language==="auto")throw new ProviderError("language_required","For Deepgram, choose the lesson’s main spoken language (Urdu, Arabic or English), then retry. Mixed-language words may be missed.");
-  const key=credentials("Deepgram",process.env.DEEPGRAM_API_KEY),query=new URLSearchParams({model:"nova-3",language,punctuate:"true"});
+  // Exclude this prerecorded request from Deepgram's model-improvement program.
+  // This does not change separate provider metadata/log retention policies.
+  const key=credentials("Deepgram",process.env.DEEPGRAM_API_KEY),query=new URLSearchParams({model:"nova-3",language,punctuate:"true",mip_opt_out:"true"});
   const r=await fetch(`https://api.deepgram.com/v1/listen?${query}`,{method:"POST",headers:{Authorization:`Token ${key}`,"Content-Type":media(bytes).type},body:new Uint8Array(bytes),signal:AbortSignal.timeout(120_000)});
   await requireOK(r,"Deepgram");const result=deepgramSchema.parse(await r.json());
   return wordsToSegments(result.results.channels[0].alternatives[0].words.map(w=>({start:w.start,end:w.end,text:w.punctuated_word||w.word,confidence:w.confidence,language})));

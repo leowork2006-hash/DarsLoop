@@ -8,7 +8,7 @@ import { Brand } from "./brand";
 import { StudyHome } from "./study-home";
 import { UploadPage } from "./upload-page";
 import { StudyPlanPage } from "./study-plan-page";
-import { hasSeenPageGuide, rememberPageGuide, type GuidePage } from "@/lib/page-guides";
+import { hasSeenPageGuide, rememberPageGuide, hasDismissedAutomaticGuides, dismissAutomaticGuides, type GuidePage } from "@/lib/page-guides";
 import { useHelpPreference } from "./study-guide";
 import { AddLesson } from "./add-lesson";
 import { Modal } from "./modal";
@@ -101,10 +101,11 @@ export function WorkspaceApp(){
   const playerLesson=lesson||(!selected&&view==="home"?workspace?.lessons.find(l=>l.id===chatLessonId)||null:!selected&&view==="review"?workspace?.lessons.find(l=>l.id===reviewAudioId)||null:null);
   const hasAudioPlayer=!!playerLesson&&playerLesson.sourceKind!=="pdf";
   const guideKey:GuidePage=lesson?`lesson-${tab}`:view;
-  function closeGuide(){setGuide(false);welcome.dismiss();if(workspace){const page=guidePage||guideKey;seenPages.current.add(`${workspace.userId}:${page}`);rememberPageGuide(workspace.userId,page);}}
+  function closeGuide(){setGuide(false);welcome.dismiss();if(workspace){const page=guidePage||guideKey;seenPages.current.add(`${workspace.userId}:${page}`);rememberPageGuide(workspace.userId,page);dismissAutomaticGuides(workspace.userId);}}
   function addLesson(mode:"record"|"upload"){if(mode==="upload"){navigate("upload");return;}setAddMode(mode);setAdd(true);setMobileMenu(false);}
   useEffect(()=>{
     if(!workspace||!welcomed||onboarding||add||setup||share||remove||mobileMenu||profileMenu||invite||guide)return;
+    if(hasDismissedAutomaticGuides(workspace.userId))return;
     if(lesson&&!sourcePassages(lesson).length)return;
     const pageId=`${workspace.userId}:${guideKey}`;
     if(seenPages.current.has(pageId)||hasSeenPageGuide(workspace.userId,guideKey))return;
@@ -137,7 +138,7 @@ export function WorkspaceApp(){
       <button className={isReferenceLibrary&&!course?"active":""} aria-current={isReferenceLibrary&&!course?"page":undefined} onClick={()=>navigate("library")}><RefFolder size={19} weight="regular"/> My lessons</button>
     </nav>
     <div className="reference-sidebar-divider"/>
-    {courses.length>0&&<nav className="course-nav reference-course-nav" aria-label="Your courses">{courses.map(c=><button key={c} className={isReferenceLibrary&&course===c?"active":""} aria-current={isReferenceLibrary&&course===c?"page":undefined} onClick={()=>navigate("library",c)}><span className="reference-course-icon"><RefBook size={18}/></span><span>{c}</span><RefCaret className="reference-course-arrow" size={14}/></button>)}</nav>}
+    {courses.length>0&&<nav className="course-nav reference-course-nav" aria-label="Filter lessons by course">{courses.map(c=><button key={c} aria-label={`Filter lessons by course: ${c}`} className={isReferenceLibrary&&course===c?"active":""} aria-current={isReferenceLibrary&&course===c?"page":undefined} onClick={()=>navigate("library",c)}><span className="reference-course-icon"><RefBook size={18}/></span><span>{["Home","My lessons","Study plan","Review","Private classes","Insights","Teacher’s terms","Record a lesson","Upload"].includes(c)?`Course: ${c}`:c}</span><RefCaret className="reference-course-arrow" size={14}/></button>)}</nav>}
     <nav className="workspace-nav reference-study-nav" aria-label="Study tools">
       <button data-tour="plan" className={isReferencePlan?"active":""} aria-current={isReferencePlan?"page":undefined} onClick={()=>navigate("plan")}><RefBook size={19}/> Study plan</button>
       <div className="reference-review-nav"><button data-tour="review" className={isReferenceReview?"active":""} aria-current={isReferenceReview&&reviewTab==="due"?"page":undefined} onClick={()=>{navigate("review");setReviewTab("due");setReviewExpanded(true);}}><RefCards size={19}/> Review{due>0&&<span>{due}</span>}</button><button type="button" className="reference-review-toggle" aria-label={`${reviewExpanded?"Collapse":"Expand"} Review tools`} aria-expanded={reviewExpanded} aria-controls={`review-tools-${scope}`} onClick={()=>setReviewExpanded(value=>!value)}><RefDown size={16}/></button></div>

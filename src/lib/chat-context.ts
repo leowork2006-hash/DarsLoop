@@ -4,14 +4,8 @@ import { capturedMaterialLanguage, textUsesRequestedScript } from './study-mater
 import type { Answer, Lesson, StudyPassage } from './types';
 
 export type ChatContext={question:string;passageIds:string[]};
-export function questionLanguage(question:string){
-  const explicit=/\b(?:answer|reply|respond|explain|write|translate).{0,60}\bin (English|Arabic|Urdu)\b/iu.exec(question)?.[1]?.toLowerCase();
-  if(explicit)return explicit==='arabic'?'ar':explicit==='urdu'?'ur':'en';
-  // A quoted Arabic/Urdu topic is source wording, not the question's language.
-  const prose=question.replace(/“[^”]{0,500}”|"[^"]{0,500}"/gu,'');
-  if(/^\s*(?:what|where|when|why|how|explain|summari[sz]e|describe|give me|tell me|please|can you|could you)\b/iu.test(prose))return 'en';
-  return capturedMaterialLanguage([{text:prose||question}]);
-}
+import { questionLanguage } from './trust-copy';
+export { questionLanguage } from './trust-copy';
 const overview=/\b(?:what (?:is|was) (?:this |the )?(?:lesson|class|lecture) about|(?:explain|summari[sz]e|recap)(?: to me| me)? (?:this |the |whole |entire |full )?(?:lesson|class|lecture)\b|(?:overview|summary|recap|main topics|main points|key topics|key points) (?:of |for )?(?:this |the |whole |entire )?(?:lesson|class|lecture)\b|(?:lesson|class|lecture) (?:overview|summary|in detail))|^(?:give me (?:a )?)?(?:short overview|main topics|key points)$|(?:اشرح|لخص)(?: لي)? (?:هذا |هذه )?(?:الدرس|المحاضرة)|(?:سبق|لیکچر) (?:کا )?(?:خلاصہ|وضاحت)/iu;
 const elaboration=/\b(?:explain|elaborate|expand|detail|detailed|more|simpler|shorter|brief|example|again|it|that|this|mean|ore)\b|مزید|تفصیل|وضاحت|اشرح|بالتفصيل|وضح/u;
 const commandWords=new Set('explain explaination explanation elaborate expand detail detailed more much ore me in please it that this again simpler shorter brief example give make can you mean why how understand اشرح اكثر أكثر بالتفصيل وضح وضاحت مزید تفصیل کریں کرو دوبارہ مختصر بتائیں سمجھائیں چاہتا ہوں'.split(' '));

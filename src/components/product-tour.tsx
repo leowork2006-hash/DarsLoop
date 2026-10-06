@@ -35,8 +35,8 @@ const tourSteps = [
   { delay: 1400, target: "topic" }, { delay: 750, action: "topic" },
   { delay: 2200, target: "nav-home" }, { delay: 800, action: "home" },
 ] as const;
-const demoQuestion = "How should I revise after class?";
-const homeQuestion = "What should I focus on while listening?";
+const demoQuestion = "What does this lesson say about zakah?";
+const homeQuestion = "What are the five pillars named in this lesson?";
 
 /** A local, prepared example. It never invokes AI or changes the lesson's demo status. */
 export function ProductTour({ lesson }: { lesson: Lesson }) {
@@ -80,7 +80,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
   const reviewView = tab === "review" || tab === "quiz" || tab === "cards";
   const pageTitle = tab === "home" ? "Chat" : tab === "library" ? "My lessons" : tab === "plan" ? "Study plan" : reviewView ? "Review" : lesson.title;
   const activeTabs = lessonView ? tabs.slice(0, 2) : reviewView ? tabs.slice(2) : [];
-  const answer = answerIndex === -1 ? lesson.artifacts?.overview ?? "This example covers listening, catch-up and revision." : answerIndex === null ? "This prepared example covers listening, catch-up and revision. Try a question about one of those topics." : notes[answerIndex]?.text ?? "This topic is not covered in the example.";
+  const answer = answerIndex === -1 ? lesson.artifacts?.overview ?? "This example introduces the five pillars of Islam." : answerIndex === null ? "This prepared example introduces the five pillars of Islam. Try a question about one of those terms." : notes[answerIndex]?.text ?? "This topic is not covered in the example.";
   const answerWords = answer.split(/\s+/);
   const running = playing && !reduced && inView && visible;
   drawerOpen.current = drawer;
@@ -105,7 +105,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
     const trimmed = value.trim();
     if (!trimmed) return;
     const text = trimmed.toLowerCase();
-    const match = /what.*lesson.*about|overview|topics.*connect/.test(text) ? -1 : /quiz|mistake|wrong/.test(text) ? 3 : /absen|absent|miss|catch/.test(text) ? 2 : /revis|return|remember|check/.test(text) ? 1 : /listen|writ|note|attention/.test(text) ? 0 : null;
+    const match = /what.*lesson.*about|overview|topics.*connect/.test(text) ? -1 : /fast|sawm|pilgrimage|hajj/.test(text) ? 3 : /prayer|salah|charity|zakah|zakat/.test(text) ? 2 : /testimony|shahadah/.test(text) ? 1 : /pillar/.test(text) ? 0 : null;
     setSent(trimmed); setAnswerIndex(match === -1 ? -1 : match !== null && notes[match] ? match : null); setWords(0); setManualChat(manual); setSource(null);
   }, [notes]);
 
@@ -253,7 +253,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
             {tab === "ask" && <div className={styles.chat}>
               <div className={styles.sceneTop}><span className={styles.sceneTitle}>Ask this lesson</span><span className={styles.prepared}>Prepared example</span></div>
               <div className={styles.conversation}>
-                {!sent ? <div className={styles.chatWelcome}><span className={styles.chatMark}><MessageCircle size={23} /></span><h4>Keep the class in context.</h4><p>Try a question about listening or revision.</p><button onClick={() => { pause(); setQuestion(demoQuestion); submitQuestion(demoQuestion, true); }}>{demoQuestion}<ArrowRight size={14} /></button></div> : <><div className={styles.userMessage}>{sent}</div><div className={styles.assistantMessage}><span className={styles.answerMark}><img src="/art/hoopoe-guide-v10.png" alt="" width={32} height={32}/></span><div><span className={styles.answerLabel}>From this lesson</span><p>{answerWords.slice(0, words).join(" ")} {words < answerWords.length && <i className={styles.typing} aria-label="Revealing answer" />}</p>{words >= answerWords.length && answerIndex !== null && answerIndex >= 0 && citation(notes[answerIndex]?.evidence)}</div></div></>}
+                {!sent ? <div className={styles.chatWelcome}><span className={styles.chatMark}><MessageCircle size={23} /></span><h4>Keep the class in context.</h4><p>Try a question about a term from this lesson.</p><button onClick={() => { pause(); setQuestion(demoQuestion); submitQuestion(demoQuestion, true); }}>{demoQuestion}<ArrowRight size={14} /></button></div> : <><div className={styles.userMessage}>{sent}</div><div className={styles.assistantMessage}><span className={styles.answerMark}><img src="/art/hoopoe-guide-v10.png" alt="" width={32} height={32}/></span><div><span className={styles.answerLabel}>From this lesson</span><p>{answerWords.slice(0, words).join(" ")} {words < answerWords.length && <i className={styles.typing} aria-label="Revealing answer" />}</p>{words >= answerWords.length && answerIndex !== null && answerIndex >= 0 && citation(notes[answerIndex]?.evidence)}</div></div></>}
               </div>
               <form className={styles.composer} onSubmit={event => { event.preventDefault(); pause(); submitQuestion(question, true); }}><input aria-label="Question about the example lesson" value={question} maxLength={180} onChange={event => setQuestion(event.target.value)} placeholder="Ask about this lesson…" /><button aria-label="Send example question" type="submit" data-tour-target="send" disabled={!question.trim()}><Send size={16} /></button></form>
             </div>}

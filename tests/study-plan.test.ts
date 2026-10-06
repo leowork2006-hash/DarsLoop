@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { exampleLesson } from "../src/lib/example";
+import { studySkillsLesson as exampleLesson } from "./fixtures/study-skills";
 import { getStudyPlan } from "../src/lib/study-plan";
 import type { Lesson, Review } from "../src/lib/types";
 
