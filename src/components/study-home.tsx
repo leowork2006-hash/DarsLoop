@@ -29,11 +29,13 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
   const [draft, setDraft] = useState<string | null>(null), [question, setQuestion] = useState("");
   const [pending, setPending] = useState<HomeAction | null>(null), [questionDraft, setQuestionDraft] = useState<{ text: string; nonce: number; submit?: boolean }>();
   const [menu, setMenu] = useState(false);
-  const menuRoot = useRef<HTMLDivElement>(null), menuButton = useRef<HTMLButtonElement>(null);
+  const menuRoot = useRef<HTMLDivElement>(null), menuButton = useRef<HTMLButtonElement>(null), editor = useRef<HTMLTextAreaElement>(null);
   const ready = workspace.lessons.filter(l => l.status === "ready" && sourcePassages(l).length > 0);
   const active = ready.find(l => l.id === activeId) || null;
   const groupIds = group ? workspace.groups.find(g => g.id === group)?.lessons.map(l => l.id) || [] : null;
   const choices = ready.filter(l => (!groupIds || groupIds.includes(l.id)) && `${l.title} ${l.course}`.toLowerCase().includes(search.toLowerCase()));
+
+  useEffect(()=>{const node=editor.current;if(!node)return;node.style.height="auto";node.style.height=`${Math.min(112,node.scrollHeight)}px`;},[question,activeId]);
 
   useEffect(()=>{setActiveId(null);setQuestionDraft(undefined);setQuestion("");setPicker(false);setMenu(false);},[workspace.userId]);
 
@@ -95,7 +97,7 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
         <button type="button" role="menuitem" onClick={() => menuAction(onReview)}><ListBullets size={20}/>My revision</button>
       </div>}
     </div>
-    <button type="button" className={`home-source ${active ? "has-source" : ""}`} data-tour="home-source" onClick={() => selectLesson()}><BookOpen size={17}/><span>{active ? active.title : "Choose a lesson"}</span><CaretDown size={13}/></button>
+    <button type="button" className={`home-source ${active ? "has-source" : ""}`} aria-label={active ? `Change lesson: ${active.title}` : "Choose a lesson"} title={active?.title} data-tour="home-source" onClick={() => selectLesson()}><BookOpen size={17}/><span>{active ? active.title : "Choose a lesson"}</span><CaretDown size={13}/></button>
   </div>;
   const welcome = <div className="home-welcome">
     <StudyAvatar reference/><ChatHeading/>
@@ -110,7 +112,7 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
         {welcome}
         <form className="home-composer-empty" data-tour="home-composer" onSubmit={e => { e.preventDefault(); selectLesson(question.trim().length >= 2 ? { kind: "question", text: question } : null); }}>
           <label className="sr-only" htmlFor="home-question">Ask about your lesson</label>
-          <textarea id="home-question" dir="auto" rows={1} maxLength={1000} placeholder="Ask about your lesson…" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); selectLesson(question.trim().length >= 2 ? { kind: "question", text: question } : null); } }}/>
+          <textarea ref={editor} id="home-question" dir="auto" rows={1} maxLength={1000} placeholder="Ask about your lesson…" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); selectLesson(question.trim().length >= 2 ? { kind: "question", text: question } : null); } }}/>
           <div className="home-composer-footer">{tools}<div className="home-composer-actions">{entryActions}<button className="send-button" aria-label="Choose a lesson for this question" disabled={question.trim().length < 2}><ArrowUp size={22}/></button></div></div>
         </form>
         <p className="composer-caption">Answers use your lesson. Ask a teacher for religious guidance.</p>
@@ -120,8 +122,8 @@ export function StudyHome({ workspace, onAdd, onOpen, onPlay, onError, onReview,
       <p className="material-picker-intro">Choose a lesson to use in your chat.</p>
       <div className="material-picker-toolbar"><label className="search-field"><MagnifyingGlass size={17}/><span className="sr-only">Search lesson materials</span><input autoFocus placeholder="Search materials…" value={search} onChange={e => setSearch(e.target.value)}/>{search && <button type="button" className="icon-button" aria-label="Clear material search" onClick={() => setSearch("")}><X size={16}/></button>}</label>{workspace.groups.length > 0 && <label className="field"><span className="sr-only">Filter by private class</span><select aria-label="Filter by private class" value={group} onChange={e => { setGroup(e.target.value); setDraft(null); }}><option value="">All my lessons</option>{workspace.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select></label>}</div>
       <div className="material-choice-grid" role="radiogroup" aria-label="Lesson for chat"><button type="button" className="material-new" onClick={() => { setPicker(false); onAdd("upload"); }}><Plus size={32}/><span>Upload new material</span></button>{choices.map((l, i) => <button id={`material-${l.id}`} tabIndex={choices.some(c => c.id === draft) ? draft === l.id ? 0 : -1 : i === 0 ? 0 : -1} onKeyDown={e => { if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].includes(e.key)) { e.preventDefault(); const n = e.key === "Home" ? 0 : e.key === "End" ? choices.length - 1 : (i + (["ArrowLeft", "ArrowUp"].includes(e.key) ? choices.length - 1 : 1)) % choices.length; setDraft(choices[n].id); document.getElementById(`material-${choices[n].id}`)?.focus(); } }} role="radio" aria-checked={draft === l.id} key={l.id} className={`material-choice ${draft === l.id ? "selected" : ""}`} onClick={() => setDraft(l.id)}>
-        <span className="material-cover"><Microphone size={66} weight="light"/><span className="material-check">{draft === l.id && <Check size={13}/>}</span></span>
-        <strong dir="auto">{l.sourceKind === "pdf" ? <FilePdf size={16}/> : <FileAudio size={16}/>}<span>{l.title}</span></strong><small>{l.course}{l.shared && " · Shared"}</small><span>{l.sourceKind === "pdf" ? `${l.sourcePageCount || l.pdfPages?.length || 0} pages · PDF` : `${formatTime(l.duration)} audio`}</span>
+        <span className="material-cover" aria-hidden="true">{l.sourceKind === "pdf" ? <FilePdf size={48} weight="light"/> : <Microphone size={48} weight="light"/>}<span className="material-check">{draft === l.id && <Check size={13}/>}</span></span>
+        <span className="material-info"><strong dir="auto">{l.title}</strong><small dir="auto">{l.course}{l.shared && " · Shared"}</small><span className="material-meta">{l.sourceKind === "pdf" ? `${l.sourcePageCount || l.pdfPages?.length || 0} pages · PDF` : `${formatTime(l.duration)} audio`}</span></span>
       </button>)}</div>
       {!choices.length && <p className="material-empty">{ready.length ? "No lessons match your search." : "Record or upload your first lesson. It will appear here when it’s ready."}</p>}
       <footer className="material-picker-footer"><span>{draft && choices.some(l => l.id === draft) ? "1 selected" : "0 selected"}</span><button type="button" className="button primary" disabled={!choices.some(l => l.id === draft)} onClick={confirmLesson}>Confirm selection</button></footer>
