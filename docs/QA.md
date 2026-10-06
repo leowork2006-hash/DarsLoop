@@ -1,5 +1,15 @@
 # Verification and known limits
 
+## Long Arabic processing and search correction — 6 October 2026 (V39)
+
+The complete unit suite passed **327 tests across 49 files**, and the final production build/TypeScript passed. Two Arabic retrieval fixtures reproduced the old failures before the fix: a late review passage was missed, and generic classroom wording was retrieved for an unrelated question. The correction removes Arabic retrieval boilerplate, matches conservative word forms, weights distinctive topics, and bounds source context. Literal quotations, support audits and teacher-referral boundaries remain enforced.
+
+An actual isolated production-pipeline check prepared and processed a **91-minute repeated authored synthetic Arabic recording** through the configured live Groq dual pass and Gemini generation/audit adapters. All ten chunks completed, producing 26 notes, six quizzes and 32 cards. Notes covered eight of ten sections. This is partial-material completion on a repeated fixture, not a natural lecture, hosted upload, native accuracy benchmark or full lesson coverage. The first chat check failed after an actual search-limit response; that initial run remains recorded as an end-to-end failure.
+
+After the fix, a separate 66-passage authored Arabic saved-source fixture passed a correctly forced embedding-limit check with actual live answer/support auditing: the covered review question returned an exact cited answer, an unrelated question returned no claims, and a personal ruling request received a teacher referral. An initial test interceptor missed the SDK batch endpoint and exercised normal hybrid search instead; that result is retained separately and is not counted as outage proof. The 91-minute speech test was not repeated.
+
+Library and Upload now distinguish Source ready, Partial notes/material and Needs attention. Missing notes or a practice kind cannot silently look fully ready. Partial notes show section coverage and a full-source action; service-limited chat offers a retry while retaining grounding. Actual isolated mobile interactions at391×844 confirmed readiness labels/counts, partial upload progress, available-material opening and full-transcript navigation without document overflow. No physical phone or new real-class processing was used. External availability, complete coverage of every recording and the exact unidentified student's failure remain unproven.
+
 ## Mobile chat and actionable Insights correction — 6 October 2026
 
 Production build/TypeScript and17focused unit checks passed. Five grouped isolated production-build screen checks covered mobile individual-word/re-entry behavior, compact aligned controls, merged summary/key points, current-version review recommendations/UTC activity, desktop and320/390px fit, and recommended practice navigation. No browser/provider errors; three screenshots inspected. One fixture check expected3recommendations rather than up to3; corrected without inventing another item. No physical-phone/Safari-engine or learning-benefit proof.

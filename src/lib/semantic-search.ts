@@ -5,7 +5,7 @@ import { db, safeLesson } from "./store";
 import { rawLesson } from "./backend";
 import { cloudMode } from "./supabase/config";
 import { savedVectors, saveVectors } from "./supabase/store";
-import { instructionLike, noteAnchors, queryTokenMatches, retrieve, tokens } from "./evidence";
+import { instructionLike, lexicalPassageRanks, noteAnchors, retrieve, retrievalContext } from "./evidence";
 import type { Lesson, Segment, StudyPassage } from "./types";
 
 export const EMBEDDING_MODEL="gemini-embedding-001",EMBEDDING_DIMENSIONS=768;
@@ -20,7 +20,7 @@ export function searchWindows(segments:Segment[]):Window[] {
   const result:Window[]=[];let text="",indices:number[]=[];
   const flush=()=>{if(text){result.push({hash:createHash("sha256").update(JSON.stringify({indices,text,ids:indices.map(i=>segments[i].id)})).digest("hex"),indices:[...indices],text});text="";indices=[];}};
   segments.forEach((s,i)=>{
-    if(instructionLike(s.text))return;
+    if(s.flags.length||instructionLike(s.text))return;
     // Split representation for the embedding endpoint only. Source passages are never rewritten.
     const parts=s.text.match(/[\s\S]{1,1400}/gu)||[];
     for(const part of parts){if(indices.length>=5||text.length+part.length+1>1400)flush();text+=(text?"\n":"")+part;if(!indices.includes(i))indices.push(i);}
@@ -78,17 +78,15 @@ export async function indexedVectors(lesson:Lesson,windows:Window[],embedder=emb
 export function rankedPassages(question:string,segments:Segment[],windows:Window[],vectors:number[][],query:number[],limit=18) {
   if(windows.length!==vectors.length)throw new Error("Incomplete retrieval index");
   const q=unitVector(query),semantic=windows.map((w,i)=>({w,score:unitVector(vectors[i]).reduce((n,v,j)=>n+v*q[j],0)})).sort((a,b)=>b.score-a.score);
-  const terms=tokens(question),lexical=segments.map((s,i)=>({i,score:tokens(s.text).filter(t=>terms.some(term=>queryTokenMatches(term,t))).length})).filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
+  const lexical=lexicalPassageRanks(question,segments).filter(row=>!segments[row.index].flags.length);
   const scores=new Map<number,number>();
   const semanticSeen=new Set<number>();
-  semantic.forEach(({w},rank)=>w.indices.forEach(i=>{if(!semanticSeen.has(i)){semanticSeen.add(i);scores.set(i,(scores.get(i)||0)+1/(60+rank+1));}}));
-  lexical.forEach(({i},rank)=>scores.set(i,(scores.get(i)||0)+1/(60+rank+1)));
+  semantic.forEach(({w},rank)=>w.indices.forEach(i=>{if(segments[i]&&!segments[i].flags.length&&!instructionLike(segments[i].text)&&!semanticSeen.has(i)){semanticSeen.add(i);scores.set(i,(scores.get(i)||0)+1/(60+rank+1));}}));
+  lexical.forEach(({index},rank)=>scores.set(index,(scores.get(index)||0)+1/(60+rank+1)));
   const anchors=[...scores.entries()].sort((a,b)=>b[1]-a[1]).slice(0,Math.min(8,limit)).map(([i])=>i);
-  const chosen=new Set(anchors);
-  for(const i of anchors){for(const neighbor of [i-1,i+1]){if(neighbor>=0&&neighbor<segments.length&&chosen.size<limit)chosen.add(neighbor);}}
-  return [...chosen].sort((a,b)=>a-b).map(i=>segments[i]);
+  return retrievalContext(segments,anchors,limit).filter(p=>!p.flags.length);
 }
-export async function lessonPassages(question:string,lesson:Lesson):Promise<{segments:import("./types").StudyPassage[];method:SearchMethod}> {
+export async function lessonPassages(question:string,lesson:Lesson):Promise<{segments:import("./types").StudyPassage[];method:SearchMethod;unavailable?:boolean}> {
   if(lesson.sourceKind==="pdf"){
     const pages=sourcePassages(lesson).filter(p=>!p.flags.length&&!instructionLike(p.text));
     const anchors=noteAnchors(question,pages,lesson.artifacts?.notes);
@@ -98,11 +96,9 @@ export async function lessonPassages(question:string,lesson:Lesson):Promise<{seg
   }
   const anchors=noteAnchors(question,lesson.segments,lesson.artifacts?.notes);
   if(anchors.length){
-    const chosen=new Set(anchors.map(s=>lesson.segments.findIndex(segment=>segment.id===s.id)));
-    for(const anchor of [...chosen])for(const neighbor of [anchor-1,anchor+1])if(neighbor>=0&&neighbor<lesson.segments.length)chosen.add(neighbor);
-    return {segments:[...chosen].sort((a,b)=>a-b).map(i=>lesson.segments[i]).filter(s=>!instructionLike(s.text)),method:"note_anchor"};
+    return {segments:retrievalContext(lesson.segments,anchors.map(s=>lesson.segments.findIndex(segment=>segment.id===s.id)),18).filter(s=>!s.flags.length),method:"note_anchor"};
   }
-  if(lesson.segments.length<=30)return {segments:lesson.segments.filter(s=>!instructionLike(s.text)),method:"whole_lesson"};
+  if(lesson.segments.length<=30)return {segments:lesson.segments.filter(s=>!s.flags.length&&!instructionLike(s.text)),method:"whole_lesson"};
   try {
     const windows=searchWindows(lesson.segments),vectors=await indexedVectors(lesson,windows),[query]=await embed([question],"RETRIEVAL_QUERY");
     return {segments:rankedPassages(question,lesson.segments,windows,vectors,query).filter(s=>!instructionLike(s.text)),method:"hybrid"};
@@ -110,6 +106,6 @@ export async function lessonPassages(question:string,lesson:Lesson):Promise<{seg
     const status=(error as {status?:unknown})?.status;
     console.log(JSON.stringify({event:"retrieval-fallback",code:typeof status==="number"?`provider_${status}`:"index_unavailable"}));
     // Provider failure never expands the corpus or enables an outside answer.
-    return {segments:retrieve(question,lesson.segments,12),method:"lexical_fallback"};
+    return {segments:retrieve(question,lesson.segments.filter(s=>!s.flags.length&&!instructionLike(s.text)),12),method:"lexical_fallback",unavailable:true};
   }
 }

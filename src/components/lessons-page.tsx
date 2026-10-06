@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, BookOpen, Cards, CheckCircle, CircleNotch, FileAudio, FilePdf, Headphones, List, ListChecks, Microphone, MagnifyingGlass, SquaresFour, UploadSimple, Users, WarningCircle, X } from "@phosphor-icons/react";
 import { availablePractice } from "@/lib/insights";
+import { lessonReadiness, lessonMatchesReadinessFilter, type LessonReadinessFilter } from "@/lib/lesson-readiness";
 import { formatTime, type Lesson, type Workspace } from "@/lib/types";
 
 type LibraryTab = "all" | "mine" | "shared";
-type StatusFilter = "all" | "ready" | "preparing" | "failed";
+type StatusFilter = LessonReadinessFilter;
 export type LessonsPageProps = {
   workspace: Workspace;
   course: string;
@@ -24,18 +25,21 @@ function addedDate(lesson: Lesson) {
 }
 
 function LessonStatus({ lesson }: { lesson: Lesson }) {
-  if (lesson.status === "ready" && lesson.error) return <span className="lessons-status lessons-status-failed">{lesson.sourceKind === "pdf" ? <FilePdf size={13} /> : <Headphones size={13} />} {lesson.sourceKind === "pdf" ? "Pages ready" : "Transcript ready"}</span>;
-  if (lesson.status === "ready") return <span className="lessons-status lessons-status-ready"><CheckCircle size={13} /> Ready</span>;
-  if (lesson.status === "failed") return <span className="lessons-status lessons-status-failed"><WarningCircle size={13} /> Needs attention</span>;
-  return <span className="lessons-status lessons-status-preparing"><CircleNotch size={13} className="lessons-preparing-icon" /> {lesson.status === "queued" ? "Queued" : "Preparing"}</span>;
+  const readiness = lessonReadiness(lesson);
+  if (readiness.materialReady) return <span className="lessons-status lessons-status-ready"><CheckCircle size={13} /> {readiness.label}</span>;
+  if (readiness.state === "partial" || readiness.needsAttention) return <span className="lessons-status lessons-status-failed"><WarningCircle size={13} /> {readiness.label}</span>;
+  return <span className="lessons-status lessons-status-preparing"><CircleNotch size={13} className="lessons-preparing-icon" /> {readiness.label}</span>;
 }
 
 function LessonContents({ lesson }: { lesson: Lesson }) {
+  const readiness = lessonReadiness(lesson);
   if (lesson.status === "failed") return <p className="lessons-card-stage">Open your lesson for details.</p>;
   if (lesson.status !== "ready") return <p className="lessons-card-stage" dir="auto">{lesson.stage || "Study material is being prepared."}</p>;
   const practice = availablePractice(lesson), quizzes = practice.filter(item => item.kind === "quiz").length, cards = practice.filter(item => item.kind === "flashcard").length;
   const notes = lesson.noteOptions?.enabled === false ? 0 : lesson.artifacts?.notes.length || 0;
   return <div className="lessons-card-contents">
+    {readiness.state === "partial" && <p className="lessons-card-stage" style={{flexBasis:"100%",margin:0}}>{readiness.description}</p>}
+    {readiness.needsAttention && <p className="lessons-card-stage" style={{flexBasis:"100%",margin:0}}>{readiness.sourceReady ? "Source saved. Open your lesson for preparation details." : "Open your lesson for preparation details."}</p>}
     {notes > 0 && <span><BookOpen size={13} />{notes} {notes === 1 ? "note" : "notes"}</span>}
     {quizzes > 0 && <span><ListChecks size={13} />{quizzes} {quizzes === 1 ? "question" : "questions"}</span>}
     {cards > 0 && <span><Cards size={13} />{cards} {cards === 1 ? "card" : "cards"}</span>}
@@ -64,7 +68,7 @@ export function LessonsPage({ workspace, course, onCourse, onOpen, onUpload, onR
   const filtered = all.filter(lesson => (tab !== "mine" || lesson.ownerId === workspace.userId)
     && (tab !== "shared" || lesson.shared === true && lesson.ownerId !== workspace.userId && !lesson.demo)
     && (!course || lesson.course === course)
-    && (status === "all" || (status === "preparing" ? lesson.status === "queued" || lesson.status === "processing" : lesson.status === status))
+    && lessonMatchesReadinessFilter(lesson, status)
     && (!search || `${lesson.title} ${lesson.course}`.toLocaleLowerCase().includes(search)));
   const hasFilters = Boolean(query || course || status !== "all");
   function clearFilters() { setQuery(""); onCourse(""); setStatus("all"); }
@@ -74,7 +78,7 @@ export function LessonsPage({ workspace, course, onCourse, onOpen, onUpload, onR
     <div className="lessons-page-tabs" role="tablist" aria-label="Lesson collections">{([{ id: "all", label: "All lessons" }, { id: "mine", label: "My materials" }, { id: "shared", label: "Shared with me" }] as const).map(option => <button type="button" key={option.id} id={`lessons-tab-${option.id}`} role="tab" aria-selected={tab === option.id} aria-controls="lessons-content" onClick={() => setTab(option.id)}>{option.label}</button>)}</div>
     <div className="lessons-toolbar" data-tour="lessons-toolbar">
       <div className="lessons-search"><MagnifyingGlass size={17} /><input type="search" aria-label="Search lessons" placeholder="Search your lessons…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button type="button" aria-label="Clear lesson search" onClick={() => setQuery("")}><X size={14} /></button>}</div>
-      <div className="lessons-filter-controls"><label><span className="sr-only">Filter lessons by course</span><select value={course} onChange={event => onCourse(event.target.value)}><option value="">All courses</option>{courses.map(value => <option value={value} key={value}>{value}</option>)}</select></label><label><span className="sr-only">Filter lessons by status</span><select value={status} onChange={event => setStatus(event.target.value as StatusFilter)}><option value="all">All statuses</option><option value="ready">Ready</option><option value="preparing">Preparing</option><option value="failed">Needs attention</option></select></label><div className="lessons-view-toggle" role="group" aria-label="Lesson layout"><button type="button" aria-label="Grid view" aria-pressed={view === "grid"} onClick={() => setView("grid")}><SquaresFour size={18} /></button><button type="button" aria-label="List view" aria-pressed={view === "list"} onClick={() => setView("list")}><List size={18} /></button></div></div>
+      <div className="lessons-filter-controls"><label><span className="sr-only">Filter lessons by course</span><select value={course} onChange={event => onCourse(event.target.value)}><option value="">All courses</option>{courses.map(value => <option value={value} key={value}>{value}</option>)}</select></label><label><span className="sr-only">Filter lessons by status</span><select value={status} onChange={event => setStatus(event.target.value as StatusFilter)}><option value="all">All statuses</option><option value="ready">Ready</option><option value="partial">Partial material</option><option value="preparing">Preparing</option><option value="failed">Needs attention</option></select></label><div className="lessons-view-toggle" role="group" aria-label="Lesson layout"><button type="button" aria-label="Grid view" aria-pressed={view === "grid"} onClick={() => setView("grid")}><SquaresFour size={18} /></button><button type="button" aria-label="List view" aria-pressed={view === "list"} onClick={() => setView("list")}><List size={18} /></button></div></div>
     </div>
     <div className="lessons-results-heading"><p><strong>{filtered.length}</strong> {filtered.length === 1 ? "lesson" : "lessons"}{course && <span> in <bdi>{course}</bdi></span>}</p><span>Newest first</span></div>
     <div id="lessons-content" role="tabpanel" aria-labelledby={`lessons-tab-${tab}`} data-tour="lessons-content">

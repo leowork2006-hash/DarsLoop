@@ -54,11 +54,23 @@ export function validateAnswer(input:unknown,segments:StudyPassage[],version:num
 }
 export function normalise(text:string){return text.normalize("NFKC").toLowerCase().replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[^\p{L}\p{N}\s]/gu," ");}
 const stops=new Set("the a an is of to for in on what where did does do teacher lesson this that how can i you explain please my me with and about said tell from it was we are should class".split(" "));
-export function tokens(text:string){return [...new Set(normalise(text).split(/\s+/).filter(t=>t.length>1&&!stops.has(t)))];}
+const arabicStops=new Set("كيف ماذا لماذا متى اين هل ما من هو هي هذا هذه ذلك تلك هنا هناك في عن على الى ان انه ثم الذي التي كان كانت يمكن ينبغي لي لنا طالب درس معلم مثال يقول قال اشرح وضح شرح يشرح حول بحسب".split(" "));
+function arabicRetrievalForm(word:string) {
+  if(!/^[ء-ي]+$/u.test(word))return word;
+  // Strip definite articles/clitics only; never apply a broad Arabic root stemmer.
+  const plain=word.replace(/^(?:و|ف)?(?:ال|بال|كال|لل)(?=.{3,}$)/u,"");
+  return arabicReviewForms.has(plain)?"مراجعة":plain;
+}
+// A bounded inflection family for مراجعة/راجع, not invented synonyms. These
+// forms affect candidate retrieval only; source text and quoted evidence stay literal.
+const arabicReviewForms=new Set("مراجعة راجع يراجع تراجع اراجع نراجع راجعي راجعوا يراجعون تراجعون تراجعين يراجعن تراجعن".split(" "));
+export function tokens(text:string){return [...new Set(normalise(text).split(/\s+/).filter(t=>t.length>1&&!stops.has(t)&&!arabicStops.has(arabicRetrievalForm(t))))];}
+function isArabicRetrievalQuestion(question:string){return /[ء-ي]/u.test(question)&&!/[پچژگکںھہۂےٹڈڑ]/u.test(question);}
 // Conservative typo tolerance for retrieval only. Original speech, quotations
 // and safety routing are unchanged; a fuzzy match is a candidate, never proof.
 export function queryTokenMatches(query:string,word:string){
   if(query===word)return true;
+  if(/^[ء-ي]+$/u.test(query)&&/^[ء-ي]+$/u.test(word)&&arabicRetrievalForm(query)===arabicRetrievalForm(word))return true;
   const a=Array.from(query),b=Array.from(word),max=a.length>=8&&b.length>=8?2:1;
   if(a.length<4||b.length<4||Math.abs(a.length-b.length)>max)return false;
   if(/\p{Script=Latin}/u.test(query)!==/\p{Script=Latin}/u.test(word))return false;
@@ -80,12 +92,35 @@ export function instructionLike(text:string) {
     || /(?:تجاهل|تجاوز).{0,30}(?:التعليمات|القواعد)|(?:ہدایات|قواعد).{0,30}(?:نظر انداز|بھول)|(?:سسٹم پرامپٹ|اپنی ہدایات).{0,30}(?:دکھاؤ|بتاؤ)/u.test(t);
 }
 const religiousTopic=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|fast(?:ing)?|w[ou]d[uh]u?|ablution|prayers?|pray(?:ing)?|marriage|divorce)\b|حلال|حرام|فتوى|فتوی|وضوء|وضو|صلاة|نماز|صيام|روزہ/iu;
+export function lexicalPassageRanks(question:string,segments:StudyPassage[]):{index:number;score:number}[] {
+  const q=tokens(question);if(!q.length)return [];
+  const cache=new Map<string,boolean>(),matches=(term:string,word:string)=>{
+    const key=term+"\0"+word;if(!cache.has(key))cache.set(key,queryTokenMatches(term,word));return cache.get(key)!;
+  };
+  const rows=segments.map((segment,index)=>({index,words:instructionLike(segment.text)?[]:tokens(segment.text)}));
+  if(!isArabicRetrievalQuestion(question))return rows.map(({index,words})=>({index,score:words.reduce((n,word)=>n+(q.some(term=>matches(term,word))?1:0),0)})).filter(row=>row.score>0).sort((a,b)=>b.score-a.score);
+  // Common words repeated throughout a long class cannot outweigh a rare topic.
+  // Score each query term once per passage, rather than its many spelling forms.
+  const matched=rows.map(row=>q.map(term=>row.words.some(word=>matches(term,word))));
+  const weights=q.map((_,i)=>1+Math.log((segments.length+1)/(matched.filter(row=>row[i]).length+1)));
+  return rows.map((row,i)=>({index:row.index,score:matched[i].reduce((score,found,j)=>score+(found?weights[j]:0),0)})).filter(row=>row.score>0).sort((a,b)=>b.score-a.score);
+}
+export function retrievalContext<T extends StudyPassage>(segments:T[],anchors:number[],limit:number):T[] {
+  const maximum=Math.max(0,Math.min(18,Math.floor(limit))),chosen=new Set<number>();let characters=0;
+  const add=(index:number)=>{const source=segments[index];if(!source||chosen.has(index)||chosen.size>=maximum||instructionLike(source.text)||characters+source.text.length>30_000)return;chosen.add(index);characters+=source.text.length;};
+  // Keep the ranked anchors before spending the finite context on neighbors.
+  anchors.forEach(add);for(const index of anchors){add(index-1);add(index+1);}
+  return [...chosen].sort((a,b)=>a-b).map(index=>segments[index]);
+}
 export function retrieve(question:string,segments:StudyPassage[],limit=8):StudyPassage[] {
   segments=segments.filter(s=>!instructionLike(s.text));
-  const q=tokens(question);if(!q.length)return [];
-  const ranked=segments.map((s,i)=>({i,score:tokens(s.text).reduce((n,t)=>n+(q.some(term=>queryTokenMatches(term,t))?1:0),0)})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,3);
-  const selected=new Set<number>();ranked.forEach(r=>{for(let i=Math.max(0,r.i-1);i<=Math.min(segments.length-1,r.i+1);i++)selected.add(i);});
-  return [...selected].sort((a,b)=>a-b).slice(0,limit).map(i=>segments[i]);
+  const ranked=lexicalPassageRanks(question,segments),arabic=isArabicRetrievalQuestion(question),seen=new Set<string>();
+  const anchors=ranked.filter(row=>{
+    if(!arabic)return true;
+    const text=normalise(segments[row.index].text).trim();
+    if(row.score<ranked[0].score*.6||seen.has(text))return false;seen.add(text);return true;
+  }).slice(0,3).map(row=>row.index);
+  return retrievalContext(segments,anchors,limit);
 }
 export function needsPersonalReferral(question:string) {
   return /\b((give|issue) (me |a )?fatwa|fatwa for (me|my)|is it (halal|haram) for me|am i (allowed|permitted)|what should i do about my|should i (divorce|marry)|(is )?my (divorce|marriage|prayer|fast) (is )?(valid|invalid)|(?:can|may|should) i (?:pray|fast|marry|divorce)|(?:do|must) i (?:need |have to )?(?:make |do )?(?:w[ou]d[uh]u?|ablution))\b/i.test(question)||/أفتني|افتني|فتوى لي|میرے لیے فتوی|میری نماز درست|کیا میری طلاق|کیا میں.{0,30}نماز/.test(question);

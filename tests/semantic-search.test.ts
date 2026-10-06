@@ -68,6 +68,37 @@ describe("selected-lesson retrieval invariants; mocked embeddings",()=>{
       const r=await lessonPassages("revision",lesson);expect(r.method).toBe("lexical_fallback");expect(r.segments.length).toBeGreaterThan(0);expect(r.segments.every(p=>segments.some(s=>s.id===p.id))).toBe(true);
     }finally{if(saved===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=saved;}
   });
+  it("finds a late Arabic review explanation despite repeated generic student passages and unavailable embeddings",async()=>{
+    const saved=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY="";
+    try {
+      const owner=fixtureSession(),base=s.listLessons(owner.userId)[0];
+      const segments:Segment[]=Array.from({length:42},(_,i)=>({id:`arabic-${i}`,start:i*12,end:(i+1)*12,text:i===36?"المراجعة تعني العودة إلى شرح الدرس ومحاولة تذكر الأفكار قبل قراءة الملاحظات.":i===37?"الاستماع وحده ليس كافيا في هذه الطريقة.":i===20?"يراجع الطالب الدرس في هذا المثال لكن هذا الصوت غير واضح.":"الطالب في هذا الدرس يكتب المثال في دفتره.",flags:i===20?["Low transcription confidence"]:[]}));
+      const lesson:Lesson={...base,id:randomUUID(),demo:false,segments,artifacts:null};s.insertLesson(lesson);
+      const result=await lessonPassages("كيف يراجع الطالب الدرس في هذا المثال؟",lesson);
+      expect(result.method).toBe("lexical_fallback");
+      expect(result.segments.map(p=>p.id)).toContain("arabic-36");
+      expect(result.segments.map(p=>p.id)).toContain("arabic-37");
+      expect(result.segments.every(p=>!p.flags.length)).toBe(true);
+      expect(result.segments.length).toBeLessThanOrEqual(12);
+      expect(result.segments.find(p=>p.id==="arabic-36")?.text).toBe(segments[36].text);
+      const {excerptAnswer,retrieve}=await import("../src/lib/evidence");
+      const answer=excerptAnswer("كيف يراجع الطالب الدرس في هذا المثال؟",result.segments,1);
+      expect(answer.status).toBe("answered");expect(answer.blocks[0].evidence[0].quote).toBe(segments[36].text);
+      expect(retrieve("كيف يراجع الطالب الدرس في هذا المثال؟",segments.filter(p=>!p.flags.length),1)[0].id).toBe("arabic-36");
+    }finally{if(saved===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=saved;}
+  });
+  it("does not retrieve Arabic student/lesson boilerplate for an unrelated topic",async()=>{
+    const saved=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY="";
+    try {
+      const owner=fixtureSession(),base=s.listLessons(owner.userId)[0];
+      const segments:Segment[]=Array.from({length:42},(_,i)=>({id:`scope-${i}`,start:i*12,end:(i+1)*12,text:i===36?"المراجعة تعني العودة إلى شرح الدرس ومحاولة تذكر الأفكار قبل قراءة الملاحظات.":"الطالب في هذا الدرس يكتب المثال في دفتره.",flags:[]}));
+      const lesson:Lesson={...base,id:randomUUID(),demo:false,segments,artifacts:null};s.insertLesson(lesson);
+      const result=await lessonPassages("ماذا يقول المعلم عن المجرات في هذا الدرس؟",lesson);
+      expect(result.method).toBe("lexical_fallback");expect(result.segments).toEqual([]);
+      const {excerptAnswer}=await import("../src/lib/evidence");
+      expect(excerptAnswer("ماذا يقول المعلم عن المجرات في هذا الدرس؟",segments,1)).toMatchObject({status:"not_covered",blocks:[]});
+    }finally{if(saved===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=saved;}
+  });
   it("follows an audited English topic to Urdu quotes without an embedding call",async()=>{
     const owner=fixtureSession(),base=s.listLessons(owner.userId)[0];
     const segments:Segment[]=Array.from({length:40},(_,i)=>({id:`urdu-${i}`,start:i*10,end:i*10+10,text:i===20?"استاد نے چالیس دن کی مدت کے بارے میں وضاحت کی۔":"یہ کلاس کی دوسری بات ہے۔",flags:[]}));
