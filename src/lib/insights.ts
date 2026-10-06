@@ -50,6 +50,16 @@ export function studyInsights(lessons: Lesson[], reviews: Review[], now = Date.n
   }
   const activity: ReviewActivity[] = [...daily].sort(([a], [b]) => a.localeCompare(b)).map(([day, attempts]) => ({ day, attempts }));
   const future = valid.filter(review => Date.parse(review.dueAt) > clock).sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt));
+  const dueItems=due.map(pair).sort((a,b)=>Number(a.review.lastResult)-Number(b.review.lastResult)||Date.parse(a.review.dueAt)-Date.parse(b.review.dueAt)||a.item.id.localeCompare(b.item.id));
+  const untried=real.flatMap(lesson=>[...practice.get(lesson.id)!.values()].filter(item=>!saved.has(`${lesson.id}:${lesson.version}:${item.id}`)).map(item=>({lesson,item})));
+  const recommendations:{lesson:Lesson;item:PracticeItem;reason:"due"|"revisit"|"new"}[]=[],suggested=new Set<string>();
+  for(const candidate of [...dueItems.map(value=>({...value,reason:"due" as const})),...revisits.map(value=>({...value,reason:"revisit" as const})),...untried.map(value=>({...value,reason:"new" as const}))]){
+    const key=`${candidate.lesson.id}:${candidate.item.id}`;
+    if(suggested.has(key))continue;
+    suggested.add(key);recommendations.push({lesson:candidate.lesson,item:candidate.item,reason:candidate.reason});if(recommendations.length===3)break;
+  }
+  const today=new Date(clock).toISOString().slice(0,10),weekStart=new Date(Date.parse(`${today}T00:00:00Z`)-6*86_400_000).toISOString().slice(0,10);
+  const recent=activity.filter(event=>event.day>=weekStart);
   return {
     lessons: real.length,
     readyLessons: real.filter(lesson => lesson.status === "ready").length,
@@ -59,6 +69,9 @@ export function studyInsights(lessons: Lesson[], reviews: Review[], now = Date.n
     currentReviews: valid,
     available: [...practice.values()].reduce((total, items) => total + items.size, 0),
     due: due.length,
+    untried: untried.length,
+    recommendations,
+    recentWeek: { days:recent.length, attempts:recent.reduce((total,event)=>total+event.attempts,0) },
     missed: revisits.length,
     revisits,
     activity,

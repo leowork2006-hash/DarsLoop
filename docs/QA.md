@@ -1,5 +1,11 @@
 # Verification and known limits
 
+## Mobile chat and actionable Insights correction — 6 October 2026
+
+Production build/TypeScript and17focused unit checks passed. Five grouped isolated production-build screen checks covered mobile individual-word/re-entry behavior, compact aligned controls, merged summary/key points, current-version review recommendations/UTC activity, desktop and320/390px fit, and recommended practice navigation. No browser/provider errors; three screenshots inspected. One fixture check expected3recommendations rather than up to3; corrected without inventing another item. No physical-phone/Safari-engine or learning-benefit proof.
+
+Insights separates latest quiz correctness from self-rated flashcards, shows actual dated activity, untouched current practice and source-linked next steps. It derives no mastery, improvement or time-spent score. No new database fields or generation requests. Heading respects reduced motion, starts when visible and replays on return rather than looping indefinitely.
+
 ## Notes language and compact layout correction — 6 October 2026
 
 TypeScript and final production build passed. Nineteen scoped unit checks passed. A rolled-back synthetic database fixture confirmed same-language reuse, explicit-language queueing, unchanged source, duplicate/busy guards, one job and service-only execution. Six grouped isolated browser checks covered centered individual-word headings, mobile account/library/breadcrumb fit, removed editor/aside cards, explicit preparation only, a single speed caret and320px notes without horizontal overflow. Three screenshots were inspected. An initial mock/selector/SQL-alias issue was corrected; an actual lesson-tab margin overflow was fixed. Initial reports remain private.

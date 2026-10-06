@@ -92,3 +92,23 @@
   .account-settings-details > div { gap: 8px; }
   .account-settings-details :is(dt,dd),.account-settings-help { font-size: 12px; }
 }
+
+/* Compact visual controls retain generous touch areas. */
+@media (max-width: 800px) {
+  .workspace-shell.is-reference-home .home-shortcuts { gap: 6px; }
+  .workspace-shell.is-reference-home .home-shortcuts button { min-height: 36px; font-size: 11px; padding: 5px 9px; }
+  .workspace-shell.is-reference-home .reference-chat :is(.home-composer-empty,.chat-composer.home-composer) { padding: 10px 8px 6px; gap: 2px; }
+  .workspace-shell.is-reference-home .reference-chat .home-composer-footer { gap: 0; }
+  .workspace-shell.is-reference-home .home-composer-actions,.workspace-shell.is-reference-home .home-lesson-entry { gap: 0; }
+  .workspace-shell.is-reference-home .home-source { font-size: 11px; max-width: 135px; padding: 4px 0; }
+  .workspace-shell.is-reference-home .home-source svg { width: 11px; }
+  .workspace-shell.is-reference-home :is(.home-record-control,.home-upload-control) { position: relative; background: transparent; border: 0; box-shadow: none; color: var(--ref-body); border-radius: 7px; }
+  .workspace-shell.is-reference-home :is(.home-record-control,.home-upload-control):hover { background: var(--ref-soft); transform: none; }
+  .workspace-shell.is-reference-home :is(.home-record-control,.home-upload-control) svg { width: 18px; height: 18px; }
+  .workspace-shell.is-reference-home .reference-chat .send-button { position: relative; background: transparent; border: 0; box-shadow: none; }
+  .workspace-shell.is-reference-home .reference-chat .send-button::before { content: ""; position: absolute; inset: 5px; border-radius: 7px; background: var(--ref-ink); }
+  .workspace-shell.is-reference-home .reference-chat .send-button > svg { position: relative; width: 20px; height: 20px; }
+  .workspace-shell.is-reference-home .reference-chat .home-composer-tools > .home-menu-anchor { flex-shrink: 0; }
+  .workspace-shell.is-reference-home .reference-chat .home-attach { width: 36px; min-width: 36px; }
+  .workspace-shell.is-reference-home .reference-chat .home-attach svg { width: 19px; height: 19px; }
+}

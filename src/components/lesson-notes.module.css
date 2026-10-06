@@ -67,3 +67,11 @@
 .languageControl { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 12px; }
 .languageControl select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--ref-line); border-radius: 8px; background: var(--ref-card); color: var(--ref-text); font: inherit; }
 @media (max-width: 800px) { .prepare h3 { font-size: 18px; line-height: 1.4; } .prepare p { font-size: 12px; } .languageControl { justify-content: space-between; } .languageControl select { max-width: 65%; } .layout.layout.layout :global(.tab-intro h2) { font-size: 20px; } }
+
+.summaryPoints { border-top: 1px solid var(--ref-line); margin-top: 22px; padding-top: 20px; }
+.summaryPoints > h3 { font-size: 16px; margin: 0 0 14px; font-weight: 550; }
+.summaryPoints ul { list-style: none; margin: 0; padding: 0; }
+.summaryPoints li { padding: 14px 0; border-bottom: 1px solid var(--ref-line); }
+.summaryPoints li:last-child { padding-bottom: 0; border: 0; }
+.summaryPoints strong { display: block; font-size: 14px; font-weight: 550; line-height: 1.6; overflow-wrap: anywhere; }
+.summaryPoints p { font-size: 13px; line-height: 1.8; margin: 7px 0 12px; white-space: pre-line; overflow-wrap: anywhere; }

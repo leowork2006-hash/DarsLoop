@@ -1,28 +1,37 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Brain, BookOpen, Cards, MapTrifold, NotePencil, ListChecks } from "@phosphor-icons/react";
 import type { Lesson } from "@/lib/types";
 import styles from "./lesson-chat.module.css";
 
 const headings = ["How can I help?", "What would you like to study?"];
 export function ChatHeading() {
-  const [phrase,setPhrase]=useState(0),[words,setWords]=useState(0),[reduced,setReduced]=useState(false);
+  const [phrase,setPhrase]=useState(0),[words,setWords]=useState(0),[reduced,setReduced]=useState(false),[visible,setVisible]=useState(false),[visit,setVisit]=useState(0);
+  const root=useRef<HTMLDivElement>(null);
   useEffect(()=>{
     const preference=window.matchMedia("(prefers-reduced-motion: reduce)");
     const update=()=>setReduced(preference.matches);
     update();preference.addEventListener("change",update);
     return()=>preference.removeEventListener("change",update);
   },[]);
+  useEffect(()=>{
+    const node=root.current;if(!node)return;
+    const observer=new IntersectionObserver(([entry])=>setVisible(entry.isIntersecting),{threshold:.7});observer.observe(node);
+    const replay=()=>{if(document.visibilityState==="visible")setVisit(value=>value+1);};
+    window.addEventListener("pageshow",replay);document.addEventListener("visibilitychange",replay);
+    return()=>{observer.disconnect();window.removeEventListener("pageshow",replay);document.removeEventListener("visibilitychange",replay);};
+  },[]);
+  useEffect(()=>{setPhrase(0);setWords(0);},[visible,visit]);
   const parts=headings[phrase].split(" ");
   useEffect(()=>{
-    if(reduced||phrase===headings.length-1&&words===parts.length)return;
+    if(reduced||!visible||phrase===headings.length-1&&words===parts.length)return;
     const timer=window.setTimeout(()=>{
       if(words<parts.length)setWords(words+1);
       else {setPhrase(phrase+1);setWords(0);}
-    },words<parts.length?180:700);
+    },words<parts.length?(words===0?400:220):1200);
     return()=>window.clearTimeout(timer);
-  },[words,phrase,parts.length,reduced]);
-  return <div className={styles.heading}><h2><span className="sr-only">How can I help?</span><span aria-hidden="true">{parts.map((word,index)=><span key={`${phrase}-${index}`} className={styles.headingWord} data-visible={reduced||index<words}>{word}{index<parts.length-1?"\u00a0":""}</span>)}</span></h2></div>;
+  },[words,phrase,parts.length,reduced,visible,visit]);
+  return <div ref={root} className={styles.heading}><h2><span className="sr-only">How can I help?</span><span aria-hidden="true">{parts.map((word,index)=><span key={`${phrase}-${index}`} className={styles.headingWord} data-visible={reduced||index<words}>{word}{index<parts.length-1?"\u00a0":""}</span>)}</span></h2></div>;
 }
 
 export function ChatStarters({ lesson, onAsk, onNotes, onQuiz, onCards, onPlan }: {

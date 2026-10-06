@@ -1,20 +1,20 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, CaretDown, CircleNotch } from "@phosphor-icons/react";
+import { BookOpen, CircleNotch } from "@phosphor-icons/react";
 import { SourceEvidence } from "./source-evidence";
-import { formatTime, type Citation, type Lesson } from "@/lib/types";
+import { type Lesson } from "@/lib/types";
 import { initialNoteView, type NoteView } from "@/lib/personal-notes";
 import { studyMaterialLanguageLabels, type PreparedMaterialLanguage } from "@/lib/study-material-language";
 import { api, message } from "./client-api";
 import styles from "./lesson-notes.module.css";
 import { detailedOptions, detailedPrepared, savedMaterialLanguage, sourceReadyForMaterial } from "@/lib/material-sections";
 
-const views:{id:NoteView;label:string}[]=[{id:"summary",label:"Short summary"},{id:"points",label:"Key points"},{id:"detailed",label:"Detailed"}];
+const views:{id:NoteView;label:string}[]=[{id:"summary",label:"Short summary"},{id:"detailed",label:"Detailed"}];
 
 
 
 export function LessonNotes({lesson,onPlay,preview=false}:{lesson:Lesson;onPlay:(time:number)=>void;preview?:boolean}) {
-  const [view,setView]=useState<NoteView>(()=>initialNoteView(lesson));
+  const [view,setView]=useState<NoteView>(()=>initialNoteView(lesson)==="detailed"?"detailed":"summary");
   const [language,setLanguage]=useState<PreparedMaterialLanguage>(()=>detailedOptions(lesson).language as PreparedMaterialLanguage);
   const savedLanguage=savedMaterialLanguage(lesson),languageChanged=language!==savedLanguage;
   const [preparing,setPreparing]=useState(false),[prepareError,setPrepareError]=useState(""),[prepareNotice,setPrepareNotice]=useState("");
@@ -39,7 +39,7 @@ export function LessonNotes({lesson,onPlay,preview=false}:{lesson:Lesson;onPlay:
     {prepareError&&<p className={styles.error} role="alert">{prepareError}</p>}{prepareNotice&&!pending&&<p className={styles.status} role="status">{prepareNotice}</p>}
     {!!artifacts?.preparation?.uncoveredSections.length&&<p className={styles.viewCaption} role="status">Some source sections do not have supported notes in this preparation. Check the full {lesson.sourceKind==="pdf"?"PDF":"transcript"} for those passages.</p>}
     {notes.length?<>
-      {view==="summary"?<article className={styles.summary}><span className={styles.sectionLabel}>SHORT SUMMARY</span><p dir="auto">{artifacts?.overview||notes.slice(0,3).map(note=>note.text).join(" ")}</p><SourceEvidence evidence={summaryEvidence} lesson={lesson} onPlay={onPlay}/></article>:view==="points"?<div className={styles.points}>{notes.map((note,index)=><details key={`${index}-${note.heading}`} className={styles.point}><summary><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><h3 dir="auto">{note.heading}</h3><CaretDown size={17}/></summary><div className={styles.pointBody}><p dir="auto">{note.text}</p><SourceEvidence evidence={note.evidence} lesson={lesson} onPlay={onPlay}/></div></details>)}</div>:<div className={styles.detail}>{notes.map((note,index)=><article className="note-section" key={`${index}-${note.heading}`}><div className="note-number">{String(index+1).padStart(2,"0")}</div><div><h3 dir="auto">{note.heading}</h3><p dir="auto">{note.text}</p><SourceEvidence evidence={note.evidence} lesson={lesson} onPlay={onPlay}/></div></article>)}</div>}
+      {view==="summary"?<article className={styles.summary}><span className={styles.sectionLabel}>SHORT SUMMARY</span><p dir="auto">{artifacts?.overview||notes.slice(0,3).map(note=>note.text).join(" ")}</p><SourceEvidence evidence={summaryEvidence} lesson={lesson} onPlay={onPlay}/><div className={styles.summaryPoints}><h3>Key points</h3><ul>{notes.map((note,index)=><li key={`${index}-${note.heading}`}><strong dir="auto">{note.heading}</strong><SourceEvidence evidence={note.evidence} lesson={lesson} onPlay={onPlay}/></li>)}</ul></div></article>:<div className={styles.detail}>{notes.map((note,index)=><article className="note-section" key={`${index}-${note.heading}`}><div className="note-number">{String(index+1).padStart(2,"0")}</div><div><h3 dir="auto">{note.heading}</h3><p dir="auto">{note.text}</p><SourceEvidence evidence={note.evidence} lesson={lesson} onPlay={onPlay}/></div></article>)}</div>}
     </>:<div className={styles.unavailable}><BookOpen size={24}/><h3>{!notesEnabled?"Notes are turned off.":lesson.error?"Class notes couldn’t be prepared.":"Class notes are still being prepared."}</h3><p>{!notesEnabled?lesson.sourceKind==="pdf"?"Your PDF pages and supported practice are available in the other tabs.":"Your transcript and supported practice are available in the other tabs.":lesson.sourceKind==="pdf"?"You can still read PDF pages and open the private original source.":"You can still read the transcript and listen to your original recording."}</p></div>}
   </div></div>;
 }

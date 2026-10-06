@@ -31,3 +31,65 @@
 .missed-replay-icon,.lesson-insight-icon { width:40px; height:44px; display:grid; place-items:center; flex:0 0 auto; background:#eae8df; border-radius:9px; color:var(--ref-muted); } .lesson-insight-rows strong { display:block; font-size:14px; font-weight:500; margin-bottom:6px; } .insights-bottom-note { margin-top:22px; font-size:11px; color:var(--ref-muted); line-height:1.8; }
 @media(max-width:1100px) { .insights-summary { grid-template-columns:1fr 1fr; } .next-metric { grid-column:1/-1; } .next-metric .next-review-copy { display:inline-flex; width:calc(100% - 205px); margin:0 15px 0 0; vertical-align:middle; } .next-metric .metric-divider { margin:16px 0; } .insights-detail-grid { grid-template-columns:1fr; } }
 @media(max-width:600px) { .insights-reference { margin-top:24px; padding-bottom:98px; } .insights-reference h1 { font-size:28px; } .insights-heading { gap:10px; } .insights-heading > .insights-button { padding:8px 10px; font-size:12px; } .insights-heading p { font-size:12px; } .insights-summary { margin-top:25px; gap:13px; } .insights-metric { padding:17px; } .insights-metric > strong { font-size:30px; } .insights-metric > strong small { font-size:15px; } .insights-metric h2 { font-size:9px; } .coverage-gauge { margin-top:28px; } .coverage-gauge > div { bottom:6px; } .coverage-gauge span { font-size:9px; } .coverage-gauge b { font-size:23px; } .results-metric > p { font-size:12px; gap:4px; } .results-metric > p svg { width:15px; } .metric-footnote { font-size:9px; } .next-metric .next-review-copy { display:flex; width:auto; margin:0 0 19px; } .insights-data-card { padding:19px; } .insights-data-card h2 { font-size:20px; } .insights-detail-grid { gap:16px; } .activity-cells,.activity-weekdays { gap:5px; } .activity-cell { border-radius:2px; } .insights-missed-row,.lesson-insight-rows > div { flex-wrap:wrap; } .insights-missed-row > .insights-button { margin-left:54px; } .activity-key { gap:3px; } .activity-key i { width:10px; height:10px; } .insights-activity figcaption { font-size:9px; gap:6px; } }
+
+/* Actionable study signals from current saved practice. */
+.insights-compact-summary { grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 24px; gap: 14px; }
+.insights-compact-summary .insights-metric { padding: 20px; }
+.insights-compact-summary .insights-metric > strong { font-size: 30px; }
+.insights-compact-summary .insights-metric > p { margin-top: 10px; font-size: 12px; color: var(--ref-muted); line-height: 1.65; }
+.insights-actions { margin-bottom: 18px; background: var(--ref-card); }
+.insights-actions > header { margin-bottom: 12px; }
+.insights-actions header p { font-size: 12px; line-height: 1.6; color: var(--ref-muted); margin-top: 7px; }
+.insights-action-row { display: flex; align-items: center; gap: 20px; padding: 17px 0; border-top: 1px solid var(--ref-line); }
+.insights-action-row:last-child { padding-bottom: 0; }
+.insights-action-row > div { flex: 1; min-width: 0; }
+.insights-action-row small { display: block; color: var(--ref-muted); font-size: 11px; margin-top: 8px; overflow-wrap: anywhere; }
+.insights-action-row h3 { font-size: 14px; line-height: 1.7; font-weight: 500; margin-top: 5px; overflow-wrap: anywhere; }
+.insights-action-row > button { flex-shrink: 0; }
+.insights-reason { font-size: 10px; border-radius: 5px; padding: 3px 7px; color: #375d4d; background: #e5f1e9; }
+.insights-reason[data-reason=revisit] { color: #875136; background: #f7e9dd; }
+.insights-reason[data-reason=new] { color: #665383; background: #eee8f6; }
+.insights-snapshot { margin: 0; }
+.insights-snapshot > div { display: flex; gap: 20px; align-items: baseline; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--ref-line); font-size: 13px; }
+.insights-snapshot > div:first-child { padding-top: 0; }
+.insights-snapshot dt { min-width: 0; color: var(--ref-body); }
+.insights-snapshot dd { margin: 0; white-space: nowrap; font-weight: 550; }
+.insights-recorded-activity { margin-top: 18px; }
+.insights-recorded-activity .insights-activity { max-width: 640px; }
+.insights-learning-detail { gap: 18px; }
+.insights-reference .insights-button { min-height: 44px; }
+html[data-theme=dark] .insights-reason { background: #293a30; color: #b9d7c4; }
+html[data-theme=dark] .insights-reason[data-reason=revisit] { background: #443126; color: #eac7ae; }
+html[data-theme=dark] .insights-reason[data-reason=new] { background: #362d42; color: #d1bde5; }
+@media (max-width: 600px) {
+  .insights-reference { margin-top: 20px; padding-bottom: 28px; }
+  .insights-heading { align-items: flex-start; }
+  .insights-reference h1 { font-size: 24px; }
+  .insights-heading p { max-width: 230px; line-height: 1.6; }
+  .insights-tabs { gap: 22px; margin-top: 19px; }
+  .insights-tabs button { font-size: 13px; min-height: 44px; padding-bottom: 8px; }
+  .insights-compact-summary { gap: 7px; margin: 18px 0; }
+  .insights-compact-summary .insights-metric { padding: 12px 9px; border-radius: 10px; }
+  .insights-compact-summary .insights-metric > strong { font-size: 24px; }
+  .insights-compact-summary .insights-metric h2 { font-size: 10px; text-transform: none; letter-spacing: 0; margin-top: 8px; }
+  .insights-compact-summary .insights-metric > p { display: none; }
+  .insights-data-card { padding: 16px; }
+  .insights-data-card > header { gap: 10px; margin-bottom: 17px; align-items: flex-start; }
+  .insights-data-card h2 { font-size: 17px; line-height: 1.5; }
+  .insights-action-row { gap: 8px; flex-wrap: wrap; padding: 15px 0; }
+  .insights-action-row > div { flex-basis: 100%; }
+  .insights-action-row > button { margin-top: 3px; padding: 8px 12px; font-size: 12px; }
+  .insights-action-row h3 { font-size: 13px; }
+  .insights-snapshot > div { font-size: 12px; gap: 12px; padding-block: 12px; }
+  .course-bar-title { gap: 7px; }
+  .course-bar-track { height: 8px; margin-left: 25px; }
+  .insights-course-row p { margin-left: 25px; line-height: 1.7; }
+  .activity-cells,.activity-weekdays { gap: 3px; }
+  .activity-months { margin-bottom: 10px; }
+  .activity-weekdays { width: 24px; font-size: 9px; }
+  .activity-months { margin-left: 34px; }
+  .lesson-insight-rows > div { gap: 10px; }
+  .lesson-insight-rows strong { font-size: 13px; overflow-wrap: anywhere; }
+  .lesson-insight-rows > div > .insights-button { margin-left: 50px; }
+  .insights-caption,.insights-bottom-note { font-size: 11px; }
+}

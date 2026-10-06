@@ -107,3 +107,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) { .headingWord { transition: none; transform: none; } }
+
+@media (max-width: 800px) {
+  .workspace.workspace .chips > button,.homeRoot.homeRoot.homeRoot .chips > button { min-height: 42px; padding: 5px 7px 5px 5px; font-size: 11px; gap: 5px; }
+  .chipIcon { width: 22px; height: 22px; }
+  .chipIcon svg { width: 14px; height: 14px; }
+  .workspace.workspace .heading h2,.homeRoot.homeRoot.homeRoot .heading h2 { font-size: 20px; letter-spacing: 0; }
+}

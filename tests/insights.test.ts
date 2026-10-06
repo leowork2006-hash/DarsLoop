@@ -5,6 +5,20 @@ import type { Review } from "../src/lib/types";
 const lesson={...exampleLesson(),id:"owned-lesson",demo:false};
 const review:Review={lessonId:lesson.id,itemId:lesson.artifacts!.practice[0].id,version:1,attempts:3,lastResult:false,dueAt:"2026-10-04T12:00:00Z",intervalDays:0};
 describe("private study insights",()=>{
+ it("prioritizes due reviews, then misses and untouched practice without duplicates",()=>{
+  const items=lesson.artifacts!.practice,quiz=items.find(item=>item.kind==="quiz")!,card=items.find(item=>item.id==="card-murajaah")!;
+  const data=studyInsights([lesson],[{...review,itemId:quiz.id,lastResult:true},{...review,itemId:card.id,dueAt:"2026-10-06T12:00:00Z"}],Date.parse("2026-10-04T12:01:00Z"));
+  expect(data.recommendations.map(value=>value.reason)).toEqual(["due","revisit","new"]);
+  expect(new Set(data.recommendations.map(value=>value.item.id)).size).toBe(3);
+  expect(data.untried).toBe(data.available-2);
+  expect(data.recommendations[0].item.id).toBe(quiz.id);expect(data.recommendations[1].item.id).toBe(card.id);
+ });
+ it("recent days count real UTC activity only, including zero activity",()=>{
+  const data=studyInsights([lesson],[{...review,attempts:6,activity:[{day:"2026-09-27",attempts:3},{day:"2026-09-28",attempts:2},{day:"2026-10-04",attempts:1}]}],Date.parse("2026-10-04T12:01:00Z"));
+  expect(data.recentWeek).toEqual({days:2,attempts:3});
+  expect(studyInsights([lesson],[review],Date.parse("2026-10-04T12:01:00Z")).recentWeek).toEqual({days:0,attempts:0});
+  expect(studyInsights([],[]).recommendations).toEqual([]);
+ });
  it("excludes samples, unauthorized items and outdated transcript versions",()=>{const data=studyInsights([lesson,exampleLesson()],[review,{...review,lessonId:"another-user"},{...review,version:2},{...review,itemId:"invented"},{...review,lessonId:"fictional-example"}],Date.parse("2026-10-04T12:01:00Z"));expect(data.lessons).toBe(1);expect(data.attempts).toBe(3);expect(data.reviewed).toBe(1);expect(data.due).toBe(1);expect(data.revisits).toHaveLength(1);expect(data.courses[0].reviewed).toBe(1);});
  it("a remembered response leaves revisits but still counts as tried, not mastery",()=>{const data=studyInsights([lesson],[{...review,lastResult:true,dueAt:"2026-10-06T12:00:00Z"}],Date.parse("2026-10-04T12:00:00Z"));expect(data.revisits).toEqual([]);expect(data.reviewed).toBe(1);expect(data.due).toBe(0);expect(data).not.toHaveProperty("mastery");expect(data).not.toHaveProperty("streak");});
  it("empty libraries have zero activity",()=>{expect(studyInsights([],[])).toMatchObject({lessons:0,audioSeconds:0,attempts:0,reviewed:0,due:0,revisits:[],courses:[]});});
