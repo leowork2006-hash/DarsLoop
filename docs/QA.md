@@ -1,5 +1,15 @@
 # Verification and known limits
 
+## Focused audit follow-up — 6 October 2026 (V49)
+
+The full suite passed **426 tests across 57 files**; TypeScript and the production build passed. Twenty-one additional advice/grading phrases first reproduced a deterministic routing gap. The extended set now refers those requests before generation, including Arabic/Urdu music/alcohol cues and English scoring/authentication/judgment wording. Authored negative controls retain literal supported lesson reporting and ordinary quiz-score questions. The provider-spy check calls no external service. These finite tests are not an exhaustive safety result.
+
+Upload availability already had a banner; its wording is now clearer and also appears in file settings. Missing transcription does not disable generation-ready PDF preparation. All four service-availability combinations have focused helper checks. The save/permission/data guards remain. Hero/FAQ copy and example-note labels were simplified without redesigning the landing page.
+
+A production-build browser check used isolated local storage with every AI/ASR key disabled. At 390px, the actual product Upload page showed the unavailable notice before file selection, and the public example's source caption/timecode/search input measured 11px/12px/16px with no document overflow. The teacher-question dialog's prose wrapped rather than truncating mid-word. No file was uploaded, no model ran and no hosted account was created. This is not a physical phone test or a check of every dialog.
+
+Specific signup error mappings already existed for invalid/restricted email, weak passwords, quota, timeout and provider outages. Unknown/account-existence errors remain intentionally generic; provider raw text is never reflected. A new real-email delivery attempt was not made, so the historical signup failure's cause and general public delivery remain unproven. A no-clear-speech guard is not proof that every music-only input is detected.
+
 ## Demo consistency and References — 6 October 2026 (V48)
 
 The complete suite passed **398 tests across 55 files**; TypeScript and the production build passed. Recognized unchanged system demos now update once to the fictional five-pillars lesson. Source identity and creation time remain stable, source version increases, and personal lessons, existing reviews, concurrent edits and remembered deletion are preserved. Mocked cloud and isolated SQLite cases cover these boundaries.

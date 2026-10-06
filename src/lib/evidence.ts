@@ -98,7 +98,7 @@ export function instructionLike(text:string) {
 // Routing cues are narrower than a religious-topic classifier. Descriptive
 // lesson questions remain available as literal source excerpts.
 const rulingRequest=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|sin(?:s|ful|ning)?|reward|punish(?:ment|ed)?)\b|(?:حكم|حکم|يجوز|جايز|جائز|فتوى|فتوی|حلال|حرام|گناہ|ثواب|عذاب|عقاب|معصية)/iu;
-const religiousTopic=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|fast(?:ing)?|w[ou]d[uh]u?|ablution|prayers?|pray(?:ing)?|marriage|divorce|salah|sawm|zakah|zakat|shahadah|hajj|pillars of islam|testimony of faith)\b|حلال|حرام|فتوى|فتوی|وضوء|وضو|صلاة|نماز|صيام|روزہ|الصوم|الصلاه|الزكاة|زکوۃ|الحج|اركان الاسلام|ارکان اسلام/iu;
+const religiousTopic=/\b(?:halal|haram|fatwa|rulings?|permissible|permitted|allowed|fast(?:ing)?|w[ou]d[uh]u?|ablution|prayers?|pray(?:ing)?|marriage|divorce|salah|sawm|zakah|zakat|shahadah|hajj|pillars of islam|testimony of faith|music|songs?|alcohol|vap(?:e|es|ing)|riba|gambl(?:e|ing)|tattoos?|zina|masturbation|suicide)\b|حلال|حرام|فتوى|فتوی|وضوء|وضو|صلاة|نماز|صيام|روزہ|الصوم|الصلاه|الزكاة|زکوۃ|الحج|اركان الاسلام|ارکان اسلام|موسیقی|موسيقي|شراب|خمر|كحول|ربا/iu;
 export function lexicalPassageRanks(question:string,segments:StudyPassage[]):{index:number;score:number}[] {
   const q=tokens(question);if(!q.length)return [];
   const cache=new Map<string,boolean>(),matches=(term:string,word:string)=>{
@@ -134,13 +134,13 @@ export function needsPersonalReferral(question:string) {
   const personal=/\b(?:i|my|me|mine|our|we)\b|(?:^|\s)(?:انا|لي|صلاتي|صومي|زوجي|زوجتي|میری|میرا|میرے|میں|ہم)(?=\s|$)/u.test(q);
   return /\b(?:give|issue) (?:me |a )?fatwa|fatwa for (?:me|my)|is it (?:halal|haram) for me|am i (?:allowed|permitted)|what should i do about my|should i (?:divorce|marry)/iu.test(q)
     || /افتني|فتوى لي|میرے لیے فتوی/u.test(q)
-    || personal&&(religiousTopic.test(q)||rulingRequest.test(q))&&/\b(?:valid|invalid|allowed|permitted|halal|haram|sin|invalidate)\b|\b(?:can|may|should|must|need) (?:i|we) (?:pray|fast|marry|divorce|do|make|give|pay)\b|حكم|يجوز|جائز|درست|صحیح|گناہ|کیا|هل|يصح|باطل/u.test(q);
+    || personal&&(religiousTopic.test(q)||rulingRequest.test(q))&&/\b(?:valid|invalid|allowed|permitted|halal|haram|sin|invalidate)\b|\b(?:can|may|should|must|need) (?:i|we) (?:pray|fast|marry|divorce|do|make|give|pay|listen|drink|smoke|vape|accept|gamble|tattoo|commit|start)\b|حكم|يجوز|جائز|درست|صحیح|گناہ|کیا|هل|يصح|باطل/u.test(q);
 }
 export function boundedQuestion(question:string,segments:StudyPassage[],version:number,mode:Answer["mode"]):Answer|null {
   const q=normalise(question),finish=(answer:Answer)=>localizeTrustAnswer(answer,question);
   if(instructionLike(question))return finish({status:"not_covered",blocks:[],message:"I can only help with this lesson. Instructions in a question cannot change that.",mode,version});
   const religious=religiousTopic.test(q)||rulingRequest.test(q);
-  const authenticity=(/(?:\b(?:hadith|hadeeth|narration|isnad|matn)\b|حديث|حدیث)/iu.test(q)&&/(?:\b(?:authentic(?:ity)?|grad(?:e|ing)|sahih|saheeh|hasan|hassan|weak|strong|genuine|real|sound|valid|verif(?:y|ied|ication)|classif(?:y|ication)|rate|daif|fabricated|reliable|true|isnad|matn)\b|صحيح|صحیح|حسن|ضعيف|ضعیف|قوي|اصلي|مستند|سند)/iu.test(q))
+  const authenticity=(/(?:\b(?:hadith|hadeeth|narration|isnad|matn)\b|حديث|حدیث)/iu.test(q)&&/(?:\b(?:authentic(?:ity|at(?:e|ed|ing|ion))?|grad(?:e|ing)|sahih|saheeh|hasan|hassan|weak|strong|genuine|real|sound|valid|verif(?:y|ied|ication)|classif(?:y|ication)|rat(?:e|ing)|scor(?:e|ing)|judg(?:e|ing|ement|ment)|daif|fabricated|reliable|true|isnad|matn)\b|صحيح|صحیح|حسن|ضعيف|ضعیف|قوي|اصلي|مستند|سند)/iu.test(q))
     || /\b(?:did|does) (?:the )?(?:prophet|messenger)(?: muhammad)? (?:really|actually) say\b/iu.test(q)
     || /(?:هل|کیا).{0,35}(?:النبي|الرسول|نبی|رسول).{0,35}(?:حقا|واقعی|قال|فرمایا)/u.test(q);
   if(authenticity)return finish({status:"needs_teacher",blocks:[],message:"I cannot grade a hadith. A source lookup can show a possible match; verify with your teacher. The publisher’s record stays separate from this lesson.",mode,version});

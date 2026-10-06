@@ -6,6 +6,8 @@ Return to what your teacher taught. A student workspace for Islamic classes: rec
 
 **Release status, 6 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed the earlier release checks. One owner-authorized signup email arrived and the account became confirmed; a clean first-click callback and general public email delivery remain unproven. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
 
+[Dated development record](docs/WORK-LOG.md) · [Religious sources and demo limits](RELIGIOUS-SOURCES.md)
+
 ## Try it without keys
 
 Requires Node.js 24 or later and npm. Verified on macOS with Node 26.4.0. FFmpeg and FFprobe are required for audio import/processing and the full test suite; the prepared example does not call them. A labelled fictional example is bundled and can be explored without an account.

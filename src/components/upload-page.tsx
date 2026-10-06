@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Waveform as AudioLines, BookOpen, Check, CheckCircle, CaretRight as ChevronRight, FileAudio, Cards as Layers, Microphone as Mic, Pause, Play, ArrowCounterClockwise as RotateCcw, UploadSimple as Upload, ListBullets, TextAlignLeft, Notebook, ChatCircle, MapTrifold } from "@phosphor-icons/react";
 import { type Lesson, type Workspace } from "@/lib/types";
 import { lessonReadiness, lessonMatchesReadinessFilter, type LessonReadinessFilter } from "@/lib/lesson-readiness";
+import { preparationNotice, type PreparationNotice } from "@/lib/preparation-availability";
 import { Modal } from "./modal";
 import { api, message } from "./client-api";
 import { uploadLesson } from "./import-client";
@@ -22,6 +23,9 @@ const details = [
 type Detail = typeof details[number]["id"];
 export function PaperCompanion({ moving = false }: { moving?: boolean }) {
   return <img className={`paper-companion ${moving ? "paper-companion-moving" : ""}`} src="/art/paper-hoopoe-v8.webp" width="640" height="640" alt="" draggable={false}/>;
+}
+function PreparationAvailability({ notice }: { notice: PreparationNotice | null }) {
+  return notice && <div className="processing-banner" role="status" data-upload-unavailable><BookOpen size={20}/><div><strong>{notice.title}</strong><p>{notice.description}</p><Link href="/example" prefetch={false} className="text-link">Explore the finished example <ArrowRight size={14}/></Link></div></div>;
 }
 
 export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onError }: {
@@ -43,6 +47,8 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
   const input = useRef<HTMLInputElement>(null), request = useRef<AbortController | null>(null);
   const job = workspace.lessons.find(l => l.id === jobId);
   const fileIsPdf=!!file&&(/\.pdf$/i.test(file.name)||file.type==="application/pdf"),pdf=job?job.sourceKind==="pdf":fileIsPdf;
+  const availability = preparationNotice(workspace.configured);
+  const selectedAvailability = preparationNotice(workspace.configured, fileIsPdf ? "pdf" : "audio");
   const saved = workspace.lessons.filter(l => !l.shared && !l.demo);
   const shown = saved.filter(l => lessonMatchesReadinessFilter(l, filter));
   useEffect(() => () => { request.current?.abort(); }, []);
@@ -85,8 +91,8 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
   const progressTitle = error || failed ? "Preparation needs attention" : partial ? readiness.label : settled ? ready ? "Your lesson is ready" : readiness?.label || "Source ready" : "Preparing your lesson";
   return <section className="upload-page">
     <h1 className="sr-only">Upload lesson material</h1>
-    <div className="upload-welcome"><span className="upload-guide-avatar"><img src="/art/hoopoe-guide-v10.png" width="72" height="72" alt=""/></span><p><strong>Let’s add your lesson.</strong> Upload a class recording or selectable-text PDF. We’ll prepare notes, quizzes and flashcards.</p></div>
-    {(!workspace.configured.generation || !workspace.configured.asr) && <div className="processing-banner" role="status" data-upload-unavailable><BookOpen size={20}/><div><strong>{!workspace.configured.generation ? "Study-material preparation is unavailable here right now." : "Audio and video transcription is unavailable here right now."}</strong><p>{!workspace.configured.generation ? "Audio, video and PDF uploads will wait in the queue until preparation is connected." : "Selectable-text PDFs can still be submitted for study-material preparation."}</p><Link href="/example" prefetch={false} className="text-link">Explore the finished example <ArrowRight size={14}/></Link></div></div>}
+    <div className="upload-welcome"><span className="upload-guide-avatar"><img src="/art/hoopoe-guide-v10.png" width="72" height="72" alt=""/></span><p><strong>Let’s add your lesson.</strong> Upload a class recording or selectable-text PDF. {availability ? "Save your material here, or explore the finished example." : "We’ll prepare notes, quizzes and flashcards."}</p></div>
+    <PreparationAvailability notice={availability}/>
     <div className="upload-main-column">
         <div className={`audio-drop ${dragging ? "is-dragging" : ""}`} data-tour="upload-drop" onDragOver={e => { e.preventDefault(); if (!uploading) setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={e => { e.preventDefault(); if (!uploading) choose(e.dataTransfer.files); }}>
           <img className="upload-audio-art" src="/art/audio-upload-v11.png" width="768" height="512" alt="" draggable={false}/>
@@ -108,6 +114,7 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
     {configure && file && <Modal title={fileIsPdf?"Upload PDF":"Upload audio"} onClose={() => setConfigure(false)} className="upload-config">
       <form onSubmit={submit}>
         <p className="upload-dialog-intro">Add your material and choose your study settings.</p><p className="muted">{fileIsPdf?"Choose a PDF with selectable text, up to 8 MB and 40 pages. Scanned or image-only pages need a text PDF first. Quotations link to original pages.":"We use the audio from videos. Large files are saved as a smaller audio copy. Keep your original file."}</p>
+        <PreparationAvailability notice={selectedAvailability}/>
         <div className="upload-selected"><FileAudio size={25}/><div><strong>{file.name}</strong><span>{(file.size / (fileIsPdf?1_000_000:1024*1024)).toFixed(1)} {fileIsPdf?"MB":"MiB"}</span></div><button type="button" className="icon-button" aria-label="Choose another file" onClick={() => input.current?.click()}><RotateCcw size={18}/></button></div>
         {!fileIsPdf&&<><p className="muted">Local file preview · upload to prepare notes</p>{previewFailed?<p className="muted">This browser can’t preview this format. You can still upload it.</p>:<audio className="upload-audio-preview" controls src={preview||undefined} aria-label="Local file preview" onError={()=>setPreviewFailed(true)}/>}</>}
         <div className="upload-name-fields"><label className="field">Lesson name<input required maxLength={160} value={title} onChange={e => setTitle(e.target.value)} placeholder="Give it a name"/></label><label className="field">Course <span>(optional)</span><input maxLength={100} value={course} onChange={e => setCourse(e.target.value)} placeholder="e.g. Arabic"/></label></div>
@@ -116,9 +123,9 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
         <div className="notes-switch-row"><div><h3>Make study notes</h3><p>Choose the detail that works for you.</p></div><button type="button" role="switch" aria-checked={notes} aria-label="Make study notes" className="notes-switch" onClick={() => setNotes(v => !v)}><span/></button></div>
         {notes ? <fieldset className="note-detail-options"><legend className="sr-only">Note detail</legend>{details.map(option => <label key={option.id} className={`note-detail-choice ${detail === option.id ? "selected" : ""}`}><input type="radio" name="note-detail" value={option.id} checked={detail === option.id} onChange={() => setDetail(option.id)}/><option.icon size={28} aria-hidden="true"/><strong>{option.name}</strong><span>{option.copy}</span>{detail === option.id && <CheckCircle className="note-choice-check" size={16} weight="fill"/>}</label>)}</fieldset> : <p className="notes-off-message">You’ll still get source text, a quiz and flashcards from clear parts of your lesson.</p>}
         <p className="note-detail-boundary">All detail comes from this lesson. Another study-material language needs processing; source quotations keep their original words.</p>
-        <div className="upload-consent"><label><input type="checkbox" checked={permitted} onChange={e => setPermitted(e.target.checked)}/><span>{fileIsPdf?"I have permission to use this PDF.":"I have permission to use this recording."}</span></label><label><input type="checkbox" checked={fictional} onChange={e => setFictional(e.target.checked)}/><span>{fileIsPdf?"This PDF is fictional or irreversibly anonymised, with no identifiable personal or sensitive information.":"This contest demo uses fictional audio only, with no real personal or sensitive information."}</span></label></div>
+        <div className="upload-consent"><label><input type="checkbox" checked={permitted} onChange={e => setPermitted(e.target.checked)}/><span>{fileIsPdf?"I have permission to use this PDF.":"I have permission to use this recording."}</span></label><label><input type="checkbox" checked={fictional} onChange={e => setFictional(e.target.checked)}/><span>{fileIsPdf?"This PDF is fictional or irreversibly anonymised, with no identifiable personal or sensitive information.":"This demo recording is fictional, with no real personal or sensitive information."}</span></label></div>
         {error && <p className="inline-error" role="alert">{error}</p>}
-        <footer className="upload-config-footer"><p>AI services process your {fileIsPdf?"PDF text":"audio"}. Lessons are private until you share them. Deleting a lesson removes its source and study material from DarsLoop storage. AI providers have separate retention policies.</p><div><button type="button" className="button secondary" onClick={()=>setConfigure(false)}>Cancel</button><button className="button primary" disabled={uploading || !permitted || !fictional || !title.trim()}><Upload size={17}/> Upload & prepare</button></div></footer>
+        <footer className="upload-config-footer"><p>AI services process your {fileIsPdf?"PDF text":"audio"}. Lessons are private until you share them. Deleting a lesson removes its source and study material from DarsLoop storage. AI providers have separate retention policies.</p><div><button type="button" className="button secondary" onClick={()=>setConfigure(false)}>Cancel</button><button className="button primary" disabled={uploading || !permitted || !fictional || !title.trim()}><Upload size={17}/> {selectedAvailability ? "Save to queue" : "Upload & prepare"}</button></div></footer>
       </form>
     </Modal>}
     {showProgress && <Modal title={progressTitle} onClose={() => setShowProgress(false)} className="upload-progress-modal">

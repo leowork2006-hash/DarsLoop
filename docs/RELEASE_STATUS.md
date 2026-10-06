@@ -1,5 +1,9 @@
 # Release status
 
+## Latest correction: V49
+
+Extended advice/grading routing cues with source-reporting negative controls. Clarified existing upload availability notices, saved-file queue labels, fictional-data consent and hero/FAQ wording. Example notes are labelled as examples. Small mobile source text is more readable; the accepted layout and artwork are retained. Added a [dated development record](WORK-LOG.md); setup instructions and the existing religious-source register remain available. Current verification and its limits are in [QA.md](QA.md).
+
 ## Latest correction: V48
 
 Existing unchanged built-in demos update once to the fictional five-pillars lesson. Edited and personal lessons are preserved, deletion is remembered, and source versions prevent old practice or shares from applying to the replacement content. The example logo matches the product; two landing questions now match their displayed answers. The example's References tab links the background sources and explains their limits. The landing layout and illustrations are retained.
