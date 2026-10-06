@@ -87,7 +87,7 @@ export function ClassesPage({ workspace, refresh, onOpen, onError, onUpload }: C
 
     <form className="classes-create-form" data-tour="classes-create" onSubmit={event => { event.preventDefault(); if (name.trim().length >= 2) void action("create", { action: "create", name: name.trim() }, () => setName("")); }}>
       <div><h2>Start a private class</h2><p>Give your class or study circle a name.</p></div>
-      <label><span className="sr-only">Class name</span><input value={name} onChange={event => setName(event.target.value)} minLength={2} maxLength={80} required placeholder="e.g. Saturday Arabic circle" autoComplete="off" /></label>
+      <label><span className="sr-only">Class name</span><input value={name} onChange={event => setName(event.target.value)} minLength={2} maxLength={80} required placeholder="Class name" autoComplete="off" /></label>
       <button type="submit" className="classes-button classes-button-dark" disabled={!!busy || name.trim().length < 2}><Plus size={17} />{busy === "create" ? "Creating…" : "Create class"}</button>
     </form>
 
