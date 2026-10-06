@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./landing-narrative.module.css";
 
-const statement = "Listen in class. Find the point again. DarsLoop turns your lesson into clear notes, answers from the class and practice, with the original explanation close by.";
+const lines = ["Find the part you missed. 🎧", "Make sense of it with your class notes. 📖", "Try it from memory. Know what to revisit. ✨"];
+const statement = lines.join(" ");
 const words = statement.split(" ");
-const audiences = ["Alimiyyah students", "Arabic classes", "Halaqahs", "Online lessons"];
 
 export function LandingNarrative() {
   const root = useRef<HTMLElement>(null);
@@ -39,17 +39,11 @@ export function LandingNarrative() {
 
   return <section ref={root} className={styles.section} aria-label="Built around your class" data-scroll-narrative data-revealed={staticMotion || !enhanced ? words.length : Math.ceil(progress * words.length)}>
     <div className={styles.inner}>
-      <div className={styles.top}><span className={styles.label}>THE CLASS IS THE STARTING POINT</span></div>
-      <p className={styles.statement}><span className={styles.screenReader}>{statement}</span><span aria-hidden="true">{words.map((word, index) => <span key={index} className={styles.word} style={{ opacity: !enhanced || staticMotion ? 1 : Math.round((.22 + .78 * Math.max(0, Math.min(1, progress * (words.length + 3) - index))) * 1000) / 1000 }}>{word}{" "}</span>)}</span></p>
-      <span className={styles.sticker}>Built for <strong>Alimiyyah students.</strong></span>
+      <p className={styles.statement}><span className={styles.screenReader}>{statement}</span><span aria-hidden="true">{lines.map((line, lineIndex) => <span className={styles.line} key={line}>{line.split(" ").map((word, wordIndex) => {
+        const index = lines.slice(0, lineIndex).join(" ").split(" ").filter(Boolean).length + wordIndex;
+        return <span key={index} className={styles.word} style={{ opacity: !enhanced || staticMotion ? 1 : Math.round((.22 + .78 * Math.max(0, Math.min(1, progress * (words.length + 3) - index))) * 1000) / 1000 }}>{word}{" "}</span>;
+      })}</span>)}</span></p>
+      <div className={styles.badges} aria-label="Built for students of Islamic knowledge"><span className={styles.sticker}>Built for <strong>Alimiyyah students.</strong></span><span className={styles.badge}>Halaqahs</span><span className={styles.badge}>Online classes</span></div>
     </div>
-  </section>;
-}
-
-export function LandingAudienceTicker() {
-  const [reduced,setReduced]=useState(false);
-  useEffect(()=>{const media=matchMedia("(prefers-reduced-motion: reduce)");const update=()=>setReduced(media.matches);update();media.addEventListener("change",update);return()=>media.removeEventListener("change",update);},[]);
-  return <section className={styles.audienceStrip} aria-label="Made for students of Islamic knowledge">
-    <div className={styles.audienceInner}><div className={styles.audienceLabel}><span>MADE FOR YOUR STUDY CIRCLE</span></div><div className={`${styles.ticker} ${reduced?styles.static:""}`} data-ticker-paused={reduced}><ul className={styles.track} aria-label="Classes DarsLoop is built for">{[0,1].map(copy=><li key={copy} aria-hidden={copy===1?true:undefined}>{audiences.map(audience=><span key={audience}>{audience}<i aria-hidden="true">·</i></span>)}</li>)}</ul></div></div>
   </section>;
 }

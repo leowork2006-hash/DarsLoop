@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, LockKeyhole, Play, Plus } from "lucide-react";
 import { Brand } from "@/components/brand";
-import { LandingAudienceTicker, LandingNarrative } from "@/components/landing-narrative";
+import { LandingNarrative } from "@/components/landing-narrative";
 import { LandingProductGrid, LandingLessonJourney } from "@/components/landing-product-grid";
 import { ProductTour } from "@/components/product-tour";
 import { PracticePreview } from "@/components/practice-preview";
@@ -42,19 +42,18 @@ export default function Landing() {
         <div id="product" className={styles.stage}><ProductTour lesson={lesson}/></div>
       </section>
       <LandingNarrative/>
-      <LandingAudienceTicker/>
       <LandingProductGrid lesson={lesson}/>
       <LandingLessonJourney lesson={lesson}/>
       <section id="practice" className={styles.practice} aria-labelledby="practice-title">
-        <div className={styles.practiceInner}><div className={styles.practiceCopy}><span className={styles.eyebrow}>A SMALL START AFTER CLASS</span><h2 id="practice-title">Give the lesson<br/><em>a try.</em></h2><p>Try a question, turn over a card or take a mock exam. The class explanation is there when you need it.</p><p className={styles.sampleNote}>This is a fictional example. Practice here isn’t saved.</p><Link href="/example" className={styles.secondary}>Open the full example <ArrowRight size={17}/></Link></div><PracticePreview lesson={lesson}/></div>
+        <div className={styles.practiceInner}><div className={styles.practiceCopy}><h2 id="practice-title">Give the lesson<br/><em>a try.</em></h2><p>Try a question, turn over a card or take a mock exam. The class explanation is there when you need it.</p><p className={styles.sampleNote}>This is a fictional example. Practice here isn’t saved.</p><Link href="/example" className={styles.secondary}>Open the full example <ArrowRight size={17}/></Link></div><PracticePreview lesson={lesson}/></div>
       </section>
       <section id="questions" className={styles.faq} aria-labelledby="faq-title" data-landing-faq>
-        <div className={styles.sectionHeading}><span className={styles.eyebrow}>A FEW THINGS TO KNOW</span><h2 id="faq-title">Before your<br/><em>first lesson.</em></h2><p>Clear answers, so you know where to start.</p></div>
+        <div className={styles.sectionHeading}><h2 id="faq-title">Before your<br/><em>first lesson.</em></h2><p>Clear answers, so you know where to start.</p></div>
         <div className={styles.faqGrid}>{questions.map(([q,a])=><details key={q}><summary>{q}<span><Plus size={17}/></span></summary><p>{a}</p></details>)}</div>
       </section>
       <section className={styles.closing} aria-labelledby="closing-title">
         <Image className={styles.closingImage} src="/art/study-courtyard-v42.webp" alt="An illustrated quiet courtyard at dawn, with a notebook, arches and distant hills" fill sizes="100vw" unoptimized/>
-        <div className={styles.closingCopy}><span className={styles.eyebrow}>ONE CLASS IS A GOOD START</span><h2 id="closing-title">Keep the lesson close.<br/><em>Keep learning.</em></h2><p>Notes, class answers and practice.<br/>Start with the lesson you already have.</p><Link href="/signin" className={styles.primary}>Start with DarsLoop <ArrowRight size={18}/></Link></div>
+        <div className={styles.closingCopy}><h2 id="closing-title">Keep the lesson close.<br/><em>Keep learning.</em></h2><p>Notes, class answers and practice.<br/>Start with the lesson you already have.</p><Link href="/signin" className={styles.primary}>Start with DarsLoop <ArrowRight size={18}/></Link></div>
       </section>
     </main>
     <footer className={styles.footer}>

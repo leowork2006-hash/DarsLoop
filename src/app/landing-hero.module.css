@@ -62,3 +62,9 @@
 /* V43: the product frame meets the bottom of the hero. */
 .hero{padding-bottom:0}.stage{margin-bottom:0}.hero:after{background:linear-gradient(180deg,#fcfbf659 0,#fcfbf62a 36%,transparent 100%)}
 @media(max-width:760px){.hero{padding-bottom:0}.hero:after{background:linear-gradient(180deg,#fcfbf665 0,#fcfbf62b 38%,transparent 100%)}}
+
+/* V44: compact footer, original product wordmark and a wider final invitation. */
+.closing{width:calc(100% - 24px);max-width:none;margin:0 auto;border-radius:22px;min-height:550px}.closingCopy h2{margin-top:0}.practice{background:#f0f1e9}.footer{padding:38px 0 24px}.footerLinks{padding-bottom:25px;border-bottom:1px solid #e7e0e7;gap:35px}.footerBrand{margin:20px 0 23px;padding:4px 0}.footerBrand :global(.brand){font-size:clamp(60px,10.3vw,148px);animation:wordmarkBreathe 9s ease-in-out infinite;transform-origin:center}.footerBrand :global(.brand-ai){font-size:.24em}.footerBottom{padding-top:18px}.footerIntro p{margin-top:14px}
+@keyframes wordmarkBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(max-width:700px){.closing{width:calc(100% - 12px);min-height:470px;border-radius:17px}.footer{padding-top:30px}.footerLinks{gap:25px 18px;padding-bottom:22px}.footerBrand{margin:19px 0 22px}.footerBrand :global(.brand){font-size:clamp(44px,12vw,84px)}.footerBottom{padding-top:17px}}
+@media(prefers-reduced-motion:reduce){.footerBrand :global(.brand){animation:none}}

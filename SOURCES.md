@@ -136,3 +136,9 @@ The current [Wispr Flow homepage](https://wisprflow.ai/) and [StudyFetch homepag
 Supplied screenshots informed the centered beige viewport-height narrative, browser-style preview bar and flush hero composition. This is original project-authored React/CSS; no competitor artwork or interface code is included. The animated Home exchange uses the existing authored fictional lesson and prepared supported passage before navigating to My lessons. It does not call a live AI service or play audio automatically.
 
 The current human instruction removes visible motion controls throughout the landing; earlier V40/V41 control descriptions are historical. Existing OS reduced-motion behavior and viewport/visibility/manual-interaction suspension remain. No WCAG-conformance claim is made.
+
+## Compact automatic product previews — 6 October 2026 (V44)
+
+The current [Dars homepage](https://darsapp.com/#features) was inspected as a visual reference. Its small notes/card/progress/chat previews changed automatically during browser observation. DarsLoop's layout, copy and loops are original; no Dars code, images, religious answers, curriculum-coverage claims or reported results were copied.
+
+The notes preview uses the shared product LessonNotes component, with preview-only controlled Summary/Detailed selection. The compact chat, flashcard, quiz and topic panels use the existing product interface styles and the authored public lesson's actual artifacts and source citations. These are prepared local previews, not live AI exchanges or saved student progress. Audio remains manual. Automatic React loops suspend offscreen, when the tab is hidden, under OS reduced motion and during manual/keyboard use. The footer and header reuse the product's current Brand wordmark. Audience badges describe the intended audience; they do not imply institution endorsement or complete syllabus coverage.
