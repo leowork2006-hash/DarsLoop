@@ -21,7 +21,9 @@ export async function POST(req:Request){let filePath:string|undefined,temporary:
   temporary=await mkdtemp(path.join(dataDir,"imports","upload-"));
   const source=path.join(temporary,"source");
   const form=await readImportForm(req,source);
-  if(form.get("permitted")!=="true"||form.get("synthetic")!=="true")throw new HttpError(400,"For this contest build, use permitted fictional or fully anonymised material without real student details.");
+  // The legacy "synthetic" key attests eligible data: synthetic OR irreversibly
+  // anonymised material. It does not classify the source as a fictional lesson.
+  if(form.get("permitted")!=="true"||form.get("synthetic")!=="true")throw new HttpError(400,"Confirm permission to use synthetic or irreversibly anonymised material, with no identifiable or sensitive personal information.");
   const sourceKind=form.get("sourceKind")||"audio";if(sourceKind!=="audio"&&sourceKind!=="pdf")throw new HttpError(400,"Choose audio or a selectable-text PDF.");
   let spokenLanguage;try{spokenLanguage=readSpokenLanguage(form.get("spokenLanguage"));}catch{throw new HttpError(400,"Choose a valid spoken language.");}
   let noteOptions;try{noteOptions=parseNoteOptions(form);}catch{throw new HttpError(400,"Choose a valid note option.");}

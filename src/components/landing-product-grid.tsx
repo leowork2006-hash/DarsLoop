@@ -44,7 +44,7 @@ export function LandingProductGrid({ lesson }: { lesson: Lesson }) {
     document.addEventListener("visibilitychange", visibility);
     return () => { document.removeEventListener("visibilitychange", visibility); };
   }, []);
-  return <section ref={loop.root} id="features" className={styles.section} aria-labelledby="feature-grid-title" data-product-grid data-loop-tick={loop.tick} data-loop-running={loop.running} onPointerDown={loop.interact} onKeyDown={loop.interact}>
+  return <section ref={loop.root} id="features" className={styles.section} aria-labelledby="feature-grid-title" data-product-grid data-loop-tick={loop.tick} data-loop-running={loop.running} onClick={loop.interact} onKeyDown={loop.interact}>
     <div className={styles.heading}><h2 id="feature-grid-title">Your lesson, ready<br/><em>for the way you study.</em></h2><p>Find a point, work through a question, or pick up where you left off.</p></div>
     <div className={styles.grid}>
       <article className={`${styles.card} ${styles.notesCard}`}>
@@ -100,7 +100,7 @@ export function LandingLessonJourney({lesson}:{lesson:Lesson}) {
       <div className={styles.steps}>{journey.map(({title,copy,art})=><article key={title}><div className={styles.stepArt}><img src={`/art/lesson-${art}-v45.webp`} alt="" width={140} height={140} loading="lazy"/></div><h3>{title}</h3><p>{copy}</p></article>)}</div>
       <p className={styles.journeyNote}>Long lessons can take longer to prepare. Your lesson shows progress and any action needed.</p>
     </section>
-    <section ref={loop.root} className={styles.connected} aria-labelledby="connected-title" data-source-diagram data-loop-tick={loop.tick} data-loop-running={loop.running} data-tool={selected} onPointerDown={loop.interact} onKeyDown={loop.interact}>
+    <section ref={loop.root} className={styles.connected} aria-labelledby="connected-title" data-source-diagram data-loop-tick={loop.tick} data-loop-running={loop.running} data-tool={selected} onClick={loop.interact} onKeyDown={loop.interact}>
       <div className={styles.heading}><h2 id="connected-title">Different ways to study.<br/><em>The same source to check.</em></h2><p>Your original lesson stays connected to every study tool.</p></div>
       <div className={styles.diagram}>
         <div className={styles.sourceNode}><Headphones size={19}/><div><strong>{lesson.title}</strong><span>{formatTime(lesson.duration)} · Fictional example</span></div></div>

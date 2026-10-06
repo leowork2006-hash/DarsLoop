@@ -19,6 +19,34 @@ const base={action:"start",bytes:100,title:"Fictional lesson",course:"Review",pe
 beforeEach(()=>{vi.stubEnv("DARSLOOP_ORIGIN","http://localhost:3000");f.cloud=true;f.user="student";f.create.mockReset().mockResolvedValue({id:"saved-import",parts:1});f.media.mockReset();f.pdf.mockReset().mockResolvedValue({id:"saved-pdf"});f.queue.mockReset();f.form.mockReset().mockImplementation(()=>{const form=new FormData();for(const [key,value] of Object.entries({title:"Fictional lesson",course:"Review",permitted:"true",synthetic:"true",studyLanguage:"ur",sourceKind:"audio"}))form.set(key,value);return form;});});
 afterAll(async()=>{await rm(f.dir,{force:true,recursive:true});vi.unstubAllEnvs();});
 describe("language and source options HTTP contract with mocked private storage",()=>{
+  it("retains both explicit permission and eligible-data attestations before cloud import creation",async()=>{
+    for(const key of ["permitted","synthetic"] as const)for(const value of [false,undefined,"true"]){
+      const response=await imports.POST(request({...base,[key]:value}));
+      expect(response.status).toBe(400);
+    }
+    expect(f.create).not.toHaveBeenCalled();expect(f.queue).not.toHaveBeenCalled();
+    const response=await imports.POST(request({...base,title:"Anonymised lesson material"}));
+    expect(response.status).toBe(200);
+    expect(f.create).toHaveBeenCalledTimes(1);
+    const stored=f.create.mock.calls[0][1];
+    expect(stored.title).toBe("Anonymised lesson material");
+    expect(stored).not.toHaveProperty("synthetic");expect(stored).not.toHaveProperty("permitted");
+  });
+  it("retains both multipart gates and explains eligibility without classifying a real source as fictional",async()=>{
+    f.cloud=false;
+    const original:FormData=f.form();
+    for(const key of ["permitted","synthetic"]){
+      const incomplete=new FormData();original.forEach((value,name)=>incomplete.set(name,value));incomplete.delete(key);
+      f.form.mockReturnValue(incomplete);
+      const response=await lessons.POST(request({},"lessons"));
+      expect(response.status).toBe(400);
+      const result=await response.json();expect(result.error).toContain("synthetic or irreversibly anonymised");expect(result.error).not.toContain("fictional");
+    }
+    expect(f.media).not.toHaveBeenCalled();expect(f.pdf).not.toHaveBeenCalled();expect(f.queue).not.toHaveBeenCalled();
+    original.set("title","Anonymised source");original.set("sourceKind","pdf");f.form.mockReturnValue(original);
+    expect((await lessons.POST(request({},"lessons"))).status).toBe(201);
+    expect(f.pdf.mock.calls[0][0]).toMatchObject({title:"Anonymised source",userId:"student"});
+  });
   it("rejects malformed JSON payload shapes without opening private storage",async()=>{
     for(const input of [null,[],"start",true,7]){
       const response=await imports.POST(request(input));

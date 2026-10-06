@@ -1,0 +1,26 @@
+.transcript.transcript { min-width: 0; }
+.transcript.transcript :global(.transcript-list) { background: var(--ref-card); border-color: var(--ref-line); color: var(--ref-text); }
+.transcript.transcript :global(.search-field) { background: var(--ref-soft); border-color: var(--ref-line); color: var(--ref-body); }
+.transcript .passage { grid-template-columns: 60px minmax(0,1fr); gap: 15px; background: transparent; border-color: var(--ref-line); padding: 18px 0; margin: 0; border-radius: 0; }
+.words { min-width: 0; }
+.transcript .words > p { color: var(--ref-text); overflow-wrap: anywhere; }
+.check { margin-top: 5px; color: var(--ref-muted); font: 400 12px/1.7 var(--font-body); }
+.check summary { display: flex; align-items: center; gap: 6px; width: fit-content; cursor: pointer; min-height: 32px; list-style: none; }
+.check summary::-webkit-details-marker { display: none; }
+.check summary::after { content: "+"; margin-inline-start: 2px; }
+.check[open] summary::after { content: "−"; }
+.check summary:focus-visible,.materialStatus summary:focus-visible { outline: 2px solid var(--ref-text); outline-offset: 3px; border-radius: 3px; }
+.transcript .check p { margin: 5px 0 0; color: var(--ref-body); font: 400 12px/1.8 var(--font-body); overflow-wrap: anywhere; }
+.materialStatus { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 20px; padding: 12px 14px; color: var(--ref-body); border: 1px solid var(--ref-line); border-radius: 9px; background: var(--ref-soft); font: 400 12px/1.7 var(--font-body); }
+.materialStatus > svg { flex-shrink: 0; margin-top: 3px; }
+.materialStatus > div { flex: 1; min-width: 0; }
+.materialStatus strong { color: var(--ref-text); font-weight: 500; }
+.materialStatus details { margin-top: 2px; }
+.materialStatus summary { width: fit-content; cursor: pointer; min-height: 28px; }
+.materialStatus p { margin: 8px 0; overflow-wrap: anywhere; }
+.materialStatus button { font-size: 12px; min-height: 36px; margin-inline-end: 18px; }
+@media(max-width: 800px) {
+  .transcript .passage { grid-template-columns: 51px minmax(0,1fr); gap: 11px; padding: 15px 0; }
+  .transcript .words > p { font-size: 14px; line-height: 1.9; }
+  .materialStatus { padding: 11px 12px; gap: 8px; }
+}

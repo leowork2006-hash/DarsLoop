@@ -1,6 +1,14 @@
 # Release status
 
-## Latest correction: V63
+## Latest correction: V64
+
+Upload/recording dialogs are smaller and keep optional study settings behind a disclosure. A single permission/data checkbox preserves existing API gates and recording drafts. Its explanation allows synthetic OR irreversibly anonymised material under [official terms §9](https://islamicaich.org/terms); it does not label an actual source fictional. Transcript flags are compact with details available, partial/source-ready states remain explicit, and uncertainty messages follow the source language.
+
+The ASR confidence guard considers no-speech probability together with decoding confidence; existing disagreement and exclusion checks remain. A conservative Arabic/Urdu shared-script check withholds clearly wrong-language study material without changing exact quotations. Source excerpts now prioritize the strongest supported passage, and bounded overview answers cover the lesson's beginning, middle and ending. Existing completed lessons were not rewritten and no fresh transcription was run.
+
+On 7 October 2026 in Pakistan, **537 tests across 64 files**, TypeScript and the final production build passed (6 October, 22:41 UTC). A separate authored-text Gemini check received 11 HTTP 200 responses and ultimately passed four supported cases, plus bounded off-topic/refusal checks. One overview needed correction and a rerun. These results do not certify native language, religious correctness or future service availability. See [verification and known limits](QA.md). Publication/deployment must be confirmed separately.
+
+## Earlier correction: V63
 
 The References presentation now uses compact publisher/title links for the example's existing background sources, a concise scope notice and a separate explanation of hadith lookup. Source meaning, saved lessons and lookup boundaries are retained. Two rendering checks keep background references confined to the unchanged authored example. Documentation now covers every environment-template setting and distinguishes current results from dated earlier runs. On 7 October 2026, the latest offline suite passed 525 tests across 63 files; TypeScript and the final V63 production build passed. See [latest verification and limits](QA.md).
 
@@ -35,7 +43,7 @@ Documentation updated 7 October 2026. Earlier hosted checks retain their dated s
 
 ## Implemented workflow
 
-Record permitted fictional/anonymized audio or upload supported audio/video up to two hours and 500 MiB. The hosted worker prepares timestamped transcription, supported notes, quizzes and flashcards. A private selectable-text PDF resource can instead produce study material with genuine physical-page citations, within the documented extraction bounds. Lesson questions return supported source passages or abstain/refer when unsupported. Private classes can share permitted material. An explicitly joined private quiz round uses the same supported questions and an immutable first attempt; shared results show chosen nicknames. Personal revision remains separate.
+Record permitted synthetic or irreversibly anonymised audio, or upload eligible audio/video up to two hours and 500 MiB. The hosted worker prepares timestamped transcription, supported notes, quizzes and flashcards. A private selectable-text PDF resource can instead produce study material with genuine physical-page citations, within the documented extraction bounds. Lesson questions return supported source passages or abstain/refer when unsupported. Private classes can share permitted material. An explicitly joined private quiz round uses the same supported questions and an immutable first attempt; shared results show chosen nicknames. Personal revision remains separate.
 
 Each signed-in workspace receives one complete prepared fictional demo. Deletion is remembered and demo activity is excluded from actual student Insights. Spoken-language selection is separate from the new Auto/Arabic/Urdu/English study-material selection. Arabic and Urdu text has bidirectional-aware layout; the interface is not fully translated. Source quotations remain exact, including when generated explanations change language.
 
@@ -45,7 +53,7 @@ Full-screen quiz, flashcards and lesson tests use supported saved material. Mixe
 
 ## Verification
 
-The latest V63 offline suite passed 525 tests across 63 files; TypeScript and the final V63 production build passed. V62 passed 523 tests in 62 files, TypeScript and the production build; V61 passed 520 tests in 62 files. These counts describe separate dated runs, not new live provider processing. See the V63 entry in [QA.md](QA.md) for current validation status, scope and limits.
+The latest V64 offline suite passed 537 tests across 64 files; TypeScript and the final V64 production build passed. Earlier V63 passed 525 tests in 63 files, V62 passed 523 tests in 62 files and V61 passed 520 tests in 62 files. These counts describe separate dated runs. V64's separate live authored-text Gemini check is scoped in the V64 entry of [QA.md](QA.md); it is not a fresh transcription or native-language evaluation.
 
 The V30 chronological-note/private-round source and its confirmation-header correction deployed successfully. The combined source passed 288 unit tests; final header checks and actual hosted finishing flows are scoped in QA.md. The earlier V29 Arabic/PDF source also deployed successfully. The hosted health and fictional example returned HTTP 200; the final PDF journey passed 24 assertions. See [QA.md](QA.md) for the dated build, local and actual hosted checks. An authored fictional one-hour upload completed the full hosted student workflow in the prior release. Arabic and PDF checks are separately scoped; none proves native classroom accuracy or future service availability.
 

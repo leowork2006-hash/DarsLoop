@@ -1,6 +1,18 @@
 # Verification and known limits
 
-## Latest integrated verification — 7 October 2026 (V63)
+## Latest integrated verification — 7 October 2026 (V64)
+
+The complete offline suite passed **537 tests across 64 files**, with zero failed tests or files. TypeScript and the final production build passed; the build completed at 22:41 UTC on 6 October (7 October in Pakistan). Counts describe this integrated run, not the sum of earlier checks.
+
+Upload and recording dialogs now show compact file/title controls and optional study settings. One combined consent control preserves both existing server attestations and recording-draft compatibility. Its accessible explanation follows [official terms §9](https://islamicaich.org/terms): use synthetic or irreversibly anonymised material, without identifiable or sensitive personal information. Real sources are not labelled fictional. Compact transcript warnings retain expandable details, and partial/source-ready labels distinguish available source text from complete study material. Uncertainty notices follow the source language.
+
+The ASR guard now considers no-speech probability together with decoding confidence, preventing a high no-speech score alone from excluding strongly decoded speech. Weak confidence, disagreement, repetition and instruction checks remain. A conservative shared-script check withholds clearly wrong Arabic/Urdu study-material language while retaining literal quotations. These are authored/mocked checks; no fresh audio was transcribed and no existing completed lesson was rewritten.
+
+A separate bounded live Gemini check used only the authored five-pillars text fixture: **11 actual HTTP 200 responses**, with four supported answer cases passing their final language/evidence/coverage checks. The English overview needed a correction and one rerun before covering the ending; the initial incomplete result is retained. An unrelated question returned no claims, and seven deterministic ruling/authentication/instruction cases refused without provider calls. This is finite source-grounding evidence, not native-language, scholarly or universal attack-resistance certification. An awkward Arabic phrase was still accepted by the automated audit; source quotations remain literal and human language review remains appropriate.
+
+No new hosted account, real-class processing, fresh transcription or historical source rewrite was performed in V64. Native ASR/translation quality, public signup-email delivery, target-user learning benefit and future availability remain limits. Browser and deployment observations require their own separately recorded checks; a successful local build does not prove them.
+
+## Earlier integrated verification — 7 October 2026 (V63)
 
 The complete offline suite passed **525 tests across 63 files**, with zero failed tests or files. The JSON reporter contains 63 unique passing file results and 525 assertions; nested suite totals are not file counts. TypeScript and the final V63 production build passed. The build retained its existing dynamic-filesystem tracing warning; a completed build is not a warning-free-build claim.
 

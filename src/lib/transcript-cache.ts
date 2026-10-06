@@ -6,7 +6,7 @@ import type { TranscriptionProvider } from "./transcription";
 import type { Lesson, Segment } from "./types";
 
 // Bump when request parameters, chunking, timing, word grouping or flag rules change.
-export const TRANSCRIPT_CACHE_REVISION="original-asr-v3-600s-8s-flac-one-12s-recheck-definition-cues";
+export const TRANSCRIPT_CACHE_REVISION="original-asr-v4-600s-8s-flac-one-12s-recheck-paired-silence-confidence";
 export type TranscriptConfig={revision:string;provider:TranscriptionProvider;model:string;checker?:string;language:SpokenLanguage;policy:string;region?:string};
 export type TranscriptContext={key:string;config:TranscriptConfig};
 export type TranscriptCache=TranscriptContext&{version:number;duration:number;complete?:{transcriptHash:string;chunks:number;capturedAt:string;reused?:true}};

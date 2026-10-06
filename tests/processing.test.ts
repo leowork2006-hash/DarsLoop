@@ -16,6 +16,22 @@ describe("durable processing with injected mock providers",()=>{
     const lesson={...base,id:randomUUID(),demo:false,status:"queued" as const,segments:[],artifacts:null,transcriptionComplete:false,...patch};
     s.queueLesson(lesson,true);return lesson;
   }
+  it("retains confidently decoded high-no-speech output only when independent boundaries allow it",async()=>{
+    const capture={start:0,end:8,text:"آپ سبق غور سے سنیں اور بعد میں اصل وضاحت دوبارہ سنیں۔",no_speech_prob:.92,avg_logprob:-.25};
+    for(const agree of [true,false]){
+      const lesson=queuedAudio({duration:10,spokenLanguage:"ur"}),providers={audioChunk:vi.fn(async()=>Buffer.from("authored-mock")),transcribe:vi.fn(async()=>({segments:[capture]})),crossCheck:vi.fn(async()=>({segments:[{start:0,end:8,text:agree?capture.text:"ایک مختلف جملہ یہاں موجود ہے اور اس میں الگ بات بیان ہوئی ہے۔"}]})),createArtifacts:vi.fn(async()=>({overview:"",notes:[],terms:[],practice:[]}))};
+      const job=s.claimJob()!;
+      if(agree){
+        await processLesson(job,providers);const saved=s.rawLesson(lesson.id)!;
+        expect(saved.status).toBe("ready");expect(saved.segments[0].flags).toEqual([]);expect(saved.segments[0].text).toBe(capture.text);
+        expect(providers.createArtifacts).toHaveBeenCalledTimes(1);
+      }else{
+        await expect(processLesson(job,providers)).rejects.toMatchObject({code:"unclear_audio"});const saved=s.rawLesson(lesson.id)!;
+        expect(saved.segments[0].flags).toContain("Wording differs between two transcriptions. Replay this moment.");expect(saved.segments[0].text).toBe(capture.text);
+        expect(providers.createArtifacts).not.toHaveBeenCalled();s.failJob(job.id,job.lease,saved.error!);
+      }
+    }
+  });
   it("rejects empty or entirely silence-flagged speech before material generation and preserves the capture",async()=>{
     for(const transcript of [[],[{start:1,end:4,text:"A possible silent-audio hallucination.",no_speech_prob:.95},{start:5,end:9,text:"Another uncertain captured line.",no_speech_prob:.8,avg_logprob:-2}]]){
       const lesson=queuedAudio(),providers={audioChunk:vi.fn(async()=>Buffer.from("mock")),transcribe:vi.fn(async()=>({segments:transcript})),createArtifacts:vi.fn(async()=>({overview:"",notes:[],terms:[],practice:[]}))};

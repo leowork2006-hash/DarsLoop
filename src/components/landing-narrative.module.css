@@ -17,7 +17,7 @@
 .tickerAudience{display:flex;align-items:center;gap:34px;font-family:"Bitter Variable",Georgia,serif;font-size:22px;letter-spacing:-.03em;color:#655369;white-space:nowrap}
 .tickerStar{font-family:Georgia,serif;font-size:15px;color:#b69ac9}
 @keyframes audienceTravel{from{transform:translateX(-50%)}to{transform:translateX(0)}}
-@media(max-width:700px){.inner{width:calc(100% - 36px);padding:45px 0;gap:30px}.statement{font-size:clamp(18px,5.55vw,30px);line-height:1.6;letter-spacing:-.055em}.line+.line{margin-top:10px}.badges{gap:10px;max-width:350px}.sticker{font-size:10px;padding:9px 13px}.ticker{margin-top:12px;padding:20px 0}.tickerGroup,.tickerAudience{gap:24px}.tickerGroup{padding-right:24px}.tickerAudience{font-size:18px}.tickerLabel{font-size:10px}.tickerStar{font-size:12px}}
-@media(max-width:360px){.inner{width:calc(100% - 28px)}.statement{font-size:18px}.badges{gap:11px}.sticker{font-size:10px}}
+@media(max-width:700px){.inner{width:calc(100% - 36px);padding:57px 0 33px;gap:30px}.statement{font-size:clamp(19px,5.8vw,32px);line-height:1.6;letter-spacing:-.055em}.line+.line{margin-top:10px}.badges{gap:10px;max-width:350px}.sticker{font-size:10px;padding:9px 13px}.ticker{margin-top:12px;padding:20px 0}.tickerGroup,.tickerAudience{gap:24px}.tickerGroup{padding-right:24px}.tickerAudience{font-size:18px}.tickerLabel{font-size:10px}.tickerStar{font-size:12px}}
+@media(max-width:360px){.inner{width:calc(100% - 28px)}.statement{font-size:19px}.badges{gap:11px}.sticker{font-size:10px}}
 @media(max-height:650px){.inner{padding:35px 0;gap:24px}.ticker{margin-top:0}}
 @media(prefers-reduced-motion:reduce){.section{min-height:100svh}.word{transition:none}.track{animation:none;transform:none}.ticker{mask-image:none}}

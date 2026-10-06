@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { capturedMaterialLanguage, materialUsesRequestedScript, resolveMaterialLanguage } from "../src/lib/study-material-language";
+import { capturedMaterialLanguage, materialUsesRequestedScript, resolveMaterialLanguage, textUsesRequestedScript } from "../src/lib/study-material-language";
 import type { Artifacts, Lesson, Segment } from "../src/lib/types";
 import { validateArtifacts } from "../src/lib/evidence";
 import { safeLesson } from "../src/lib/store";
@@ -22,6 +22,17 @@ function material(language:"ar"|"ur"|"en",source:Segment):Artifacts {
 }
 afterEach(()=>{interaction.mockReset();vi.unstubAllEnvs();});
 describe("study material language with authored fictional text and mocked AI",()=>{
+  it("distinguishes clearly wrong Arabic/Urdu explanations despite their shared script",()=>{
+    expect(textUsesRequestedScript(urdu,"ar")).toBe(false);
+    expect(textUsesRequestedScript(arabic,"ur")).toBe(false);
+    expect(textUsesRequestedScript(urdu,"ur")).toBe(true);
+    expect(textUsesRequestedScript(arabic,"ar")).toBe(true);
+    // Names and literal quoted wording must not determine explanation language.
+    expect(textUsesRequestedScript("اس سبق میں المعلم نے الشهادة کا مطلب بتایا ہے۔","ur")).toBe(true);
+    expect(textUsesRequestedScript("شرح المعلم العبارة «آپ کے میرے سبق میں» في المصدر ثم عاد إلى الدرس.","ar")).toBe(true);
+    expect(textUsesRequestedScript("الشهادة","ur")).toBe(true);
+    expect(textUsesRequestedScript("علم حاصل کرنا لازم","ur")).toBe(true);
+  });
   it("follows the dominant captured explanation, distinguishing Urdu from Arabic",()=>{
     expect(capturedMaterialLanguage([passage(urdu)])).toBe("ur");
     expect(capturedMaterialLanguage([passage(arabic)])).toBe("ar");
@@ -44,6 +55,12 @@ describe("study material language with authored fictional text and mocked AI",()
     interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)}).mockResolvedValueOnce(supported(4));
     const result=await createArtifacts([source],{enabled:true,detail:"standard",language});
     expect(result.language).toBe(language);expect(result.notes[0].evidence[0].quote).toBe(english);expect(JSON.parse(interaction.mock.calls[0][0].input).studyMaterialLanguage).toBe(language);
+  });
+  it.each([["ar","ur"],["ur","ar"]] as const)("withholds obvious %s/%s language confusion without translating source quotations",async(requested,returned)=>{
+    vi.stubEnv("GEMINI_API_KEY","mock-only");const source=passage(requested==="ar"?arabic:urdu),a=material(returned,source);
+    interaction.mockResolvedValueOnce({output_text:JSON.stringify(a)});
+    await expect(createArtifacts([source],{enabled:true,detail:"standard",language:requested})).rejects.toMatchObject({code:"material_language"});
+    expect(interaction).toHaveBeenCalledTimes(1);expect(source.text).toBe(requested==="ar"?arabic:urdu);
   });
   it("rejects translated quotations rather than replacing captured evidence",async()=>{
     vi.stubEnv("GEMINI_API_KEY","mock-only");const source=passage(english),a=material("ur",source);a.notes[0].evidence[0].quote=urdu;

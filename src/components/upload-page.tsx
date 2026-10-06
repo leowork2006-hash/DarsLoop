@@ -6,19 +6,20 @@ import type { StudyMaterialLanguage } from "@/lib/study-material-language";
 import { StudyMaterialLanguageField } from "./study-material-language";
 import { MAX_PDF_BYTES } from "@/lib/pdf-options";
 import { MAX_IMPORT_BYTES, MEDIA_ACCEPT, MEDIA_EXTENSION } from "@/lib/upload-options";
-import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Waveform as AudioLines, BookOpen, Check, CheckCircle, CaretRight as ChevronRight, FileAudio, Cards as Layers, Microphone as Mic, Pause, Play, ArrowCounterClockwise as RotateCcw, UploadSimple as Upload, ListBullets, TextAlignLeft, Notebook, ChatCircle, MapTrifold } from "@phosphor-icons/react";
+import { useEffect, useId, useRef, useState } from "react";
+import { ArrowRight, Waveform as AudioLines, BookOpen, Check, CheckCircle, CaretRight as ChevronRight, FileAudio, Cards as Layers, Microphone as Mic, Pause, Play, ArrowCounterClockwise as RotateCcw, UploadSimple as Upload, ChatCircle, MapTrifold } from "@phosphor-icons/react";
 import { type Lesson, type Workspace } from "@/lib/types";
 import { lessonReadiness, lessonMatchesReadinessFilter, type LessonReadinessFilter } from "@/lib/lesson-readiness";
 import { preparationNotice, type PreparationNotice } from "@/lib/preparation-availability";
 import { Modal } from "./modal";
 import { api, message } from "./client-api";
 import { uploadLesson } from "./import-client";
+import importStyles from "./lesson-import.module.css";
 
 const details = [
-  { id: "short", name: "Quick notes", copy: "The main points", icon: ListBullets },
-  { id: "standard", name: "Balanced notes", copy: "Points and explanations", icon: TextAlignLeft },
-  { id: "detailed", name: "Detailed notes", copy: "More of the lesson", icon: Notebook },
+  { id: "short", name: "Quick notes", copy: "The main points" },
+  { id: "standard", name: "Balanced notes", copy: "Points and explanations" },
+  { id: "detailed", name: "Detailed notes", copy: "More of the lesson" },
 ] as const;
 type Detail = typeof details[number]["id"];
 export function PaperCompanion({ moving = false }: { moving?: boolean }) {
@@ -38,13 +39,14 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
   const [spokenLanguage,setSpokenLanguage]=useState<SpokenLanguage>("auto");
   const [studyLanguage,setStudyLanguage]=useState<StudyMaterialLanguage>("auto");
   const [notes, setNotes] = useState(true), [detail, setDetail] = useState<Detail>("standard");
-  const [permitted, setPermitted] = useState(false), [fictional, setFictional] = useState(false);
+  const [permitted, setPermitted] = useState(false), [eligible, setEligible] = useState(false);
   const [configure, setConfigure] = useState(false), [showProgress, setShowProgress] = useState(false);
   const [uploading, setUploading] = useState(false), [percent, setPercent] = useState<number | null>(null);
   const [jobId, setJobId] = useState<string | null>(null), [error, setError] = useState("");
   const [dragging, setDragging] = useState(false), [paused, setPaused] = useState(false), [retrying, setRetrying] = useState(false);
   const [filter, setFilter] = useState<LessonReadinessFilter>("all");
   const input = useRef<HTMLInputElement>(null), request = useRef<AbortController | null>(null);
+  const eligibilityId=useId();
   const job = workspace.lessons.find(l => l.id === jobId);
   const fileIsPdf=!!file&&(/\.pdf$/i.test(file.name)||file.type==="application/pdf"),pdf=job?job.sourceKind==="pdf":fileIsPdf;
   const availability = preparationNotice(workspace.configured);
@@ -65,14 +67,16 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
     if(pickedIsPdf&&picked.size>MAX_PDF_BYTES){setError("Choose a selectable-text PDF up to 8 MB.");return;}
     if (!pickedIsPdf&&!MEDIA_EXTENSION.test(picked.name) && !picked.type.startsWith("audio/")) { setError("Choose audio, video or a selectable-text PDF."); return; }
     setPreviewFailed(false); setFile(picked); setTitle(picked.name.replace(/\.[^.]+$/, "").slice(0, 160));
-    setPermitted(false); setFictional(false); setConfigure(true); setJobId(null);
+    setPermitted(false); setEligible(false); setConfigure(true); setJobId(null);
   }
   async function submit(e: React.FormEvent) {
-    e.preventDefault(); if (!file || uploading || !permitted || !fictional || !title.trim()) return;
+    e.preventDefault(); if (!file || uploading || !permitted || !eligible || !title.trim()) return;
     setError(""); setUploading(true); setPercent(null); setConfigure(false); setShowProgress(true); setJobId(null);
     const controller=new AbortController();request.current=controller;
     try{
-      const lesson=await uploadLesson(file,{title:title.trim(),course:course.trim()||"My lessons",permitted,synthetic:fictional,spokenLanguage,noteOptions:{enabled:notes,detail,language:studyLanguage}},controller.signal,setPercent);
+      // The legacy API key is an eligibility attestation, not a claim that
+      // the actual source is synthetic; irreversibly anonymised material is allowed.
+      const lesson=await uploadLesson(file,{title:title.trim(),course:course.trim()||"My lessons",permitted,synthetic:eligible,spokenLanguage,noteOptions:{enabled:notes,detail,language:studyLanguage}},controller.signal,setPercent);
       if(!lesson.id)throw new Error("Saving was not confirmed. Check Recent uploads before trying again.");
       setJobId(lesson.id);onSaved(lesson);setPercent(100);
     }catch(e){if(!controller.signal.aborted)setError(message(e));}
@@ -111,21 +115,23 @@ export function UploadPage({ workspace, onRecord, onSaved, onOpen, onPlan, onErr
       {shown.length ? <div className="upload-history">{shown.slice(0, 6).map(l => {const state=lessonReadiness(l);return <button key={l.id} onClick={() => { if (state.materialReady) onOpen(l); else { setJobId(l.id); setError(""); setShowProgress(true); } }}><span className="upload-history-icon"><FileAudio size={23}/></span><span><strong dir="auto">{l.title}</strong><small>{l.course}</small></span><span className={`upload-status ${state.materialReady?"ready":state.needsAttention||state.state==="partial"?"failed":l.status}`}>{state.materialReady&&<Check size={14}/>} {state.label}</span><ChevronRight size={16}/></button>;})}</div> : <div className="upload-history-empty"><FileAudio size={27}/><p>{saved.length ? "No uploads in this view." : "Your uploads will appear here."}</p></div>}
       {uploading && !showProgress && <button className="text-link" onClick={() => setShowProgress(true)}>Show upload progress</button>}
     </section>
-    {configure && file && <Modal title={fileIsPdf?"Upload PDF":"Upload audio"} onClose={() => setConfigure(false)} className="upload-config">
+    {configure && file && <Modal title={fileIsPdf?"Upload PDF":"Upload audio"} onClose={() => setConfigure(false)} className={`upload-config ${importStyles.dialog}`}>
       <form onSubmit={submit}>
-        <p className="upload-dialog-intro">Add your material and choose your study settings.</p><p className="muted">{fileIsPdf?"Choose a PDF with selectable text, up to 8 MB and 40 pages. Scanned or image-only pages need a text PDF first. Quotations link to original pages.":"We use the audio from videos. Large files are saved as a smaller audio copy. Keep your original file."}</p>
+        <p className={importStyles.limits}>{fileIsPdf?"Selectable text · up to 8 MB and 40 pages. Scans aren’t supported.":"Up to 2 hours and 500 MiB. Videos use the audio only."}</p>
         <PreparationAvailability notice={selectedAvailability}/>
-        <div className="upload-selected"><FileAudio size={25}/><div><strong>{file.name}</strong><span>{(file.size / (fileIsPdf?1_000_000:1024*1024)).toFixed(1)} {fileIsPdf?"MB":"MiB"}</span></div><button type="button" className="icon-button" aria-label="Choose another file" onClick={() => input.current?.click()}><RotateCcw size={18}/></button></div>
-        {!fileIsPdf&&<><p className="muted">Local file preview · upload to prepare notes</p>{previewFailed?<p className="muted">This browser can’t preview this format. You can still upload it.</p>:<audio className="upload-audio-preview" controls src={preview||undefined} aria-label="Local file preview" onError={()=>setPreviewFailed(true)}/>}</>}
-        <div className="upload-name-fields"><label className="field">Lesson name<input required maxLength={160} value={title} onChange={e => setTitle(e.target.value)} placeholder="Give it a name"/></label><label className="field">Course <span>(optional)</span><input maxLength={100} value={course} onChange={e => setCourse(e.target.value)} placeholder="e.g. Arabic"/></label></div>
-        {!fileIsPdf&&<SpokenLanguageField value={spokenLanguage} onChange={setSpokenLanguage}/>}
-        <StudyMaterialLanguageField value={studyLanguage} onChange={setStudyLanguage}/>
-        <div className="notes-switch-row"><div><h3>Make study notes</h3><p>Choose the detail that works for you.</p></div><button type="button" role="switch" aria-checked={notes} aria-label="Make study notes" className="notes-switch" onClick={() => setNotes(v => !v)}><span/></button></div>
-        {notes ? <fieldset className="note-detail-options"><legend className="sr-only">Note detail</legend>{details.map(option => <label key={option.id} className={`note-detail-choice ${detail === option.id ? "selected" : ""}`}><input type="radio" name="note-detail" value={option.id} checked={detail === option.id} onChange={() => setDetail(option.id)}/><option.icon size={28} aria-hidden="true"/><strong>{option.name}</strong><span>{option.copy}</span>{detail === option.id && <CheckCircle className="note-choice-check" size={16} weight="fill"/>}</label>)}</fieldset> : <p className="notes-off-message">You’ll still get source text, a quiz and flashcards from clear parts of your lesson.</p>}
-        <p className="note-detail-boundary">All detail comes from this lesson. Another study-material language needs processing; source quotations keep their original words.</p>
-        <div className="upload-consent"><label><input type="checkbox" checked={permitted} onChange={e => setPermitted(e.target.checked)}/><span>{fileIsPdf?"I have permission to use this PDF.":"I have permission to use this recording."}</span></label><label><input type="checkbox" checked={fictional} onChange={e => setFictional(e.target.checked)}/><span>{fileIsPdf?"This PDF is fictional or irreversibly anonymised, with no identifiable personal or sensitive information.":"This demo recording is fictional, with no real personal or sensitive information."}</span></label></div>
+        <div className="upload-selected">{fileIsPdf?<BookOpen size={24}/>:<FileAudio size={24}/>}<div><strong>{file.name}</strong><span>{(file.size / (fileIsPdf?1_000_000:1024*1024)).toFixed(1)} {fileIsPdf?"MB":"MiB"}</span></div><button type="button" className="icon-button" aria-label="Choose another file" onClick={() => input.current?.click()}><RotateCcw size={18}/></button></div>
+        {!fileIsPdf&&<details className={importStyles.preview}><summary>Listen to this file</summary>{previewFailed?<p>This browser can’t preview this format. You can still upload it.</p>:<audio className="upload-audio-preview" controls src={preview||undefined} aria-label="Local file preview" onError={()=>setPreviewFailed(true)}/>}</details>}
+        <div className="upload-name-fields"><label className="field"><span className={importStyles.fieldLabel}>Lesson name</span><input required maxLength={160} value={title} onChange={e => setTitle(e.target.value)} placeholder="Give it a name"/></label><label className="field"><span className={importStyles.fieldLabel}>Course <span>(optional)</span></span><input maxLength={100} value={course} onChange={e => setCourse(e.target.value)} placeholder="e.g. Arabic"/></label></div>
+        <details className={importStyles.settings}><summary><span>Study settings</span><span>{notes?details.find(option=>option.id===detail)?.name:"Notes off"}</span></summary><div className={importStyles.settingsBody}>
+          {!fileIsPdf&&<SpokenLanguageField value={spokenLanguage} onChange={setSpokenLanguage}/>}
+          <StudyMaterialLanguageField value={studyLanguage} onChange={setStudyLanguage}/>
+          <div className="notes-switch-row"><h3>Make study notes</h3><button type="button" role="switch" aria-checked={notes} aria-label="Make study notes" className="notes-switch" onClick={() => setNotes(v => !v)}><span/></button></div>
+          {notes?<label className="field">Note detail<select value={detail} onChange={event=>setDetail(event.target.value as Detail)}>{details.map(option=><option key={option.id} value={option.id}>{option.name} · {option.copy}</option>)}</select></label>:<p className={importStyles.helper}>Source text and supported practice are still prepared.</p>}
+        </div></details>
+        <div className="upload-consent"><label><input type="checkbox" aria-describedby={eligibilityId} checked={permitted&&eligible} onChange={event=>{setPermitted(event.target.checked);setEligible(event.target.checked);}}/><span>I have permission to use this material, and it contains no identifiable or sensitive personal information.</span></label><details className={importStyles.eligibility}><summary>Material allowed during judging</summary><p id={eligibilityId}>Use synthetic or irreversibly anonymised material. No person can be identified or linked back to the original. Sensitive personal data is not permitted in this judging version.</p></details></div>
         {error && <p className="inline-error" role="alert">{error}</p>}
-        <footer className="upload-config-footer"><p>AI services process your {fileIsPdf?"PDF text":"audio"}. Lessons are private until you share them. Deleting a lesson removes its source and study material from DarsLoop storage. AI providers have separate retention policies.</p><div><button type="button" className="button secondary" onClick={()=>setConfigure(false)}>Cancel</button><button className="button primary" disabled={uploading || !permitted || !fictional || !title.trim()}><Upload size={17}/> {selectedAvailability ? "Save to queue" : "Upload & prepare"}</button></div></footer>
+        <div className={importStyles.privacy}><p>AI services process your {fileIsPdf?"PDF text":"audio"}. Private until you share.</p><details><summary>Privacy and deletion</summary><p>Deleting a lesson removes its source and study material from DarsLoop storage. AI providers have separate retention policies.{!fileIsPdf&&" Large files are saved as a smaller audio copy; keep your original file."}</p></details></div>
+        <footer className="upload-config-footer"><div><button type="button" className="button secondary" onClick={()=>setConfigure(false)}>Cancel</button><button className="button primary" disabled={uploading || !permitted || !eligible || !title.trim()}><Upload size={17}/> {selectedAvailability ? "Save to queue" : "Upload & prepare"}</button></div></footer>
       </form>
     </Modal>}
     {showProgress && <Modal title={progressTitle} onClose={() => setShowProgress(false)} className="upload-progress-modal">

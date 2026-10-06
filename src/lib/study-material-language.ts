@@ -42,11 +42,23 @@ export function languageAuditInstruction(language:PreparedMaterialLanguage):stri
 // returned for an Arabic/Urdu selection (or the reverse). This is a script
 // sanity check, not a native-language or translation-quality guarantee.
 export function textScriptCounts(text:string) {return {arabic:count(text,/\p{Script=Arabic}/gu),latin:count(text,/\p{Script=Latin}/gu)};}
+const urduExplanationWords=new Set("آپ میرے میری میرا ہم تم کے کی کا کو سے میں ہے ہیں یہ وہ نہیں پھر اگر ہو تو کریں کریں گے".split(" "));
+const arabicExplanationWords=new Set("هذا هذه الذي التي ثم عند عندما الي علي في من يجب ينبغي يمكن ماذا كيف لماذا اشرح المعلم الطالب".split(" "));
+function clearlyWrongSharedScript(text:string,language:"ar"|"ur") {
+  // Shared Arabic-script letters cannot identify the explanation language.
+  // Reject only several explicit function cues; names/short answers stay
+  // ambiguous, and literal quoted wording is not a language instruction.
+  const explanation=text.replace(/«[^»]*»|“[^”]*”|"[^"]*"/gu," ").normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي");
+  const words=explanation.split(/[^\p{L}\p{M}]+/u).filter(Boolean);
+  const urdu=words.filter(word=>urduExplanationWords.has(word)).length;
+  const arabic=words.filter(word=>arabicExplanationWords.has(word)).length;
+  return language==="ar"?urdu>=3&&urduMarkers.test(explanation):arabic>=3&&urdu===0&&!urduMarkers.test(explanation);
+}
 export function textUsesRequestedScript(text:string,language:PreparedMaterialLanguage):boolean {
   const {arabic,latin}=textScriptCounts(text);
   // A numeric answer has no explanation-language script to reject.
   if(!arabic&&!latin)return true;
-  return language==="en"?latin>=arabic:arabic>0&&arabic>=latin;
+  return language==="en"?latin>=arabic:arabic>0&&arabic>=latin&&!clearlyWrongSharedScript(text,language);
 }
 export function materialUsesRequestedScript(material:Artifacts,language:PreparedMaterialLanguage):boolean {
   const filtered=filterMaterialLanguage(material,language);

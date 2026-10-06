@@ -26,6 +26,20 @@ describe("literal excerpt relevance, authored sources only",()=>{
   expect(boundedQuestion("What does the Quran say about prayer in this lesson?",demo.segments,1,"ai")).toMatchObject({status:"not_covered",blocks:[]});
   expect(boundedQuestion("What did the teacher say about prayer?",demo.segments,1,"ai")).toMatchObject({status:"answered",mode:"excerpt"});
  });
+ it("returns the actual comparison before incidental earlier mentions",()=>{
+  const question="Explain the difference between zakah and voluntary charity using this lesson.";
+  const actual=demo.segments[4];
+  for(const passages of [demo.segments,[...demo.segments].reverse()]){
+   const answer=boundedQuestion(question,passages,1,"ai")!;
+   expect(answer).toMatchObject({status:"answered",mode:"excerpt"});
+   expect(answer.blocks[0].text).toBe(actual.text);
+   expect(answer.blocks[0].evidence).toEqual([{segmentId:actual.id,quote:actual.text}]);
+  }
+ });
+ it("does not use ranked incidental mentions when the actual comparison is flagged",()=>{
+  const passages=demo.segments.map((s,i)=>i===4?{...s,flags:["Unclear speech"]}:s);
+  expect(boundedQuestion("Explain the difference between zakah and voluntary charity using this lesson.",passages,1,"ai")).toMatchObject({status:"not_covered",blocks:[]});
+ });
  it("preserves negated reporting, long-word typo recall, PDF facts and the unclear-source distinction",()=>{
   const segments:Segment[]=[{id:"vaping",start:0,end:10,text:"The teacher will not discuss whether vaping breaks the fast in this class.",flags:[]},{id:"revision",start:10,end:20,text:"Revision means recalling before reading the notes.",flags:[]}];
   expect(excerptAnswer("What did the teacher say about whether vaping breaks the fast?",segments,1).blocks[0].text).toBe(segments[0].text);

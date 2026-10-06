@@ -18,6 +18,7 @@ const copy={
   partial:{en:'Only the supported passages are shown. Check the original source for anything further.',ar:'تُعرض الفقرات المدعومة فقط. راجع المصدر الأصلي لأي تفاصيل أخرى.',ur:'صرف ماخذ سے ثابت شدہ عبارتیں دکھائی گئی ہیں۔ مزید تفصیل کے لیے اصل ماخذ دیکھیں۔'},
   ai:{en:'AI answer from this lesson. Check the cited original.',ar:'إجابة مولّدة بالذكاء الاصطناعي من هذا الدرس. تحقّق من الأصل المشار إليه.',ur:'یہ اس سبق سے بنایا گیا AI جواب ہے۔ دیے گئے اصل حوالے کو چیک کریں۔'},
   notes:{en:'From prepared lesson notes. Check the cited original.',ar:'من ملاحظات الدرس المُعدّة. تحقّق من الأصل المشار إليه.',ur:'یہ سبق کے تیار شدہ نوٹس سے ہے۔ دیے گئے اصل حوالے کو چیک کریں۔'},
+  checkWording:{en:"Check wording",ar:"راجع الصياغة",ur:"الفاظ چیک کریں"},
   replay:{en:'Replay before relying on this passage.',ar:'أعد الاستماع قبل الاعتماد على هذه الفقرة.',ur:'اس عبارت پر اعتماد کرنے سے پہلے دوبارہ سنیں۔'},
 } as const;
 export function trustCopy(language:PreparedMaterialLanguage,key:keyof typeof copy){return copy[key][language];}
@@ -33,6 +34,9 @@ const flags:Record<string,{ar:string;ur:string}>={
   'Possible repeated transcription':{ar:'تكرار محتمل في التفريغ',ur:'نقلِ گفتگو میں ممکنہ تکرار'},
   'Meaning-sensitive words: replay this passage':{ar:'كلمات تؤثر في المعنى: أعد الاستماع',ur:'معنی پر اثر انداز ہونے والے الفاظ: دوبارہ سنیں'},
   'Instruction-like wording: excluded from AI study material; replay the audio':{ar:'عبارة تشبه تعليمات للنظام: مستبعدة من مواد الدراسة؛ أعد الاستماع',ur:'نظام کے لیے ہدایات جیسی عبارت: مطالعے کے مواد سے خارج؛ دوبارہ سنیں'},
+  'Wording differs between two transcriptions. Replay this moment.':{ar:'اختلفت صياغة التفريغين؛ راجع التسجيل',ur:'دو نقلوں کے الفاظ مختلف ہیں؛ ریکارڈنگ سنیں'},
+  'Key wording differs between two transcriptions. Replay this moment.':{ar:'اختلفت كلمات أساسية بين التفريغين؛ راجع التسجيل',ur:'دو نقلوں میں اہم الفاظ مختلف ہیں؛ ریکارڈنگ سنیں'},
+  'Short audio recheck differs from the original capture. Replay this moment.':{ar:'اختلفت المراجعة القصيرة عن التفريغ الأول؛ راجع التسجيل',ur:'مختصر دوبارہ جانچ کے الفاظ پہلی نقل سے مختلف ہیں؛ ریکارڈنگ سنیں'},
   'Low word confidence: replay this passage':{ar:'ثقة منخفضة في الكلمات: أعد الاستماع',ur:'الفاظ پر کم اعتماد: دوبارہ سنیں'},
 };
 export function uncertaintyText(values:string[],language:PreparedMaterialLanguage){

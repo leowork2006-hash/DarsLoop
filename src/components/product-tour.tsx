@@ -223,7 +223,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
   </>;
 
   return <div className={styles.wrap} ref={root} data-product-tour data-scene={tab} data-tour-running={running} data-tour-step={step}>
-    <div className={styles.frame} ref={frame} onPointerDownCapture={pause} onFocusCapture={pause}>
+    <div className={styles.frame} ref={frame} onClickCapture={pause} onFocusCapture={pause}>
       <div className={styles.chrome} aria-label="Browser-style product preview"><span className={styles.dots} aria-hidden="true"><i /><i /><i /></span><span className={styles.address}><LockKeyhole size={12}/><span>darsloop-production.up.railway.app/example</span></span><span className={styles.chromeTools} aria-hidden="true"><Search size={16}/><i>S</i></span></div>
       <div className={styles.app}>
         <aside className={styles.sidebar} aria-label="Example workspace">{sidebarContent}</aside>

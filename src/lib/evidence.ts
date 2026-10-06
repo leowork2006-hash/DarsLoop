@@ -167,7 +167,13 @@ function relevantExcerpts(question:string,passages:StudyPassage[]):StudyPassage[
     if(typos.length!==1)return [];
     resolved.push(typos[0]);
   }
-  return passages.filter((_,i)=>resolved.some(anchor=>words[i].has(anchor)));
+  // A broad introduction can name a topic before the actual explanation.
+  // Rank distinct supported query anchors before taking the bounded excerpt
+  // count, so that an early mention cannot crowd out the requested comparison.
+  // Rare anchors carry more weight; repeats in a passage add no extra score.
+  const weights=resolved.map(anchor=>1+Math.log((passages.length+1)/(words.filter(w=>w.has(anchor)).length+1)));
+  return passages.map((passage,i)=>({passage,index:i,score:resolved.reduce((n,anchor,j)=>n+(words[i].has(anchor)?weights[j]:0),0)}))
+    .filter(row=>row.score>0).sort((a,b)=>b.score-a.score||a.index-b.index).map(row=>row.passage);
 }
 export function needsPersonalReferral(question:string) {
   const q=normalise(question);
@@ -225,7 +231,11 @@ export function excerptAnswer(question:string,segments:StudyPassage[],version:nu
 export function segmentFlags(d:{avg_logprob?:number;no_speech_prob?:number;compression_ratio?:number},text:string) {
   const flags:string[]=[];
   if(instructionLike(text))flags.push("Instruction-like wording: excluded from AI study material; replay the audio");
-  if(typeof d.no_speech_prob==="number"&&d.no_speech_prob>0.6)flags.push("Possible silence or unclear speech");
+  // Whisper's no-speech score describes a decoding window and can stay high
+  // despite confident speech. Its reference decoder pairs it with logprob;
+  // never treat that score alone as proof that every returned line is silence.
+  // Missing confidence remains conservative; independent exclusions stay.
+  if(typeof d.no_speech_prob==="number"&&d.no_speech_prob>0.6&&!(typeof d.avg_logprob==="number"&&Number.isFinite(d.avg_logprob)&&d.avg_logprob> -1))flags.push("Possible silence or unclear speech");
   if(typeof d.avg_logprob==="number"&&d.avg_logprob< -1)flags.push("Low transcription confidence");
   if(typeof d.compression_ratio==="number"&&d.compression_ratio>2.4)flags.push("Possible repeated transcription");
   if(/\b(not|unless|except)\b|\d|لا|ليس|إلا|نہیں|مگر/u.test(text)&&flags.length)flags.push("Meaning-sensitive words: replay this passage");
