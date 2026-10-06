@@ -18,7 +18,9 @@ const tabs = [
 ] as const;
 type Tab = typeof tabs[number]["id"] | "home" | "library" | "review" | "plan";
 const tourSteps = [
-  { delay: 2300, target: "nav-library" }, { delay: 800, action: "library" },
+  { delay: 2000, target: "home-input" }, { delay: 700, action: "home-type" },
+  { delay: 1700, target: "home-send" }, { delay: 750, action: "home-send" },
+  { delay: 4700, target: "nav-library" }, { delay: 800, action: "library" },
   { delay: 1600, target: "lesson" }, { delay: 800, action: "notes" },
   { delay: 1700, target: "detail" }, { delay: 800, action: "detail" },
   { delay: 1900, target: "ask" }, { delay: 800, action: "ask" },
@@ -34,6 +36,7 @@ const tourSteps = [
   { delay: 2200, target: "nav-home" }, { delay: 800, action: "home" },
 ] as const;
 const demoQuestion = "How should I revise after class?";
+const homeQuestion = "What should I focus on while listening?";
 
 /** A local, prepared example. It never invokes AI or changes the lesson's demo status. */
 export function ProductTour({ lesson }: { lesson: Lesson }) {
@@ -58,6 +61,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
   const [answerIndex, setAnswerIndex] = useState<number | null>(null);
   const [words, setWords] = useState(0);
   const [manualChat, setManualChat] = useState(false);
+  const [typingHome, setTypingHome] = useState(false);
   const [choice, setChoice] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -110,6 +114,13 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
   }, [sent, reduced, inView, visible, manualChat, running, words, answerWords.length]);
 
   useEffect(() => {
+    if (!typingHome || !running || tab !== "home") return;
+    if (question.length >= homeQuestion.length) { setTypingHome(false); return; }
+    const timer = setTimeout(() => setQuestion(value => homeQuestion.slice(0, value.length + 1)), 34);
+    return () => clearTimeout(timer);
+  }, [typingHome, running, tab, question.length]);
+
+  useEffect(() => {
     if (!running) return;
     const current = tourSteps[step];
     const timer = setTimeout(() => {
@@ -132,7 +143,9 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
       } else {
         setDrawer(false);
         switch (current.action) {
-          case "home": setTab("home"); setSent(""); break;
+          case "home": setTab("home"); setSent(""); setQuestion(""); setWords(0); setTypingHome(false); break;
+          case "home-type": setQuestion(""); setTypingHome(true); break;
+          case "home-send": setTypingHome(false); submitQuestion(homeQuestion, false); setQuestion(""); break;
           case "library": setTab("library"); setSearch(""); break;
           case "review": setTab("review"); break;
           case "plan": setTab("plan"); setTopicIndex(null); break;
@@ -157,7 +170,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
   useEffect(() => { if (screen.current) screen.current.scrollTop = 0; }, [tab]);
 
   const pause = () => setPlaying(false);
-  const selectTab = (next: Tab) => { pause(); setTab(next); setSource(null); setDrawer(false); };
+  const selectTab = (next: Tab) => { pause(); setTypingHome(false); setTab(next); setSource(null); setDrawer(false); if (next === "home") { setSent(""); setQuestion(""); } };
   const openSource = (citation?: Citation) => { pause(); if (citation) setSource(citation); };
   const sourceSegment = source ? lesson.segments.find(segment => segment.id === source.segmentId) : undefined;
   const playSource = async () => {
@@ -190,7 +203,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
 
   return <div className={styles.wrap} ref={root} data-product-tour data-scene={tab} data-tour-running={running}>
     <div className={styles.frame} ref={frame} onPointerDownCapture={pause} onFocusCapture={pause}>
-      <div className={styles.chrome}><span className={styles.dots} aria-hidden="true"><i /><i /><i /></span><span className={styles.address}><LockKeyhole size={11} /> DarsLoop / Your study space</span><span className={styles.chromeLabel}>Interactive example</span></div>
+      <div className={styles.chrome} aria-label="Browser-style product preview"><span className={styles.dots} aria-hidden="true"><i /><i /><i /></span><span className={styles.address}><LockKeyhole size={12}/><span>darsloop-production.up.railway.app/example</span></span><span className={styles.chromeTools} aria-hidden="true"><Search size={16}/><i>S</i></span></div>
       <div className={styles.app}>
         <aside className={styles.sidebar} aria-label="Example workspace">{sidebarContent}</aside>
         {drawer && <div className={styles.drawer}><button className={styles.drawerClose} aria-label="Close preview workspace menu" onClick={() => setDrawer(false)}><X size={20}/></button>{sidebarContent}</div>}
@@ -208,7 +221,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
             event.preventDefault(); selectTab(activeTabs[next].id); root.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
           }}>{activeTabs.map(({ id: tabId, label, icon: Icon }) => <button key={tabId} id={`${id}-${tabId}`} role="tab" aria-controls={`${id}-panel`} aria-selected={tab === tabId || tab === "review" && tabId === "quiz"} tabIndex={tab === tabId || tab === "review" && tabId === "quiz" ? 0 : -1} data-tour-target={tabId} onClick={() => selectTab(tabId)}><Icon size={17}/><span>{label}</span></button>)}</div>}
           <div className={styles.screen} ref={screen} id={`${id}-panel`} role="tabpanel" aria-label={!activeTabs.length ? pageTitle : undefined} aria-labelledby={activeTabs.length ? `${id}-${tab === "review" ? "quiz" : tab}` : undefined} tabIndex={0}>
-            {tab === "home" && <div className={styles.homeScene}><div className={styles.homeWelcome}><span className={styles.mascot}><img src="/art/hoopoe-guide-v10.png" alt="" width={76} height={76}/></span><h3>How can I help?</h3><ChatStarters lesson={lesson} onAsk={text => { selectTab("ask"); setQuestion(text); submitQuestion(text, true); }} onNotes={() => selectTab("notes")} onQuiz={() => selectTab("quiz")} onCards={() => selectTab("cards")} onPlan={() => selectTab("plan")}/><div className={styles.homeShortcuts}><button onClick={() => selectTab("library")}><FolderOpen size={17}/>Materials</button><button onClick={() => selectTab("plan")}><Map size={17}/>Study plan</button><Link href="/example"><Users size={17}/>My classes</Link></div></div><form className={styles.homeComposer} onSubmit={event => { event.preventDefault(); selectTab("ask"); submitQuestion(question, true); }}><input aria-label="Home example question" placeholder="Ask about your lesson…" value={question} onChange={event => setQuestion(event.target.value)}/><div><button type="button" aria-label="Choose example material" onClick={() => selectTab("library")}><Plus size={20}/></button><button type="button" className={styles.chooseLesson} onClick={() => selectTab("library")}><BookOpen size={15}/><span>Choose a lesson</span><ChevronDown size={12}/></button><Link href="/example" aria-label="Record in the full example"><Microphone size={18}/></Link><Link href="/example" aria-label="Open example upload"><Upload size={18}/></Link><button className={styles.homeSend} aria-label="Send prepared home question" disabled={!question.trim()}><ArrowUp size={20}/></button></div></form><p className={styles.homeCaption}>Answers use your lesson. Ask a teacher for religious guidance.</p></div>}
+            {tab === "home" && <div className={styles.homeScene}>{sent ? <div className={styles.homeConversation}><div className={styles.sceneTop}><span className={styles.sceneTitle}>Ask your class</span><span className={styles.prepared}>Prepared example</span></div><div className={styles.userMessage}>{sent}</div><div className={styles.assistantMessage}><span className={styles.answerMark}><img src="/art/hoopoe-guide-v10.png" alt="" width={32} height={32}/></span><div><span className={styles.answerLabel}>From this lesson</span><p>{answerWords.slice(0, words).join(" ")} {words < answerWords.length && <i className={styles.typing} aria-label="Revealing Home answer"/>}</p>{words >= answerWords.length && answerIndex !== null && answerIndex >= 0 && citation(notes[answerIndex]?.evidence)}</div></div></div> : <div className={styles.homeWelcome}><span className={styles.mascot}><img src="/art/hoopoe-guide-v10.png" alt="" width={76} height={76}/></span><h3>How can I help?</h3><ChatStarters lesson={lesson} onAsk={text => { pause(); setTypingHome(false); submitQuestion(text, true); setQuestion(""); }} onNotes={() => selectTab("notes")} onQuiz={() => selectTab("quiz")} onCards={() => selectTab("cards")} onPlan={() => selectTab("plan")}/><div className={styles.homeShortcuts}><button onClick={() => selectTab("library")}><FolderOpen size={17}/>Materials</button><button onClick={() => selectTab("plan")}><Map size={17}/>Study plan</button><Link href="/example"><Users size={17}/>My classes</Link></div></div>}<form className={styles.homeComposer} onSubmit={event => { event.preventDefault(); pause(); setTypingHome(false); submitQuestion(question, true); setQuestion(""); }}><input data-tour-target="home-input" aria-label="Home example question" placeholder="Ask about your lesson…" value={question} maxLength={180} onChange={event => { setTypingHome(false); setQuestion(event.target.value); }}/><div><button type="button" aria-label="Choose example material" onClick={() => selectTab("library")}><Plus size={20}/></button><button type="button" className={styles.chooseLesson} onClick={() => selectTab("library")}><BookOpen size={15}/><span>{sent ? lesson.title : "Choose a lesson"}</span><ChevronDown size={12}/></button><Link href="/example" aria-label="Record in the full example"><Microphone size={18}/></Link><Link href="/example" aria-label="Open example upload"><Upload size={18}/></Link><button className={styles.homeSend} data-tour-target="home-send" aria-label="Send prepared home question" disabled={!question.trim()}><ArrowUp size={20}/></button></div></form><p className={styles.homeCaption}>Answers use your lesson. Ask a teacher for religious guidance.</p></div>}
             {tab === "library" && <div className={styles.libraryScene}><div className={styles.libraryCollections}><span>All lessons</span><span>My materials</span><span>Shared with me</span></div><label className={styles.librarySearch}><Search size={18}/><input aria-label="Search preview lessons" placeholder="Search your lessons…" value={search} onChange={event => setSearch(event.target.value)}/></label><div className={styles.libraryCount}><span>{`${lesson.title} ${lesson.course}`.toLowerCase().includes(search.toLowerCase()) ? "1 lesson" : "0 lessons"}</span><span>Newest first</span></div>{`${lesson.title} ${lesson.course}`.toLowerCase().includes(search.toLowerCase()) ? <button className={styles.libraryCard} data-tour-target="lesson" onClick={() => selectTab("notes")}><div className={styles.libraryCover}><Microphone size={35}/><div><span>Example note</span><strong>{notes[0]?.heading}</strong><p>{notes[0]?.text}</p></div><span className={styles.libraryDuration}><Headphones size={13}/>{formatTime(lesson.duration)}</span></div><div className={styles.libraryCardBody}><span>{lesson.course}<i><CheckCircle2 size={14}/>Ready</i></span><h4>{lesson.title}</h4><p>{notes.length} notes · {lesson.artifacts?.practice.filter(item => item.kind === "quiz").length} questions · {lesson.artifacts?.practice.filter(item => item.kind === "flashcard").length} cards</p><div>Fictional example<ArrowRight size={17}/></div></div></button> : <p>No lessons match this search.</p>}</div>}
             {tab === "review" && <div className={styles.reviewScene}><div className={styles.reviewBanner}><span>ONE POINT AT A TIME</span><h4>Try it. Check it. Hear it again.</h4><p>Choose a lesson. Each answer takes you back to the teacher’s words.</p></div><div className={styles.reviewLesson}><span>{lesson.course}</span><h4>{lesson.title}</h4><p>Fictional sample practice · {quiz ? "Quiz and flashcards" : "Class practice"}</p><div><button className={styles.primary} data-tour-target="start-quiz" onClick={() => selectTab("quiz")}>Start quiz<ArrowRight size={16}/></button><button onClick={() => selectTab("cards")}>Study cards<Layers size={16}/></button></div></div></div>}
             {tab === "plan" && <div className={styles.planScene}><div className={styles.planSummary}><span><BookOpen size={15}/>{topics.length} topics</span><span><Check size={15}/>0 practised</span><span><RotateCcw size={15}/>0 to revisit</span></div><div className={styles.planBanner}><h4>From your sources to a clear next step.</h4><p>Follow a topic, check its source, then practise.</p></div><h4 className={styles.planUnit}>{lesson.title}</h4><div className={styles.planTopics}>{topics.map((topic,index) => <div key={topic.id}><button data-tour-target={index === 0 ? "topic" : undefined} aria-expanded={topicIndex === index} onClick={() => { pause(); setTopicIndex(topicIndex === index ? null : index); }}><i/><span>{topic.title}<small>{topic.practiceCount ? "Ready to try" : "Read & listen"}</small></span><ChevronDown size={15}/></button>{topicIndex === index && <article><p>{topic.description}</p>{citation(topic.sources)}<button className={styles.primary} onClick={() => selectTab("notes")}>Open notes<ArrowRight size={15}/></button></article>}</div>)}</div></div>}
@@ -241,7 +254,6 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
       </div>
       {running && cursor && <div className={styles.cursor} aria-hidden="true" style={{ left: cursor.x, top: cursor.y }}><MousePointer2 size={27} fill="#28232e" /><span>Explore</span></div>}
     </div>
-    <div className={styles.caption}><span><i /> Interactive tour · fictional example</span><div><Link href="/example">Try it yourself <ArrowRight size={13} /></Link><button disabled={reduced} onClick={() => { audio.current?.pause(); if (playing) setPlaying(false); else { setTab("home"); setDetail(false); setSource(null); setDrawer(false); setStep(0); setCursor(null); setPlaying(true); } }} aria-label={reduced ? "Product walkthrough motion is off" : playing ? "Pause product walkthrough" : "Play product walkthrough"}>{playing ? <Pause size={13} /> : <Play size={13} />}{reduced ? "Motion off" : playing ? "Pause tour" : "Play tour"}</button></div></div>
     <audio ref={audio} src="/example/audio" preload="none" onPlay={() => setAudioPlaying(true)} onPause={() => setAudioPlaying(false)} onEnded={() => setAudioPlaying(false)} />
   </div>;
 }

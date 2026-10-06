@@ -12,8 +12,7 @@ export function LandingNarrative() {
   const [progress, setProgress] = useState(0);
   const [enhanced, setEnhanced] = useState(false);
   const [reduced, setReduced] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const staticMotion = reduced || paused;
+  const staticMotion = reduced;
 
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
@@ -22,8 +21,8 @@ export function LandingNarrative() {
       frame = null;
       if (!root.current) return;
       const bounds = root.current.getBoundingClientRect();
-      const travel = Math.max(260, Math.min(innerHeight * .8, bounds.height));
-      setProgress(Math.max(0, Math.min(1, (innerHeight * .8 - bounds.top) / travel)));
+      const travel = Math.max(1, bounds.height - innerHeight);
+      setProgress(Math.max(0, Math.min(1, -bounds.top / travel)));
     };
     const queue = () => { if (frame === null) frame = requestAnimationFrame(update); };
     const preference = () => { setReduced(media.matches); queue(); };
@@ -40,18 +39,17 @@ export function LandingNarrative() {
 
   return <section ref={root} className={styles.section} aria-label="Built around your class" data-scroll-narrative data-revealed={staticMotion || !enhanced ? words.length : Math.ceil(progress * words.length)}>
     <div className={styles.inner}>
-      <div className={styles.top}><span className={styles.label}>THE CLASS IS THE STARTING POINT</span><span className={styles.sticker}>Built for<br/><strong>Alimiyyah students.</strong></span></div>
+      <div className={styles.top}><span className={styles.label}>THE CLASS IS THE STARTING POINT</span></div>
       <p className={styles.statement}><span className={styles.screenReader}>{statement}</span><span aria-hidden="true">{words.map((word, index) => <span key={index} className={styles.word} style={{ opacity: !enhanced || staticMotion ? 1 : Math.round((.22 + .78 * Math.max(0, Math.min(1, progress * (words.length + 3) - index))) * 1000) / 1000 }}>{word}{" "}</span>)}</span></p>
-      <div className={styles.tickerHeader}><span>Built around the class you’re in.</span><button onClick={() => setPaused(value => !value)} aria-pressed={paused} disabled={reduced}>{reduced ? "Motion reduced" : paused ? "Follow scroll" : "Show full text"}</button></div>
+      <span className={styles.sticker}>Built for <strong>Alimiyyah students.</strong></span>
     </div>
   </section>;
 }
 
 export function LandingAudienceTicker() {
-  const [paused,setPaused]=useState(false);
   const [reduced,setReduced]=useState(false);
   useEffect(()=>{const media=matchMedia("(prefers-reduced-motion: reduce)");const update=()=>setReduced(media.matches);update();media.addEventListener("change",update);return()=>media.removeEventListener("change",update);},[]);
   return <section className={styles.audienceStrip} aria-label="Made for students of Islamic knowledge">
-    <div className={styles.audienceInner}><div className={styles.audienceLabel}><span>MADE FOR YOUR STUDY CIRCLE</span><button onClick={()=>setPaused(value=>!value)} aria-pressed={paused} disabled={reduced}>{reduced?"Motion reduced":paused?"Resume ticker":"Pause ticker"}</button></div><div className={`${styles.ticker} ${paused||reduced?styles.static:""}`} data-ticker-paused={paused||reduced}><ul className={styles.track} aria-label="Classes DarsLoop is built for">{[0,1].map(copy=><li key={copy} aria-hidden={copy===1?true:undefined}>{audiences.map(audience=><span key={audience}>{audience}<i aria-hidden="true">·</i></span>)}</li>)}</ul></div></div>
+    <div className={styles.audienceInner}><div className={styles.audienceLabel}><span>MADE FOR YOUR STUDY CIRCLE</span></div><div className={`${styles.ticker} ${reduced?styles.static:""}`} data-ticker-paused={reduced}><ul className={styles.track} aria-label="Classes DarsLoop is built for">{[0,1].map(copy=><li key={copy} aria-hidden={copy===1?true:undefined}>{audiences.map(audience=><span key={audience}>{audience}<i aria-hidden="true">·</i></span>)}</li>)}</ul></div></div>
   </section>;
 }

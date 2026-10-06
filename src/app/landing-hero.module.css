@@ -58,3 +58,7 @@
 @media(max-width:360px){.hero{padding-inline:12px}.site .title{font-size:32px}.site .header{padding-inline:10px}.header :global(.brand){font-size:20px}.closingCopy h2{font-size:32px}.practiceCopy h2,.sectionHeading h2{font-size:34px}.footerBrand :global(.brand){font-size:46px}}
 @media(prefers-reduced-motion:reduce){.faqGrid summary svg{transition:none}}
 .site .practice h2{font-family:"Bitter Variable",Georgia,serif}
+
+/* V43: the product frame meets the bottom of the hero. */
+.hero{padding-bottom:0}.stage{margin-bottom:0}.hero:after{background:linear-gradient(180deg,#fcfbf659 0,#fcfbf62a 36%,transparent 100%)}
+@media(max-width:760px){.hero{padding-bottom:0}.hero:after{background:linear-gradient(180deg,#fcfbf665 0,#fcfbf62b 38%,transparent 100%)}}

@@ -41,8 +41,8 @@ export default function Landing() {
         </div>
         <div id="product" className={styles.stage}><ProductTour lesson={lesson}/></div>
       </section>
-      <LandingAudienceTicker/>
       <LandingNarrative/>
+      <LandingAudienceTicker/>
       <LandingProductGrid lesson={lesson}/>
       <LandingLessonJourney lesson={lesson}/>
       <section id="practice" className={styles.practice} aria-labelledby="practice-title">
