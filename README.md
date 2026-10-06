@@ -4,7 +4,7 @@ Return to what your teacher taught. A student workspace for Islamic classes: rec
 
 **Live app:** [DarsLoop](https://darsloop-production.up.railway.app) · [Try the fictional example without an account](https://darsloop-production.up.railway.app/example).
 
-**Release status, 6 October 2026:** Linux Docker deployment and a fresh hosted upload/transcription/study journey passed. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed the earlier release checks. One owner-authorized signup email arrived and the account became confirmed; a clean first-click callback and general public email delivery remain unproven. No student pilot or measured learning improvement is claimed. See [release status](docs/RELEASE_STATUS.md).
+**Release status, updated 7 October 2026:** The latest V63 offline suite passed 525 tests across 63 files; TypeScript and the production build passed. See [release status](docs/RELEASE_STATUS.md) for the scope and limits. Earlier Linux Docker deployment and hosted upload/transcription/study checks remain separately scoped. The public product repository is [leowork2006-hash/DarsLoop](https://github.com/leowork2006-hash/DarsLoop); a fresh GitHub clone installed, built and passed the earlier release checks. One owner-authorized signup email arrived and the account became confirmed; a clean first-click callback and general public email delivery remain unproven. No student pilot or measured learning improvement is claimed.
 
 [Dated development record](docs/WORK-LOG.md) · [Religious sources and demo limits](RELIGIOUS-SOURCES.md)
 
@@ -34,6 +34,8 @@ Without AI keys, local questions use visibly labelled transcript search, and fre
 
 ## Connect fresh transcription and generation
 
+This repository contains no real API keys. The judging committee must use their own keys.
+
 Install [FFmpeg and FFprobe](https://ffmpeg.org/download.html) and check `ffmpeg -version` and `ffprobe -version` in your terminal. Copy `.env.example` to `.env.local` only if that file does not already exist. Then create your own [Groq key](https://console.groq.com/keys) and [Google AI Studio key](https://aistudio.google.com/apikey). Put them in `.env.local`, restart the app, then run `npm run worker` in a second terminal. Defaults are `whisper-large-v3` and `gemini-3.5-flash-lite`; availability and quota depend on your account. A second Whisper pass checks disagreements, and a generation audit checks support. Agreement does not guarantee correctness. Enable both `whisper-large-v3` and `whisper-large-v3-turbo` in Groq → Organization → Limits → Allowed Models, and check project restrictions too. A denied comparison model stops fresh transcription; API keys cannot override that setting.
 
 | Variable | Required for | Obtain / default |
@@ -41,16 +43,23 @@ Install [FFmpeg and FFprobe](https://ffmpeg.org/download.html) and check `ffmpeg
 | GROQ_API_KEY | Fresh speech-to-text | [Groq console](https://console.groq.com/keys) |
 | GEMINI_API_KEY | Fresh notes, chat and embeddings | [Google AI Studio](https://aistudio.google.com/apikey) |
 | ASR_MODEL / GENERATION_MODEL | Optional model override | Defaults above; choose an available compatible model |
+| TRANSCRIPTION_PROVIDER | Manual speech-to-text provider selection | `groq` by default; accepts `deepgram` or `speechmatics`. See [provider configuration](DEPLOYMENT.md#manual-transcription-backups-and-quota-queue). No automatic provider substitution |
+| TRANSCRIPTION_CONCURRENCY | Local audio-section processing width | Default `2`, clamped to `1`–`2`; see [provider configuration](DEPLOYMENT.md#manual-transcription-backups-and-quota-queue) |
+| DEEPGRAM_API_KEY | Optional Deepgram backup | Create a private key in the [Deepgram console](https://console.deepgram.com/) using its [API-key guide](https://developers.deepgram.com/docs/create-additional-api-keys) |
+| SPEECHMATICS_API_KEY | Optional Speechmatics backup | Create a private key in the [Speechmatics portal](https://portal.speechmatics.com/) using its [authentication guide](https://docs.speechmatics.com/get-started/authentication). DarsLoop limits this provider to explicit Arabic/English |
+| SPEECHMATICS_REGION | Speechmatics batch endpoint | Default `eu1`; DarsLoop also accepts `us1`. See [supported endpoints](https://docs.speechmatics.com/get-started/authentication#supported-endpoints) |
 | NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY | Cloud accounts | [Supabase project settings](https://supabase.com/dashboard) |
 | SUPABASE_SECRET_KEY | Private cloud server and worker | Supabase project API keys; never put it in client code |
 | DARSLOOP_BACKEND | Hosted authenticated mode | `supabase`; empty uses local SQLite |
 | DARSLOOP_ORIGIN | Public origin and cookie protection | Exact HTTPS host without a path |
+| DARSLOOP_EMAIL_CONFIRMATION_FLOW | Optional email-confirmation route | Empty means PKCE. Set `token_hash` only after configuring the matching [email template and redirects](docs/email-confirmation.md); see [Supabase email templates](https://supabase.com/docs/guides/auth/auth-email-templates) and [custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp) |
 | DARSLOOP_DATA_DIR | Private temporary/local data | Default `.data`; never commit it |
+| DARSLOOP_TRANSCRIPT_CACHE_SECRET | Optional local transcript reuse | Set your own private random secret as described in [transcript reuse](DEPLOYMENT.md#detailed-preparation-transcript-reuse-and-private-quiz-rounds). Empty disables local reuse; cloud mode uses the server secret |
 | PORT | Host-assigned listening port | Default 3000 |
 | FFMPEG_BIN / FFPROBE_BIN | Optional executable paths | Installed `ffmpeg` / `ffprobe` |
 | ESPEAK_BIN | Regenerating the fictional fixture only | Installed `espeak-ng` |
 
-Secrets stay server-side. Groq receives audio chunks; Google receives extracted source passages (audio transcript or PDF page text), questions and embeddings. The association reference service receives read-only source queries. Use permitted fictional or irreversibly anonymized material in this contest build; never upload real student details. Provider terms apply; no billing has been enabled by this build.
+Secrets stay server-side. The selected speech provider (Groq, Deepgram or Speechmatics) receives audio chunks; Google receives extracted source passages (audio transcript or PDF page text), questions and embeddings. The association reference service receives read-only source queries. Use permitted fictional or irreversibly anonymized material in this contest build; never upload real student details. Provider terms apply; no billing has been enabled by this build.
 
 ## Imports and recording
 
@@ -97,7 +106,7 @@ A printable guide is in [docs/Repository-and-Judge-Guide.pdf](docs/Repository-an
 
 Original project code is [MIT](LICENSE). Dependencies, fonts, external source content and logos retain their own terms: see [SOURCES.md](SOURCES.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Design references informed the interface; competitor code, assets and real recordings are not bundled. Built with AI assistance by Hamza Adam, team 965. Commit dates are actual creation dates; earlier local work is not reconstructed as invented historical commits.
 
-## Latest actual verification — 5 October 2026
+## Earlier hosted performance measurement — 5 October 2026
 
 The final V28 hosted fictional one-hour WAV completed in 55.112 seconds upload plus 121.374 seconds processing and passed 29 scoped assertions. Whole-container memory peaked at 841.5 MB under its 1000.0 MB limit, with zero OOM kills. These are synthetic sequential English measurements. They do not prove native classroom accuracy, concurrency or future uptime. V29 language/PDF and V30 chronological-note, private-round, cache and confirmation-route verification are recorded separately in [docs/QA.md](docs/QA.md).
 

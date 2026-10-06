@@ -23,6 +23,7 @@ import { ChatHeading, ChatStarters } from "./chat-starters";
 import { SourceExcerpt, SourcePassagePicker } from "./source-excerpt";
 import practiceStyles from "./practice-entry.module.css";
 import { demoReferences, hasCurrentDemoScript } from "@/lib/demo-references";
+import referenceStyles from "./lesson-references.module.css";
 
 export type LessonTab="notes"|"ask"|"practice"|"transcript"|"sources"|"catchup";
 export const Evidence=SourceEvidence;
@@ -136,12 +137,26 @@ function AudioTranscript({lesson,onPlay}:{lesson:Lesson;onPlay:(time:number)=>vo
   return <div className="transcript-workspace"><div className="tab-intro"><p className="eyebrow">THE CAPTURED EXPLANATION</p><h2>Your class transcript.</h2><p>{lesson.demo?"Exact fictional script with timings from generated audio. This is not an ASR test.":"Machine transcript. Unclear passages are marked; other transcription errors may remain."}</p></div><label className="search-field" data-tour="source-search"><Search size={17}/><span className="sr-only">Search transcript</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Find a word in this lesson…"/>{search&&<button className="icon-button" aria-label="Clear transcript search" onClick={()=>setSearch("")}><X size={15}/></button>}</label><div className="transcript-list">{shown.length?shown.map(s=><article key={s.id} className={`transcript-passage ${s.flags.length?"uncertain-passage":""}`}><button type="button" className="timestamp" aria-label={`Play transcript at ${formatTime(s.start)}`} onClick={()=>onPlay(s.start)}><Play size={11} weight="fill"/><bdi>{formatTime(s.start)}</bdi></button><div><p dir="auto">{s.text}</p>{s.flags.length>0&&<div className="uncertainty-label"><Headphones size={14}/>{uncertaintyText(s.flags,resolveMaterialLanguage(lesson.artifacts?.language,lesson.segments))} — {trustCopy(resolveMaterialLanguage(lesson.artifacts?.language,lesson.segments),"replay")}</div>}</div></article>):<div className="empty-state"><Search/><h3>No matching words.</h3><p>Try another spelling or a shorter phrase.</p></div>}</div></div>;
 }
 function DemoSources({preview}:{preview:boolean}) {
-  return <div className="sources-workspace">
-    <div className="tab-intro"><p className="eyebrow">ABOUT THIS EXAMPLE</p><h2>Sources for this example.</h2><p>These published pages were used to check the basic definitions in our fictional lesson.</p></div>
-    <div className="source-form">{demoReferences.map(source=><p key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer">{source.label} <ExternalLink size={15}/></a></p>)}</div>
-    <p className="quiet-note">The notes and practice come from the fictional script. These links do not mean the lesson has been reviewed by a scholar.</p>
-    <div className="tab-intro"><h3>Looking up a hadith from class?</h3><p>In your own lesson, choose the captured words to find possible hadith sources. A match helps you check the published wording; it does not confirm what your teacher meant.</p><p>This example has no hadith quotation to look up.</p></div>
-    {preview&&<Link className="button secondary" href="/signin">Start your own lesson<ArrowRight size={16}/></Link>}
+  const titleId=useId(),lookupTitleId=useId();
+  return <div className={`sources-workspace ${referenceStyles.workspace}`}>
+    <section aria-labelledby={titleId}>
+      <header className={referenceStyles.intro}><h2 id={titleId}>Sources for this example.</h2><p>We used these published pages to check the basic definitions in the fictional lesson.</p></header>
+      <ul className={referenceStyles.bibliography}>{demoReferences.map(source=>{
+        const [publisher,title]=source.label.split(" · ");
+        return <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" aria-label={source.label}>
+          <span className={referenceStyles.sourceIcon} aria-hidden="true"><BookOpen size={20}/></span>
+          <span className={referenceStyles.sourceText}><span className={referenceStyles.publisher}>{publisher}</span><span className={referenceStyles.sourceTitle}>{title}</span></span>
+          <ExternalLink size={17} aria-hidden="true"/>
+        </a></li>;
+      })}</ul>
+      <p className={referenceStyles.caveat}>Notes and practice follow the fictional script. These links are background references, not scholarly approval of this lesson.</p>
+    </section>
+    <section className={referenceStyles.lookup} aria-labelledby={lookupTitleId}>
+      <h3 id={lookupTitleId}><Search size={20} aria-hidden="true"/>Looking up a hadith from class?</h3>
+      <p>In your own lesson, choose the captured words to find possible sources on HadeethEnc. A wording match does not confirm what your teacher meant or give a religious ruling.</p>
+      <p className={referenceStyles.exampleNote}>This example has no hadith quotation to look up.</p>
+      {preview&&<Link className="button secondary" href="/signin">Start your own lesson<ArrowRight size={16}/></Link>}
+    </section>
   </div>;
 }
 function Sources({lesson,onPlay,onError}:{lesson:Lesson;onPlay:(time:number)=>void;onError:(s:string)=>void}) {
@@ -156,9 +171,9 @@ function Sources({lesson,onPlay,onError}:{lesson:Lesson;onPlay:(time:number)=>vo
     catch(failure){const text=message(failure);setError(text);onError(text);}
     finally{busyRef.current=false;setBusy(false);}
   }
-  return <div className="sources-workspace">
-    <div className="tab-intro"><p className="eyebrow">SEPARATE REFERENCE LOOKUP</p><h2>Possible hadith sources.</h2><p>{lesson.sourceKind==="pdf"?"Search HadeethEnc for a possible wording match from a cited PDF page. A match does not establish the author’s intended source or give a religious ruling.":"Search HadeethEnc for a wording match. A match does not confirm which narration your teacher meant or give a religious ruling."}</p></div>
-    <form className="source-form" onSubmit={search}>
+  return <div className={`sources-workspace ${referenceStyles.workspace}`}>
+    <header className={referenceStyles.intro}><h2>Possible hadith sources.</h2><p>{lesson.sourceKind==="pdf"?"Search HadeethEnc for a possible wording match from a cited PDF page. A match does not establish the author’s intended source or give a religious ruling.":"Search HadeethEnc for a wording match. A match does not confirm which narration your teacher meant or give a religious ruling."}</p></header>
+    <form className={`source-form ${referenceStyles.form}`} onSubmit={search}>
       <SourcePassagePicker lesson={lesson} value={segmentId} disabled={busy} onChange={id=>{setSegmentId(id);setWording("");setResult(null);setError("");}}/>
       {segment&&<SourceExcerpt key={segment.id} text={segment.text} label={lesson.sourceKind==="pdf"?"Source excerpt · check the PDF":"Captured words · check the audio"} actions={<SourceLink lesson={lesson} citation={{segmentId:segment.id,quote:segment.text}} onPlay={onPlay}/>}/>}
       {!!segment?.flags.length&&<p className="source-uncertain"><Headphones size={17}/><span>{lesson.sourceKind==="pdf"?"This page is flagged. Check the original PDF and use a clear passage.":"This passage has unclear wording. Replay it and choose a clear passage before looking up a source."}</span></p>}

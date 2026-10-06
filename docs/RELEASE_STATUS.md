@@ -1,8 +1,12 @@
 # Release status
 
-## Latest correction: V62
+## Latest correction: V63
 
-Fresh captures now flag recognizer disagreement at literal definitions such as “X refers to…”, including one-word substitutions that previously fell below the general disagreement threshold. The guard compares the captured words; it never chooses a religious spelling from memory. The capture-cache signature changes so fresh jobs cannot reuse a capture checked under the older rules. Existing completed lessons and the interface are retained. All 523 offline tests, TypeScript and the production build passed. No fresh provider request or account creation was performed in this pass; identical mistakes by both recognizers can still remain undetected.
+The References presentation now uses compact publisher/title links for the example's existing background sources, a concise scope notice and a separate explanation of hadith lookup. Source meaning, saved lessons and lookup boundaries are retained. Two rendering checks keep background references confined to the unchanged authored example. Documentation now covers every environment-template setting and distinguishes current results from dated earlier runs. On 7 October 2026, the latest offline suite passed 525 tests across 63 files; TypeScript and the final V63 production build passed. See [latest verification and limits](QA.md).
+
+## Earlier correction: V62
+
+Fresh captures now flag recognizer disagreement at literal definitions such as “X refers to…”, including one-word substitutions that previously fell below the general disagreement threshold. The guard compares the captured words; it never chooses a religious spelling from memory. The capture-cache signature changes so fresh jobs cannot reuse a capture checked under the older rules. Existing completed lessons and the interface are retained. On 7 October 2026, all 523 offline tests across 62 files, TypeScript and the production build passed. No fresh provider request or account creation was performed in this pass; identical mistakes by both recognizers can still remain undetected. See [latest verification and limits](QA.md).
 
 ## Earlier correction: V61
 
@@ -12,7 +16,7 @@ Narrow final safety and reliability corrections: early Arabic personal-validity 
 
 Extended advice/grading routing cues with source-reporting negative controls. Clarified existing upload availability notices, saved-file queue labels, fictional-data consent and hero/FAQ wording. Example notes are labelled as examples. Small mobile source text is more readable; the accepted layout and artwork are retained. Added a [dated development record](WORK-LOG.md); setup instructions and the existing religious-source register remain available. Current verification and its limits are in [QA.md](QA.md).
 
-## Latest correction: V48
+## Earlier correction: V48
 
 Existing unchanged built-in demos update once to the fictional five-pillars lesson. Edited and personal lessons are preserved, deletion is remembered, and source versions prevent old practice or shares from applying to the replacement content. The example logo matches the product; two landing questions now match their displayed answers. The example's References tab links the background sources and explains their limits. The landing layout and illustrations are retained.
 
@@ -25,7 +29,7 @@ Mobile/sidebar/player sizing and chat alignment are corrected. Review expands to
 These are changed-path checks; physical-device playback, native-language quality and uptime remain separately unproven. The previous verified release evidence below remains scoped to its dated run.
 
 
-Checked 6 October 2026.
+Documentation updated 7 October 2026. Earlier hosted checks retain their dated scope below.
 
 [DarsLoop](https://darsloop-production.up.railway.app) is live. [Try the fictional example](https://darsloop-production.up.railway.app/example) without signing in. Source is available in the [public repository](https://github.com/leowork2006-hash/DarsLoop).
 
@@ -40,6 +44,8 @@ Teacher review is optional. The source-first question handoff is not an approval
 Full-screen quiz, flashcards and lesson tests use supported saved material. Mixed lesson-test formats have real availability caps, raised previews and pausable motion. Written recall is self-checked separately from automatic marks. These are lesson exercises, not official syllabus exams.
 
 ## Verification
+
+The latest V63 offline suite passed 525 tests across 63 files; TypeScript and the final V63 production build passed. V62 passed 523 tests in 62 files, TypeScript and the production build; V61 passed 520 tests in 62 files. These counts describe separate dated runs, not new live provider processing. See the V63 entry in [QA.md](QA.md) for current validation status, scope and limits.
 
 The V30 chronological-note/private-round source and its confirmation-header correction deployed successfully. The combined source passed 288 unit tests; final header checks and actual hosted finishing flows are scoped in QA.md. The earlier V29 Arabic/PDF source also deployed successfully. The hosted health and fictional example returned HTTP 200; the final PDF journey passed 24 assertions. See [QA.md](QA.md) for the dated build, local and actual hosted checks. An authored fictional one-hour upload completed the full hosted student workflow in the prior release. Arabic and PDF checks are separately scoped; none proves native classroom accuracy or future service availability.
 

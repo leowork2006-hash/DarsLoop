@@ -1,6 +1,6 @@
 # Source, tool and license register
 
-Public product register, checked 5 October 2026. Core provider/source checks occurred on 4-5 October; import, release and fixture checks were updated on 5 October. Versions are pinned in package-lock.json. License notices are retained in dependencies and notices/. This is a provenance record, not a redistribution grant for external publisher content.
+Public product register, initially compiled 5 October and updated 7 October 2026. Individual sections retain their source-check dates. Versions are pinned in package-lock.json. License notices are retained in dependencies and notices/. This is a provenance record, not a redistribution grant for external publisher content.
 
 | Source/tool | Purpose | License or permission basis / origin |
 | --- | --- | --- |
@@ -12,7 +12,7 @@ Public product register, checked 5 October 2026. Core provider/source checks occ
 | Groq `whisper-large-v3` default | Original-language timed transcription | Hosted model/API, subject to Groq/OpenAI model terms; https://console.groq.com/docs/speech-to-text and https://github.com/openai/whisper |
 | Groq `whisper-large-v3-turbo` | Secondary key-word disagreement check | Same hosted API terms; small English and synthetic mixed-language checks. Correlated errors and omitted words remain possible; no calibrated confidence claim |
 | Google `gemini-embedding-001`, 768 dimensions | Version-scoped lesson semantic retrieval | https://ai.google.dev/gemini-api/docs/embeddings ; vectors are normalized locally, cached privately and deleted with the lesson |
-| Association MCP / HadeethEnc | Read-only candidate source records | Framework-approved source route; service terms at https://mcp.islamiccontent.org/terms.html ; canonical publisher https://hadeethenc.com . No blanket redistribution license is claimed |
+| Association MCP / HadeethEnc | Read-only candidate source records | Reference route listed in the organizer's scientific framework, not approval of DarsLoop or every returned match; service terms at https://mcp.islamiccontent.org/terms.html ; canonical publisher https://hadeethenc.com . No blanket redistribution license is claimed |
 | Supabase SSR 0.12.7 / JS 2.117.2 | Verified identity, private cloud database/storage and worker | MIT; https://github.com/supabase/ssr and https://github.com/supabase/supabase-js ; dependencies pinned, real database tests recorded separately |
 | Lucide React 1.51.0 / Phosphor React 2.1.10 | Interface icons | ISC / MIT; https://lucide.dev/license and https://github.com/phosphor-icons/react |
 | Busboy 1.6.0 | Bounded streaming multipart import | MIT; https://github.com/mscdex/busboy |
@@ -29,11 +29,11 @@ Public product register, checked 5 October 2026. Core provider/source checks occ
 
 ## External data and rights boundaries
 
-The bundled script, synthetic speech and prepared lesson material were made for DarsLoop. Speech was rendered with eSpeak NG 1.52.0 on 5 October, with preserved passage boundaries. No engine/voice-model code is distributed. The public example never claims fresh transcription or a live learner result.
+The bundled scripts, synthetic speech and prepared lesson material were made for DarsLoop. Speech was rendered with eSpeak NG 1.52.0, with preserved passage boundaries. The current five-pillars example and the retained legacy study-habits fixture have separate matching audio manifests. No engine/voice-model code is distributed. The public example never claims fresh transcription or a live learner result.
 
-Original raster illustrations were generated using Codex's built-in OpenAI image tool on 4-5 October. Code-native visuals were created for the project. Image-model version is not claimed where the tool did not expose it. No competitor artwork, template, code or metrics are bundled. AI output is not represented as exclusively hand-drawn artwork. OpenAI terms: https://openai.com/policies/terms-of-use/ .
+Original raster illustrations were generated using Codex's built-in OpenAI image tool on 4–6 October. Code-native visuals were created for the project. Image-model version is not claimed where the tool did not expose it. No competitor artwork, template, code or metrics are bundled. AI output is not represented as exclusively hand-drawn artwork. OpenAI terms: https://openai.com/policies/terms-of-use/ .
 
-Groq receives fresh permitted audio chunks; Google receives transcript passages, questions and embedding inputs. Models depend on account availability and quota. Actual authored checks are scoped in docs/QA.md; neither model agreement nor those checks establish broad accuracy. Existing external source grades remain publisher-attributed metadata; the app does not grade hadith itself. External reference text is retrieved read-only and not bundled as a redistributable database.
+The selected speech provider (Groq, Deepgram or Speechmatics) receives fresh permitted audio chunks; Google receives transcript passages, questions and embedding inputs. Models depend on account availability and quota. Actual authored checks are scoped in docs/QA.md; neither model agreement nor those checks establish broad accuracy. Existing external source grades remain publisher-attributed metadata; the app does not grade hadith itself. External reference text is retrieved read-only and not bundled as a redistributable database.
 
 The association source service initialized, listed tools and returned a small public Arabic candidate-record probe on 4 October. That does not prove arbitrary lecture matching, full-language coverage or uptime. Retrieved candidate wording, publisher, source URL, time and available metadata remain separate from class claims. Service terms: https://mcp.islamiccontent.org/terms.html .
 
@@ -96,7 +96,7 @@ Retrieval-format/feedback research informed this design, without claiming measur
 
 - `unpdf` 1.8.1 (MIT), parser based on PDF.js: https://github.com/unjs/unpdf . PDF.js text extraction API: https://mozilla.github.io/pdf.js/examples/ . No OCR, external book corpus or public book fixture is bundled. Source passages retain physical page numbers and literal extracted quotes.
 - Native transcription and translated audio are separate API paths: https://console.groq.com/docs/speech-to-text . DarsLoop uses transcription and a separate generation-language choice. Language hints, extraction, audits and script checks do not establish native-speaker quality or complete word retention.
-- Supabase Free per-file global limit and private bucket caps: https://supabase.com/docs/guides/storage/uploads/file-limits . Prepared audio is capped at48,000,000bytes and private PDFs at8,000,000bytes, within that global cap. Actual media/API checks are scoped in docs/QA.md.
+- Supabase Free per-file global limit and private bucket caps: https://supabase.com/docs/guides/storage/uploads/file-limits . Prepared audio is capped at 48,000,000 bytes and private PDFs at 8,000,000 bytes, within that global cap. Actual media/API checks are scoped in docs/QA.md.
 
 One student’s private feedback motivated Arabic note choices, longer uploads and PDF resources. It is qualitative usability input, not a controlled student pilot or measured learning gain. Personal identity, class recordings, feedback screenshots and diagnostic data are excluded from this repository.
 

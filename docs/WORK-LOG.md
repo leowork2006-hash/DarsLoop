@@ -1,6 +1,6 @@
 # Development record
 
-Compiled 6 October 2026 from dated local build records and actual public release history. This is a retrospective summary, not reconstructed or backdated Git history.
+Compiled 6 October, updated 7 October 2026 from dated local build records and actual public release history. This is a retrospective summary, not reconstructed or backdated Git history.
 
 ## Starting point
 
@@ -26,11 +26,13 @@ A further mobile and transcription pass corrected Study Plan dark-theme selector
 
 The final rubric pass added early referral for Arabic personal worship-validity questions and further Arabic, Urdu and English hadith-grading wording. It corrected malformed action requests, readable connection/proxy errors and upload-part recovery after a lost acknowledgement or expired signed link. Judge instructions now match the current sign-in buttons and two note views. The accepted layout and existing lessons were retained.
 
-The integrated offline suite passed 520 tests in 62 files, TypeScript and the production build. Prepared quiz/card explanations and original audio replay, source labels, mobile navigation and the existing signed-in Study Plan's dark appearance were checked live. No new cloud account, fresh upload, transcription or AI request was made in this pass. Older uploaded topics still showed speech-recognition term errors; these saved lessons were not silently rewritten. These finite checks do not establish universal safety, native classroom accuracy, learning gains or future uptime.
+The V61 integrated offline suite passed 520 tests in 62 files, TypeScript and the production build. Prepared quiz/card explanations and original audio replay, source labels, mobile navigation and the existing signed-in Study Plan's dark appearance were checked live. No new cloud account, fresh upload, transcription or AI request was made in this pass. Older uploaded topics still showed speech-recognition term errors; these saved lessons were not silently rewritten. These finite checks do not establish universal safety, native classroom accuracy, learning gains or future uptime.
 
 ## Evidence and disclosures
 
-A subsequent bounded ASR check reproduced a missing warning for one-word differences at explicit “X refers [here] to” definitions. The literal disagreement guard now covers those cues, with pronoun and duplicate-cue controls; no source spelling or timestamp is changed. The capture-cache revision prevents fresh jobs from reusing an older unchecked capture. Before release, a read-only cloud aggregate showed all eleven jobs finished and none queued/running/failed. The integrated offline suite passed 523 tests, TypeScript and the production build. No provider call, account creation or historical lesson reprocessing was performed. Shared recognizer mistakes remain possible.
+A subsequent V62 bounded ASR check reproduced a missing warning for one-word differences at explicit “X refers [here] to” definitions. The literal disagreement guard now covers those cues, with pronoun and duplicate-cue controls; no source spelling or timestamp is changed. The capture-cache revision prevents fresh jobs from reusing an older unchecked capture. Before release, a read-only cloud aggregate showed all eleven jobs finished and none queued/running/failed. The V62 integrated offline suite passed 523 tests in 62 files, TypeScript and the production build. No provider call, account creation or historical lesson reprocessing was performed. Shared recognizer mistakes remain possible.
+
+The V63 follow-up keeps the References section compact and consistent with the product: publisher/title links for the example's existing background sources, the same scope notice, and a separate hadith-lookup explanation. It adds two rendering checks so altered lesson text cannot inherit those background references. Documentation corrections cover the complete environment template, current source-route wording and exact test counts. The latest offline suite passed 525 tests in 63 files; TypeScript and the final V63 production build passed. No new provider run or lesson rewrite is claimed by this follow-up.
 
 - [QA and remaining gaps](QA.md) distinguishes local tests, hosted checks and unproven behavior.
 - [Religious sources and demo limits](../RELIGIOUS-SOURCES.md) records the primary background references.

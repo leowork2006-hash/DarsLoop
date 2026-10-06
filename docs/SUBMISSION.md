@@ -1,6 +1,6 @@
 # Submission checklist
 
-Checked 5 October 2026 against the supplied official Participant Guide (PDF positions 29-32), final portal/rubric screenshots, and current public terms. Muse's brief is a secondary checklist; conflicting claims do not override official requirements. The public guide fetch failed during this recheck; the previously supplied archived guide was used. Later portal notices have not been independently verified.
+Checked 5 October 2026 against the supplied official Participant Guide (PDF positions 29-32), final portal/rubric screenshots, and current public terms. Muse's brief is a secondary checklist; conflicting claims do not override official requirements. The public guide fetch failed during this recheck; the previously supplied archived guide was used. The later deadline extension was independently checked in the organizer’s announcement on 7 October 2026.
 
 ## Repository requirements
 
@@ -34,7 +34,9 @@ Features alone do not establish a score. Local/runtime checks are not beneficiar
 - Working live product URL and public GitHub URL.
 - Submit through the official portal and retain confirmation. This repository does not itself submit the entry.
 
-Published deadline in the supplied guide: 6 October 2026, 23:59 Riyadh / 7 October 2026, 01:59 Pakistan. Check any actual later organizer notice; do not assume an extension.
+Original deadline in the supplied guide: 6 October 2026, 23:59 Riyadh / 7 October 2026, 01:59 Pakistan.
+
+Organizer update, independently checked 7 October 2026: the final submission deadline was extended to **7 October 2026, 02:00 Riyadh / 04:00 Pakistan**. Check for any subsequent official update and retain the actual portal receipt.
 
 ## Release status
 

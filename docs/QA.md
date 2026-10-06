@@ -1,5 +1,23 @@
 # Verification and known limits
 
+## Latest integrated verification — 7 October 2026 (V63)
+
+The complete offline suite passed **525 tests across 63 files**, with zero failed tests or files. The JSON reporter contains 63 unique passing file results and 525 assertions; nested suite totals are not file counts. TypeScript and the final V63 production build passed. The build retained its existing dynamic-filesystem tracing warning; a completed build is not a warning-free-build claim.
+
+The narrow References update presents the example's two existing background-source links as compact publisher/title rows, with the same source-scope notice and a separate explanation of hadith lookup. Mobile controls and light/dark source cards use the product's existing visual style. Two rendering tests check that the current authored example shows its background sources and that changing the script does not incorrectly attach those references to different content. The lookup remains a possible published wording match, not authentication, a religious ruling or scholarly approval. Source text, existing lesson data and retrieval policy are unchanged.
+
+Documentation now covers all 21 environment-template names, including manual backup-provider selection, private provider keys, concurrency, region, local transcript reuse and email-confirmation opt-in. Local documentation file/heading links resolve. Earlier dated counts and provider/phone/learning limitations remain below. This offline run is not a new live provider call, fresh upload or beneficiary study, and does not establish the responsive appearance without the separately recorded browser check.
+
+## Earlier integrated verification — 7 October 2026 (V62)
+
+The complete offline suite passed **523 tests across 62 files**, with zero failed tests or files. The JSON reporter contains 62 unique file results and 523 assertions; nested suite totals are not file counts. TypeScript and the production build passed. The build retained its existing dynamic-filesystem tracing warning; completion is not a claim of a warning-free build.
+
+The final ASR correction flags literal “X refers [here] to” definition disagreements that previously fell below the general threshold. Authored recorded-response tests cover one-word substitutions, pronouns and duplicate cues. The guard reports disagreement without selecting a spelling from memory or changing source timestamps. Its cache revision prevents fresh jobs from reusing captures made under the older check. Existing completed lessons are not reprocessed or rewritten.
+
+The V61 pass separately checked prepared quiz/card feedback, original audio replay, source labels, mobile navigation and the existing signed-in Study Plan's dark appearance. A read-only pre-release queue aggregate found eleven finished jobs and none queued, running or failed. These are dated interface and operational observations, not a fresh upload/transcription, live AI test, concurrency benchmark, native-language evaluation or learner-outcome study. No account was created and no provider request was made in these final passes. Identical recognizer errors, native code-switch omissions, public email-delivery limits and future service availability remain possible.
+
+Older counts below are retained as evidence of their own dated runs; they are not the current suite total and are not added together.
+
 ## Focused audit follow-up — 6 October 2026 (V49)
 
 The full suite passed **426 tests across 57 files**; TypeScript and the production build passed. Twenty-one additional advice/grading phrases first reproduced a deterministic routing gap. The extended set now refers those requests before generation, including Arabic/Urdu music/alcohol cues and English scoring/authentication/judgment wording. Authored negative controls retain literal supported lesson reporting and ordinary quiz-score questions. The provider-spy check calls no external service. These finite tests are not an exhaustive safety result.
