@@ -142,7 +142,9 @@ const excerptStops=new Set(("as at by or but if then than so any all some everyt
   "what which who whom whose when where why how did does doing do was were been being " +
   "could would will shall have has had after before while during also still just only " +
   "ruling explain explained explaining explanation explanation s " +
-  "معلم المعلم استاد سبق درس الدرس طالب الطالب مثال المثال يقول قال شرح اشرح وضح وضاحت کریں").split(/\s+/));
+  "معلم المعلم استاد سبق درس الدرس طالب الطالب مثال المثال يقول قال شرح اشرح وضح " +
+  "وضاحت کریں کیا کیسے کیوں کب کہاں کون کس کے کی کا کو سے نے میں اور پر ہے ہیں تھا تھی تھے یہ اس " +
+  "بارے بتایا بتائیں بتا کہا کہتے").split(/\s+/));
 const smallNumbers=["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
 function excerptWord(word:string):string {
   if(/^(?:[0-9]|10)$/.test(word))return smallNumbers[Number(word)];
@@ -169,7 +171,10 @@ function relevantExcerpts(question:string,passages:StudyPassage[]):StudyPassage[
 }
 export function needsPersonalReferral(question:string) {
   const q=normalise(question);
-  const personal=/\b(?:i|my|me|mine|our|we)\b|(?:^|\s)(?:انا|لي|صلاتي|صومي|زوجي|زوجتي|میری|میرا|میرے|میں|ہم)(?=\s|$)/u.test(q);
+  // Urdu میں is both “I” and a locative postposition. These explicit source-
+  // reporting phrases are not personal pronouns; other first-person cues stay.
+  const personalContext=q.replace(/(?:^|\s)(?:کے بارے|سبق|کلاس|درس|کتاب|متن|عبارت|مثال)\s+میں(?=\s|$)/gu,' ');
+  const personal=/\b(?:i|my|me|mine|our|we)\b|(?:^|\s)(?:انا|لي|صلاتي|صومي|زوجي|زوجتي|میری|میرا|میرے|میں|ہم)(?=\s|$)/u.test(personalContext);
   return /\b(?:give|issue) (?:me |a )?fatwa|fatwa for (?:me|my)|is it (?:halal|haram) for me|am i (?:allowed|permitted)|what should i do about my|should i (?:divorce|marry)/iu.test(q)
     || /افتني|فتوى لي|میرے لیے فتوی/u.test(q)
     || personal&&(religiousTopic.test(q)||rulingRequest.test(q))&&/\b(?:valid|invalid|allowed|permitted|halal|haram|sin|invalidate)\b|\b(?:can|may|should|must|need) (?:i|we) (?:pray|fast|marry|divorce|do|make|give|pay|listen|drink|smoke|vape|accept|gamble|tattoo|commit|start)\b|حكم|يجوز|جائز|درست|صحیح|گناہ|کیا|هل|يصح|باطل/u.test(q);
