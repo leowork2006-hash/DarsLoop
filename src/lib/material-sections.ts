@@ -2,6 +2,7 @@ import { instructionLike } from "./evidence";
 import { NOTE_DETAIL_LIMITS, resolveNoteOptions } from "./note-options";
 import { isPdfPage, sourcePassages, validSourcePassage } from "./source-passages";
 import type { Artifacts, Lesson, PracticeItem, StudyNoteOptions, StudyPassage } from "./types";
+import { capturedMaterialLanguage, resolveMaterialLanguage, type PreparedMaterialLanguage } from "./study-material-language";
 import { supportedOverview } from "./material-overview";
 
 // Separate from the original ASR guard policy: a material change never invalidates
@@ -70,8 +71,12 @@ export function revisionPractice(artifacts: Artifacts, revision: number): Artifa
   return { ...artifacts, practice: artifacts.practice.map((item, index) => ({ ...item, id: `material-${revision}-item-${index + 1}` })) };
 }
 
-export function detailedPrepared(lesson: Lesson) {
-  return lesson.noteOptions?.enabled !== false && !!lesson.artifacts?.notes.length && lesson.artifacts.preparation?.revision === MATERIAL_GENERATION_REVISION && lesson.artifacts.preparation.detail === "detailed";
+export function savedMaterialLanguage(lesson: Lesson): PreparedMaterialLanguage {
+  return lesson.artifacts?.language || (lesson.artifacts?.notes.length ? capturedMaterialLanguage(lesson.artifacts.notes.map(note=>({text:note.heading+" "+note.text}))) : resolveMaterialLanguage(lesson.noteOptions?.language,sourcePassages(lesson)));
+}
+
+export function detailedPrepared(lesson: Lesson, language?: PreparedMaterialLanguage) {
+  return (!language || savedMaterialLanguage(lesson)===language) && lesson.noteOptions?.enabled !== false && !!lesson.artifacts?.notes.length && lesson.artifacts.preparation?.revision === MATERIAL_GENERATION_REVISION && lesson.artifacts.preparation.detail === "detailed";
 }
 
 export function sourceReadyForMaterial(lesson: Lesson) {
@@ -79,6 +84,7 @@ export function sourceReadyForMaterial(lesson: Lesson) {
   return complete && sourcePassages(lesson).some(p => validSourcePassage(p) && !p.flags.length && !instructionLike(p.text));
 }
 
-export function detailedOptions(lesson: Lesson): StudyNoteOptions {
-  return { ...resolveNoteOptions(lesson.noteOptions), enabled: true, detail: "detailed" };
+export function detailedOptions(lesson: Lesson, language?: PreparedMaterialLanguage): StudyNoteOptions {
+  const options=resolveNoteOptions(lesson.noteOptions);
+  return { ...options, enabled: true, detail: "detailed", language:language || (options.language && options.language!=="auto" ? options.language : savedMaterialLanguage(lesson)) };
 }

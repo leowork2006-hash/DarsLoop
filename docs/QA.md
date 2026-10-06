@@ -1,5 +1,11 @@
 # Verification and known limits
 
+## Notes language and compact layout correction — 6 October 2026
+
+TypeScript and final production build passed. Nineteen scoped unit checks passed. A rolled-back synthetic database fixture confirmed same-language reuse, explicit-language queueing, unchanged source, duplicate/busy guards, one job and service-only execution. Six grouped isolated browser checks covered centered individual-word headings, mobile account/library/breadcrumb fit, removed editor/aside cards, explicit preparation only, a single speed caret and320px notes without horizontal overflow. Three screenshots were inspected. An initial mock/selector/SQL-alias issue was corrected; an actual lesson-tab margin overflow was fixed. Initial reports remain private.
+
+Saved note views and language selection make no AI request. Another language requires explicit Prepare and replaces the saved active set only after success; it is not a multi-language cache. Private previously saved personal notes were not erased. No provider processing, native translation approval, physical phone or broad regression was run for this revision.
+
 ## V34 mobile workspace — 6 October
 
 - Mobile uses a full-height left drawer with the existing navigation, Page guide and Account/privacy. Bottom navigation and the separate header Guide/Settings are hidden. The drawer closes after navigation, on Escape/backdrop and when switching to desktop, and restores keyboard focus.

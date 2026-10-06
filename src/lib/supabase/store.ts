@@ -1,3 +1,4 @@
+import type { PreparedMaterialLanguage } from "../study-material-language";
 import { createHash, randomBytes } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -51,10 +52,10 @@ export async function queueLesson(l:Lesson,isNew=false){
  if(result.error?.code==="40001")throw new MaterialQueueError("conflict");
  checked(result);
 }
-export async function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number):Promise<DetailedQueueResult>{
+export async function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number,language?:PreparedMaterialLanguage):Promise<DetailedQueueResult>{
  checkMaterialRequest(version,materialRevision);
  const current=await rawLesson(id);if(!current||current.ownerId!==user||current.demo||current.shared)throw new MaterialQueueError("not_found");
- const result=await rpc<DetailedQueueResult|{error:MaterialQueueCode}>("darsloop_queue_detailed_material",{p_owner:user,p_lesson:id,p_source_version:version,p_material_revision:materialRevision,p_source_snapshot:materialSourceSnapshot(current),p_source_ready:!current.sourceImport&&sourceReadyForMaterial(current),p_note_options:detailedOptions(current),p_prepared_revision:MATERIAL_GENERATION_REVISION});
+ const result=await rpc<DetailedQueueResult|{error:MaterialQueueCode}>("darsloop_queue_detailed_material",{p_owner:user,p_lesson:id,p_source_version:version,p_material_revision:materialRevision,p_source_snapshot:materialSourceSnapshot(current),p_source_ready:!current.sourceImport&&sourceReadyForMaterial(current),p_note_options:detailedOptions(current,language),p_prepared_revision:MATERIAL_GENERATION_REVISION});
  if("error" in result)throw new MaterialQueueError(result.error);
  return result;
 }

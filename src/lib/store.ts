@@ -1,3 +1,4 @@
+import type { PreparedMaterialLanguage } from "./study-material-language";
 import { sourcePassages } from "./source-passages";
 import { DatabaseSync } from "node:sqlite";
 import { randomUUID, createHash, randomBytes } from "node:crypto";
@@ -105,11 +106,11 @@ export function queueLesson(l:Lesson,isNew=false) {
   }
   catch(e){db().exec("ROLLBACK");throw e;}
 }
-export function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number):DetailedQueueResult {
+export function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number,language?:PreparedMaterialLanguage):DetailedQueueResult {
   db().exec("BEGIN IMMEDIATE");
   try{
     const current=rawLesson(id),job=db().prepare("SELECT status FROM jobs WHERE lesson_id=?").get(id) as {status:string}|undefined;
-    const change=detailedQueueChange(current,user,version,materialRevision,job?.status);
+    const change=detailedQueueChange(current,user,version,materialRevision,job?.status,language);
     if(change.lesson){
       updateLesson(change.lesson,version);
       const queued=db().prepare("INSERT INTO jobs(id,lesson_id,status) VALUES(?,?,'queued') ON CONFLICT(lesson_id) DO UPDATE SET status='queued',lease=NULL,lease_until=NULL,error=NULL,attempts=0,available_at=0 WHERE jobs.status IN ('failed','done') RETURNING id").get(randomUUID(),id);

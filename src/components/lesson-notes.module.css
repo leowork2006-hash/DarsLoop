@@ -1,4 +1,4 @@
-.layout { min-width: 0; }
+.layout.layout.layout { display: block; width: 100%; max-width: 1050px; min-width: 0; margin-inline: auto; }
 .viewControls { display: inline-flex; flex-wrap: wrap; padding: 4px; gap: 3px; border: 1px solid var(--line, #deded8); border-radius: 11px; background: var(--ref-card, #fff); box-shadow: 0 2px 3px #19201a05; }
 .viewControls button { padding: 9px 15px; border: 0; border-radius: 7px; background: transparent; color: var(--muted, #67716a); font-size: 13px; font-weight: 500; min-height: 38px; cursor: pointer; }
 .viewControls button[aria-pressed="true"] { background: var(--ref-soft, #f1f0eb); color: var(--ink, #252b26); box-shadow: inset 0 1px 1px #fff8, 0 1px 2px #0000000d; }
@@ -63,3 +63,7 @@
   .editorActions > div:last-child { margin-inline-start: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .point > summary > svg { transition: none; } }
+
+.languageControl { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 12px; }
+.languageControl select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--ref-line); border-radius: 8px; background: var(--ref-card); color: var(--ref-text); font: inherit; }
+@media (max-width: 800px) { .prepare h3 { font-size: 18px; line-height: 1.4; } .prepare p { font-size: 12px; } .languageControl { justify-content: space-between; } .languageControl select { max-width: 65%; } .layout.layout.layout :global(.tab-intro h2) { font-size: 20px; } }

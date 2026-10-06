@@ -45,6 +45,9 @@
 .homeRoot.homeRoot.homeRoot :global(.home-chat-stage):has(:global(.home-welcome)),.homeRoot.homeRoot.homeRoot :global(.home-chat-empty):has(:global(.home-welcome)),.homeRoot.homeRoot.homeRoot .homeWorkspace:has(:global(.home-welcome)) { max-width: 1050px; }
 .heading { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 58px; margin: 5px 0 14px; }
 .workspace.workspace .heading h2,.homeRoot.homeRoot.homeRoot .heading h2 { font: 500 24px/1.4 var(--font-editorial); margin: 0; letter-spacing: -.025em; }
+.headingWord { display: inline-block; opacity: 0; transform: translateY(3px); transition: opacity 180ms ease-out, transform 180ms ease-out; }
+.headingWord[data-visible=true] { opacity: 1; transform: none; }
+.heading h2 { text-align: center; max-width: 100%; }
 .heading > button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: var(--ref-muted); border-radius: 50%; background: transparent; }
 .heading > button:hover { background: var(--ref-soft); }
 .starters { width: 100%; max-width: 1050px; margin: 12px auto 0; }
@@ -102,3 +105,5 @@
   .clear { font-size: 11px; min-height: 36px; padding-inline: 4px; }
   .workspace.workspace :global(.student-message) { max-width: 94%; }
 }
+
+@media (prefers-reduced-motion: reduce) { .headingWord { transition: none; transform: none; } }

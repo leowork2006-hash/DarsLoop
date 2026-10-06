@@ -5,7 +5,7 @@ import { authorizedLesson, deleteLesson, publicLesson, queueLesson, queueDetaile
 import { cloudMode } from "@/lib/supabase/config";
 import { configured } from "@/lib/ai";
 import { z } from "zod";
-const detailedRequest=z.strictObject({action:z.literal("prepare-detailed"),version:z.number().int().min(1).max(2147483647),materialRevision:z.number().int().min(0).max(2147483646)});
+const detailedRequest=z.strictObject({action:z.literal("prepare-detailed"),version:z.number().int().min(1).max(2147483647),materialRevision:z.number().int().min(0).max(2147483646),language:z.enum(["en","ur","ar"]).optional()});
 export const runtime="nodejs";
 type Context={params:Promise<{id:string}>};
 export async function GET(req:Request,c:Context){try{const user=await authenticate(req),l=await authorizedLesson(user,(await c.params).id);if(!l)throw new HttpError(404,"Lesson not found.");return json(publicLesson(l));}catch(e){return fail(e);}}
@@ -14,7 +14,7 @@ export async function POST(req:Request,c:Context){try{
   const b=await body(req);
   if(b.action==="prepare-detailed"){
     const parsed=detailedRequest.safeParse(b);if(!parsed.success)throw new HttpError(400,"Reload this lesson before preparing detailed notes.");
-    return json(await queueDetailedMaterial(user,l.id,parsed.data.version,parsed.data.materialRevision));
+    return json(await queueDetailedMaterial(user,l.id,parsed.data.version,parsed.data.materialRevision,parsed.data.language));
   }
   if(b.action!=="retry"||l.demo||l.status==="ready"&&!l.error)throw new HttpError(400,"This lesson does not need processing.");
   if(l.materialFailure==="detailed")return json(await queueDetailedMaterial(user,l.id,l.version,l.materialRevision||0));

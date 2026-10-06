@@ -1,3 +1,4 @@
+import type { PreparedMaterialLanguage } from "./study-material-language";
 import * as local from "./store";
 import * as cloud from "./supabase/store";
 import { cloudMode } from "./supabase/config";
@@ -13,7 +14,7 @@ export async function transcriptCandidates(owner:string,key:string,exclude:strin
 export async function listReviews(user:string){return backend().listReviews(user);}
 export async function listGroups(user:string){return backend().listGroups(user);}
 export async function queueLesson(l:Lesson,isNew=false){return backend().queueLesson(l,isNew);}
-export async function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number){return backend().queueDetailedMaterial(user,id,version,materialRevision);}
+export async function queueDetailedMaterial(user:string,id:string,version:number,materialRevision:number,language?:PreparedMaterialLanguage){return backend().queueDetailedMaterial(user,id,version,materialRevision,language);}
 export { MaterialQueueError } from "./material-queue";
 export async function claimJob(pdfOnly=false){return backend().claimJob(pdfOnly);}
 export async function heartbeat(id:string,lease:string){return backend().heartbeat(id,lease);}

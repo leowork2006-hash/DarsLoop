@@ -60,7 +60,7 @@ describe("atomic material-only queue with actual local storage",()=>{
     const l=fixture();store.queueDetailedMaterial(l.ownerId,l.id,1,0);const first=store.claimJob()!;
     store.jobCommit(first.id,first.lease,{...store.rawLesson(l.id)!,status:"ready",materialPreparation:undefined,error:"Authored generation outage"},true);
     expect(store.queueDetailedMaterial(l.ownerId,l.id,1,0)).toEqual({status:"queued",revision:1});const retry=store.claimJob()!;
-    const current=store.rawLesson(l.id)!;store.jobCommit(retry.id,retry.lease,{...current,status:"ready",error:null,materialRevision:1,materialPreparation:undefined,noteOptions:current.materialPreparation!.noteOptions,artifacts:{...current.artifacts!,preparation:{revision:MATERIAL_GENERATION_REVISION,detail:"detailed",totalSections:1,coveredSections:[0],uncoveredSections:[]}}},true);
+    const current=store.rawLesson(l.id)!;store.jobCommit(retry.id,retry.lease,{...current,status:"ready",error:null,materialRevision:1,materialPreparation:undefined,noteOptions:current.materialPreparation!.noteOptions,artifacts:{...current.artifacts!,language:"ar",preparation:{revision:MATERIAL_GENERATION_REVISION,detail:"detailed",totalSections:1,coveredSections:[0],uncoveredSections:[]}}},true);
     const completed=JSON.stringify(store.rawLesson(l.id)),completedJob=job(l.id);expect(store.queueDetailedMaterial(l.ownerId,l.id,1,0)).toEqual({status:"already_prepared",revision:1});expect(JSON.stringify(store.rawLesson(l.id))).toBe(completed);expect(job(l.id)).toEqual(completedJob);
   });
   it("resets a failed terminal job without changing its successful material revision or prior artifacts",()=>{

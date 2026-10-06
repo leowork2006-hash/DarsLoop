@@ -53,3 +53,42 @@
   .workspace-shell.is-reference-shell .workspace-main h1 { font-size: 24px; line-height: 1.3; overflow-wrap: anywhere; }
   .workspace-shell.is-reference-shell .workspace-main .page-intro h2 { font-size: 20px; line-height: 1.4; }
 }
+
+/* A bounded word reveal needs no persistent animation control. */
+.workspace-shell.is-reference-home .home-shortcuts { margin-top: 8px; }
+.workspace-shell.is-reference-shell .speed-control { position: relative; }
+.workspace-shell.is-reference-shell .speed-control select { appearance: none; -webkit-appearance: none; background-image: none; padding-inline-end: 19px; text-align: center; }
+.workspace-shell.is-reference-shell .speed-control > svg { position: absolute; inset-inline-end: 6px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ref-muted); }
+@media (max-width: 800px) {
+  .workspace-shell.is-reference-lesson .lesson-tabs { width: 100%; margin-inline: 0; padding-inline: 0; }
+  .workspace-shell.is-reference-lesson .reference-breadcrumb > span:first-child,
+  .workspace-shell.is-reference-lesson .reference-breadcrumb > svg:first-of-type { display: none; }
+  .workspace-shell.is-reference-shell .reference-breadcrumb > span:first-child { white-space: nowrap; }
+  .workspace-shell.is-reference-library .lessons-reference-page { padding: 20px 0 28px; }
+  .workspace-shell.is-reference-library .lessons-heading-icon { width: 40px; height: 40px; flex-shrink: 0; }
+  .workspace-shell.is-reference-library .lessons-heading-icon svg { width: 23px; height: 23px; }
+  .workspace-shell.is-reference-library .lessons-page-heading { gap: 14px; }
+  .workspace-shell.is-reference-library .lessons-page-heading h1 { font-size: 23px; }
+  .workspace-shell.is-reference-library .lessons-page-heading p { font-size: 12px; line-height: 1.6; margin-top: 6px; }
+  .workspace-shell.is-reference-library .lessons-heading-actions .lessons-button { min-height: 44px; padding: 8px 9px; font-size: 12px; }
+  .workspace-shell.is-reference-library .lessons-search input { font-size: 16px; min-height: 44px; }
+  .workspace-shell.is-reference-library .lessons-filter-controls { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; width: 100%; gap: 6px; }
+  .workspace-shell.is-reference-library .lessons-filter-controls select { width: 100%; max-width: none; min-height: 44px; font-size: 12px; padding-inline: 9px 18px; }
+  .workspace-shell.is-reference-library .lessons-view-toggle > button { width: 38px; height: 44px; }
+  .modal.account-settings-modal { width: calc(100% - 24px); max-height: calc(100dvh - 24px); }
+  .account-settings-modal .modal-inner { padding: 18px; }
+  .account-settings-modal .modal-header { align-items: center; gap: 10px; margin-bottom: 16px; }
+  .account-settings-modal .modal-header h2 { font-size: 23px; }
+  .account-settings-modal .modal-header > .icon-button { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  .account-settings-tabs { gap: 16px; margin-bottom: 20px; }
+  .account-settings-tabs button { font-size: 12px; min-height: 44px; }
+  .account-settings-identity { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 5px 12px; }
+  .account-settings-avatar { width: 44px; height: 44px; grid-row: 1 / 3; }
+  .account-settings-identity > div { min-width: 0; }
+  .account-settings-identity h3 { font-size: 18px; margin-bottom: 3px; }
+  .account-settings-identity p { font-size: 12px; }
+  .account-settings-mode { grid-column: 2; justify-self: start; font-size: 10px; }
+  .account-settings-details { padding-inline: 12px; }
+  .account-settings-details > div { gap: 8px; }
+  .account-settings-details :is(dt,dd),.account-settings-help { font-size: 12px; }
+}
