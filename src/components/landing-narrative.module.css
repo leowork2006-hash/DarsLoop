@@ -1,4 +1,23 @@
-.section{position:relative;min-height:180svh;background:#fbf5ef;color:#28232b;font-family:"Inter Variable",sans-serif}.inner{position:sticky;top:0;height:100svh;max-width:1140px;width:calc(100% - 72px);margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 0;gap:42px}.statement{font-size:clamp(30px,3.3vw,46px);line-height:1.6;letter-spacing:-.05em;font-weight:480;margin:0}.line{display:block}.word{transition:opacity .14s linear}.screenReader{position:absolute;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.badges{display:flex;align-items:center;justify-content:center;gap:13px;flex-wrap:wrap}.sticker{display:block;transform:rotate(-2deg);padding:10px 16px;background:#f3eaf8;border:1px solid #dcc8e7;outline:1px dashed #c0a3d0;outline-offset:-5px;border-radius:6px;color:#846593;font-family:"Bitter Variable",Georgia,serif;font-size:12px;line-height:1.6;box-shadow:2px 3px 0 #e5d6eb}.sticker strong{font-weight:500}.badge{font-size:12px;color:#736d62;background:#fffdf7;border:1px solid #ded8cd;border-radius:999px;padding:10px 16px}
-@media(max-width:700px){.inner{width:calc(100% - 36px);padding:45px 0;gap:30px}.statement{font-size:29px;line-height:1.55}.line+.line{margin-top:14px}.badges{gap:10px;max-width:310px}.sticker{font-size:11px}.badge{font-size:11px;padding:8px 14px}}
-@media(max-width:360px){.inner{width:calc(100% - 28px)}.statement{font-size:25px}.sticker{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.section{min-height:100svh}.word{transition:none}}
+.section{position:relative;min-height:180svh;background:#fbf5ef;color:#28232b;font-family:"Inter Variable",sans-serif}
+.inner{position:sticky;top:0;min-height:100svh;max-width:1140px;width:calc(100% - 72px);margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 0;gap:38px}
+.statement{font-size:clamp(30px,3.5vw,49px);line-height:1.6;letter-spacing:-.05em;font-weight:480;margin:0}
+.line{display:block;white-space:nowrap}
+.word{transition:opacity .14s linear}
+.screenReader{position:absolute;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.badges{display:flex;align-items:center;justify-content:center;gap:15px;flex-wrap:wrap}
+.sticker{display:block;transform:rotate(-2deg);padding:10px 16px;background:#f3eaf8;border:1px solid #dcc8e7;outline:1px dashed #c0a3d0;outline-offset:-5px;border-radius:6px;color:#846593;font-family:"Bitter Variable",Georgia,serif;font-size:12px;line-height:1.6;box-shadow:2px 3px 0 #e5d6eb}
+.sticker:nth-child(2){transform:rotate(2deg)}
+.sticker:nth-child(3){transform:rotate(-1deg)}
+.sticker strong{font-weight:500}
+.ticker{width:100%;margin-top:20px;padding:22px 0;border-top:1px solid #e9ded7;border-bottom:1px solid #e9ded7;overflow:hidden;mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent)}
+.track{display:flex;width:max-content;animation:audienceTravel 32s linear infinite;animation-play-state:paused}
+.ticker[data-running="true"] .track{animation-play-state:running}
+.tickerGroup{display:flex;align-items:center;flex-shrink:0;gap:34px;padding-right:34px}
+.tickerLabel{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:#938179}
+.tickerAudience{display:flex;align-items:center;gap:34px;font-family:"Bitter Variable",Georgia,serif;font-size:22px;letter-spacing:-.03em;color:#655369;white-space:nowrap}
+.tickerStar{font-family:Georgia,serif;font-size:15px;color:#b69ac9}
+@keyframes audienceTravel{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@media(max-width:700px){.inner{width:calc(100% - 36px);padding:45px 0;gap:30px}.statement{font-size:clamp(18px,5.55vw,30px);line-height:1.6;letter-spacing:-.055em}.line+.line{margin-top:10px}.badges{gap:10px;max-width:350px}.sticker{font-size:10px;padding:9px 13px}.ticker{margin-top:12px;padding:20px 0}.tickerGroup,.tickerAudience{gap:24px}.tickerGroup{padding-right:24px}.tickerAudience{font-size:18px}.tickerLabel{font-size:10px}.tickerStar{font-size:12px}}
+@media(max-width:360px){.inner{width:calc(100% - 28px)}.statement{font-size:18px}.badges{gap:11px}.sticker{font-size:10px}}
+@media(max-height:650px){.inner{padding:35px 0;gap:24px}.ticker{margin-top:0}}
+@media(prefers-reduced-motion:reduce){.section{min-height:100svh}.word{transition:none}.track{animation:none;transform:none}.ticker{mask-image:none}}

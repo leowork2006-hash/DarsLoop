@@ -45,6 +45,8 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
   const frame = useRef<HTMLDivElement>(null);
   const screen = useRef<HTMLDivElement>(null);
   const audio = useRef<HTMLAudioElement>(null);
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const drawerOpen = useRef(false);
   const [tab, setTab] = useState<Tab>("home");
   const [drawer, setDrawer] = useState(false);
   const [search, setSearch] = useState("");
@@ -81,19 +83,22 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
   const answer = answerIndex === -1 ? lesson.artifacts?.overview ?? "This example covers listening, catch-up and revision." : answerIndex === null ? "This prepared example covers listening, catch-up and revision. Try a question about one of those topics." : notes[answerIndex]?.text ?? "This topic is not covered in the example.";
   const answerWords = answer.split(/\s+/);
   const running = playing && !reduced && inView && visible;
+  drawerOpen.current = drawer;
 
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
-    const motion = () => { setReduced(media.matches); if (media.matches) setPlaying(false); };
+    const motion = () => { setReduced(media.matches); setPlaying(!media.matches); };
     setReduced(media.matches);
     setPlaying(!media.matches);
     media.addEventListener("change", motion);
     const visibility = () => setVisible(!document.hidden);
     visibility();
     document.addEventListener("visibilitychange", visibility);
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: .15 });
-    if (root.current) observer.observe(root.current);
-    return () => { media.removeEventListener("change", motion); document.removeEventListener("visibilitychange", visibility); observer.disconnect(); };
+    // The full frame can be taller than a phone viewport. Observe the visible
+    // content pane so a partly visible preview can still complete its tour.
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: .02 });
+    if (screen.current) observer.observe(screen.current);
+    return () => { media.removeEventListener("change", motion); document.removeEventListener("visibilitychange", visibility); observer.disconnect(); if (resumeTimer.current) clearTimeout(resumeTimer.current); };
   }, []);
 
   const submitQuestion = useCallback((value: string, manual: boolean) => {
@@ -126,13 +131,12 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
     const timer = setTimeout(() => {
       if ("target" in current) {
         const findTarget = () => Array.from(frame.current?.querySelectorAll<HTMLElement>(`[data-tour-target="${current.target}"]`) ?? []).find(node => node.getBoundingClientRect().width > 0);
-        let element = findTarget();
-        if (!element && current.target.startsWith("nav-")) {
-          setDrawer(true);
-          setTimeout(() => { const node = findTarget(); if (node && frame.current) { const rect = node.getBoundingClientRect(), bounds = frame.current.getBoundingClientRect(); setCursor({ x: rect.left - bounds.left + rect.width * .6, y: rect.top - bounds.top + rect.height * .55 }); } }, 80);
-        }
+        const element = findTarget();
+        // Mobile page changes happen directly. The drawer belongs to the user,
+        // so the automatic tour never opens it to imitate desktop navigation.
+        if (!element) setCursor(null);
         if (element && frame.current) {
-          if (screen.current?.contains(element)) {
+          if (tab !== "home" && screen.current?.contains(element)) {
             const control = element.getBoundingClientRect(), panel = screen.current.getBoundingClientRect();
             if (control.bottom > panel.bottom - 12) screen.current.scrollTop += control.bottom - panel.bottom + 12;
             else if (control.top < panel.top + 12) screen.current.scrollTop -= panel.top - control.top + 12;
@@ -164,12 +168,29 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
       setStep(index => (index + 1) % tourSteps.length);
     }, current.delay);
     return () => clearTimeout(timer);
-  }, [running, step, quiz?.answer, submitQuestion]);
+  }, [running, step, tab, quiz?.answer, submitQuestion]);
 
   useEffect(() => { audio.current?.pause(); setAudioNotice(""); }, [source, tab]);
   useEffect(() => { if (screen.current) screen.current.scrollTop = 0; }, [tab]);
 
-  const pause = () => setPlaying(false);
+  const pause = () => {
+    setPlaying(false);
+    setCursor(null);
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    const resume = () => {
+      const focused = document.activeElement;
+      const editing = focused instanceof HTMLElement && frame.current?.contains(focused) && focused.matches("input, textarea, [contenteditable=true]");
+      if (editing || drawerOpen.current || audio.current && !audio.current.paused) {
+        resumeTimer.current = setTimeout(resume, 4000);
+        return;
+      }
+      setTab("home"); setSent(""); setQuestion(""); setWords(0); setTypingHome(false); setSource(null); setStep(0);
+      setPlaying(!matchMedia("(prefers-reduced-motion: reduce)").matches);
+      resumeTimer.current = null;
+    };
+    // Give manual use priority, then return to the complete automatic sequence.
+    resumeTimer.current = setTimeout(resume, 16000);
+  };
   const selectTab = (next: Tab) => { pause(); setTypingHome(false); setTab(next); setSource(null); setDrawer(false); if (next === "home") { setSent(""); setQuestion(""); } };
   const openSource = (citation?: Citation) => { pause(); if (citation) setSource(citation); };
   const sourceSegment = source ? lesson.segments.find(segment => segment.id === source.segmentId) : undefined;
@@ -201,7 +222,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
     <div className={styles.sideFoot}><LockKeyhole size={14}/>Fictional example</div>
   </>;
 
-  return <div className={styles.wrap} ref={root} data-product-tour data-scene={tab} data-tour-running={running}>
+  return <div className={styles.wrap} ref={root} data-product-tour data-scene={tab} data-tour-running={running} data-tour-step={step}>
     <div className={styles.frame} ref={frame} onPointerDownCapture={pause} onFocusCapture={pause}>
       <div className={styles.chrome} aria-label="Browser-style product preview"><span className={styles.dots} aria-hidden="true"><i /><i /><i /></span><span className={styles.address}><LockKeyhole size={12}/><span>darsloop-production.up.railway.app/example</span></span><span className={styles.chromeTools} aria-hidden="true"><Search size={16}/><i>S</i></span></div>
       <div className={styles.app}>
@@ -220,7 +241,7 @@ export function ProductTour({ lesson }: { lesson: Lesson }) {
             else return;
             event.preventDefault(); selectTab(activeTabs[next].id); root.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
           }}>{activeTabs.map(({ id: tabId, label, icon: Icon }) => <button key={tabId} id={`${id}-${tabId}`} role="tab" aria-controls={`${id}-panel`} aria-selected={tab === tabId || tab === "review" && tabId === "quiz"} tabIndex={tab === tabId || tab === "review" && tabId === "quiz" ? 0 : -1} data-tour-target={tabId} onClick={() => selectTab(tabId)}><Icon size={17}/><span>{label}</span></button>)}</div>}
-          <div className={styles.screen} ref={screen} id={`${id}-panel`} role="tabpanel" aria-label={!activeTabs.length ? pageTitle : undefined} aria-labelledby={activeTabs.length ? `${id}-${tab === "review" ? "quiz" : tab}` : undefined} tabIndex={0}>
+          <div className={`${styles.screen} ${tab === "home" ? styles.homeScreen : ""}`} ref={screen} id={`${id}-panel`} role="tabpanel" aria-label={!activeTabs.length ? pageTitle : undefined} aria-labelledby={activeTabs.length ? `${id}-${tab === "review" ? "quiz" : tab}` : undefined} tabIndex={0}>
             {tab === "home" && <div className={styles.homeScene}>{sent ? <div className={styles.homeConversation}><div className={styles.sceneTop}><span className={styles.sceneTitle}>Ask your class</span><span className={styles.prepared}>Prepared example</span></div><div className={styles.userMessage}>{sent}</div><div className={styles.assistantMessage}><span className={styles.answerMark}><img src="/art/hoopoe-guide-v10.png" alt="" width={32} height={32}/></span><div><span className={styles.answerLabel}>From this lesson</span><p>{answerWords.slice(0, words).join(" ")} {words < answerWords.length && <i className={styles.typing} aria-label="Revealing Home answer"/>}</p>{words >= answerWords.length && answerIndex !== null && answerIndex >= 0 && citation(notes[answerIndex]?.evidence)}</div></div></div> : <div className={styles.homeWelcome}><span className={styles.mascot}><img src="/art/hoopoe-guide-v10.png" alt="" width={76} height={76}/></span><h3>How can I help?</h3><ChatStarters lesson={lesson} onAsk={text => { pause(); setTypingHome(false); submitQuestion(text, true); setQuestion(""); }} onNotes={() => selectTab("notes")} onQuiz={() => selectTab("quiz")} onCards={() => selectTab("cards")} onPlan={() => selectTab("plan")}/><div className={styles.homeShortcuts}><button onClick={() => selectTab("library")}><FolderOpen size={17}/>Materials</button><button onClick={() => selectTab("plan")}><Map size={17}/>Study plan</button><Link href="/example"><Users size={17}/>My classes</Link></div></div>}<form className={styles.homeComposer} onSubmit={event => { event.preventDefault(); pause(); setTypingHome(false); submitQuestion(question, true); setQuestion(""); }}><input data-tour-target="home-input" aria-label="Home example question" placeholder="Ask about your lesson…" value={question} maxLength={180} onChange={event => { setTypingHome(false); setQuestion(event.target.value); }}/><div><button type="button" aria-label="Choose example material" onClick={() => selectTab("library")}><Plus size={20}/></button><button type="button" className={styles.chooseLesson} onClick={() => selectTab("library")}><BookOpen size={15}/><span>{sent ? lesson.title : "Choose a lesson"}</span><ChevronDown size={12}/></button><Link href="/example" aria-label="Record in the full example"><Microphone size={18}/></Link><Link href="/example" aria-label="Open example upload"><Upload size={18}/></Link><button className={styles.homeSend} data-tour-target="home-send" aria-label="Send prepared home question" disabled={!question.trim()}><ArrowUp size={20}/></button></div></form><p className={styles.homeCaption}>Answers use your lesson. Ask a teacher for religious guidance.</p></div>}
             {tab === "library" && <div className={styles.libraryScene}><div className={styles.libraryCollections}><span>All lessons</span><span>My materials</span><span>Shared with me</span></div><label className={styles.librarySearch}><Search size={18}/><input aria-label="Search preview lessons" placeholder="Search your lessons…" value={search} onChange={event => setSearch(event.target.value)}/></label><div className={styles.libraryCount}><span>{`${lesson.title} ${lesson.course}`.toLowerCase().includes(search.toLowerCase()) ? "1 lesson" : "0 lessons"}</span><span>Newest first</span></div>{`${lesson.title} ${lesson.course}`.toLowerCase().includes(search.toLowerCase()) ? <button className={styles.libraryCard} data-tour-target="lesson" onClick={() => selectTab("notes")}><div className={styles.libraryCover}><Microphone size={35}/><div><span>Example note</span><strong>{notes[0]?.heading}</strong><p>{notes[0]?.text}</p></div><span className={styles.libraryDuration}><Headphones size={13}/>{formatTime(lesson.duration)}</span></div><div className={styles.libraryCardBody}><span>{lesson.course}<i><CheckCircle2 size={14}/>Ready</i></span><h4>{lesson.title}</h4><p>{notes.length} notes · {lesson.artifacts?.practice.filter(item => item.kind === "quiz").length} questions · {lesson.artifacts?.practice.filter(item => item.kind === "flashcard").length} cards</p><div>Fictional example<ArrowRight size={17}/></div></div></button> : <p>No lessons match this search.</p>}</div>}
             {tab === "review" && <div className={styles.reviewScene}><div className={styles.reviewBanner}><span>ONE POINT AT A TIME</span><h4>Try it. Check it. Hear it again.</h4><p>Choose a lesson. Each answer takes you back to the teacher’s words.</p></div><div className={styles.reviewLesson}><span>{lesson.course}</span><h4>{lesson.title}</h4><p>Fictional sample practice · {quiz ? "Quiz and flashcards" : "Class practice"}</p><div><button className={styles.primary} data-tour-target="start-quiz" onClick={() => selectTab("quiz")}>Start quiz<ArrowRight size={16}/></button><button onClick={() => selectTab("cards")}>Study cards<Layers size={16}/></button></div></div></div>}

@@ -18,10 +18,10 @@ export function useLandingLoop(length = 48) {
       const active = visible && !document.hidden && !media.matches;
       setRunning(active);
       if (active) timer = setInterval(() => {
-        if (Date.now() >= holdUntil.current && !element.matches(":focus-within")) setTick(value => (value + 1) % length);
+        if (Date.now() >= holdUntil.current && !element.querySelector("input:focus, textarea:focus, select:focus, [contenteditable=true]:focus")) setTick(value => (value + 1) % length);
       }, 300);
     };
-    const observer = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; update(); }, { threshold: .08 });
+    const observer = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; update(); }, { threshold: 0 });
     observer.observe(element);
     document.addEventListener("visibilitychange", update);
     media.addEventListener("change", update);

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, LockKeyhole, Play, Plus } from "lucide-react";
-import { Brand } from "@/components/brand";
+import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 import { LandingNarrative } from "@/components/landing-narrative";
 import { LandingProductGrid, LandingLessonJourney } from "@/components/landing-product-grid";
 import { ProductTour } from "@/components/product-tour";
@@ -24,11 +25,7 @@ export default function Landing() {
   const lesson = exampleLesson();
   return <div className={`editorial-site ${styles.site}`}>
     <a className="skip-link" href="#main">Skip to content</a>
-    <header className={`editorial-header ${styles.header}`}>
-      <Link href="/" aria-label="DarsLoop home"><Brand/></Link>
-      <nav aria-label="Main navigation"><a href="#features">Features</a><a href="#how-it-works">How it works</a><a href="#practice">Practice</a><a href="#questions">Questions</a></nav>
-      <div><Link className="editorial-signin" href="/signin">Sign in</Link><Link className="editorial-button small" href="/signin">Start learning <ArrowRight size={16}/></Link></div>
-    </header>
+    <LandingNav/>
     <main id="main">
       <section className={styles.hero} aria-labelledby="hero-title">
         <Image className={styles.clouds} src="/art/hero-clouds-v40.webp" alt="" fill sizes="100vw" preload unoptimized/>
@@ -45,7 +42,7 @@ export default function Landing() {
       <LandingProductGrid lesson={lesson}/>
       <LandingLessonJourney lesson={lesson}/>
       <section id="practice" className={styles.practice} aria-labelledby="practice-title">
-        <div className={styles.practiceInner}><div className={styles.practiceCopy}><h2 id="practice-title">Give the lesson<br/><em>a try.</em></h2><p>Try a question, turn over a card or take a mock exam. The class explanation is there when you need it.</p><p className={styles.sampleNote}>This is a fictional example. Practice here isn’t saved.</p><Link href="/example" className={styles.secondary}>Open the full example <ArrowRight size={17}/></Link></div><PracticePreview lesson={lesson}/></div>
+        <div className={styles.practiceInner}><div className={styles.practiceCopy}><h2 id="practice-title">Make a little room<br/><em>for recall.</em></h2><p>Try a question. Turn over a card. Check what you remember against the class explanation.</p></div><PracticePreview lesson={lesson}/><Link href="/example" className={styles.exampleLink}>Explore the full lesson <ArrowRight size={15}/></Link></div>
       </section>
       <section id="questions" className={styles.faq} aria-labelledby="faq-title" data-landing-faq>
         <div className={styles.sectionHeading}><h2 id="faq-title">Before your<br/><em>first lesson.</em></h2><p>Clear answers, so you know where to start.</p></div>
@@ -56,10 +53,6 @@ export default function Landing() {
         <div className={styles.closingCopy}><h2 id="closing-title">Keep the lesson close.<br/><em>Keep learning.</em></h2><p>Notes, class answers and practice.<br/>Start with the lesson you already have.</p><Link href="/signin" className={styles.primary}>Start with DarsLoop <ArrowRight size={18}/></Link></div>
       </section>
     </main>
-    <footer className={styles.footer}>
-      <div className={styles.footerLinks}><div className={styles.footerIntro}><Brand/><p>Notes and practice<br/>for Islamic classes.</p></div><div><h3>Get started</h3><Link href="/signin">Start learning</Link><Link href="/example">Explore the example</Link></div><div><h3>Your study tools</h3><a href="#features">Notes &amp; class answers</a><a href="#practice">Quizzes &amp; flashcards</a><a href="#how-it-works">How it works</a></div><div><h3>Good to know</h3><a href="#questions">Questions &amp; privacy</a><Link href="/signin">Your account</Link><p>Built by a student.<br/>For the class you’re in.</p></div></div>
-      <Link className={styles.footerBrand} href="/" aria-label="DarsLoop home"><Brand/></Link>
-      <div className={styles.footerBottom}><span>© 2026 DarsLoop</span><span>Your class is the starting point.</span></div>
-    </footer>
+    <LandingFooter/>
   </div>;
 }

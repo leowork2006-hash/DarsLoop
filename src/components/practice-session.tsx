@@ -243,7 +243,7 @@ export function PracticeSession({ lesson: initialLesson, items: requestedItems, 
         <div className={styles.brand}><Brand /><span className={styles.sessionLabel}>{isTest ? <ClipboardText size={16} /> : allFlashcards ? <Cards size={16} /> : <BookOpen size={16} />}<h2 id={titleId}>{title ?? (isTest ? "Mock exam" : allFlashcards ? "Flashcards" : "Quiz")}</h2></span></div>
         <div className={styles.headerActions}>
           {stage === "question" && <span className={`${styles.headerPill} ${seconds !== null && seconds <= 60 ? styles.timerEnding : ""}`}>{isTest && seconds !== null ? <><Timer size={17} /><bdi>{formatTime(seconds)}</bdi></> : <>{allFlashcards ? "Card" : "Question"} <bdi>{index + 1} / {items.length}</bdi></>}</span>}
-          <button type="button" className={styles.iconButton} aria-label={motionPaused ? "Resume scene motion" : "Pause scene motion"} aria-pressed={motionPaused} onClick={() => setMotionPaused(current => !current)}>{motionPaused ? <Play size={17} /> : <Pause size={17} />}</button>
+          {!preview && <button type="button" className={styles.iconButton} aria-label={motionPaused ? "Resume scene motion" : "Pause scene motion"} aria-pressed={motionPaused} onClick={() => setMotionPaused(current => !current)}>{motionPaused ? <Play size={17} /> : <Pause size={17} />}</button>}
           <button type="button" className={styles.iconButton} disabled={busy} aria-label="Close dialog" onClick={requestClose}><X size={22} /></button>
         </div>
       </header>

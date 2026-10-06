@@ -1,0 +1,54 @@
+.header {
+  position: absolute;
+  z-index: 30;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  width: calc(100% - 64px);
+  max-width: 1160px;
+  min-height: 64px;
+  padding: 8px 18px;
+  border: 1px solid #dcd2e0;
+  border-radius: 15px;
+  background: #fffdf8e8;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 18px #60446c05;
+  color: #27252a;
+  font-family: "Inter Variable", sans-serif;
+}
+
+.logo { display: inline-flex; align-items: center; min-height: 44px; flex-shrink: 0; }
+.logo :global(.brand-wordmark) { font-family: "Inter Variable", sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -.045em; gap: 5px; line-height: 1; }
+.logo :global(.brand-ai) { font: inherit; letter-spacing: inherit; align-self: center; opacity: 1; margin: 0; background: none; }
+.desktopNav, .actions { display: flex; align-items: center; }
+.desktopNav { gap: 22px; }
+.desktopNav a, .signin { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; color: #5e5660; }
+.desktopNav a:hover, .signin:hover { color: #76518f; }
+.actions { gap: 19px; flex-shrink: 0; }
+.start { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 10px 16px; border: 1px solid #27232b; border-radius: 9px; background: #27232b; color: #fffdf9; font-size: 12px; font-weight: 600; line-height: 1.3; transition: background .18s; }
+.start:hover { background: #403547; }
+.toggle, .mobileLabel, .mobileNav { display: none; }
+.header :is(a, button):focus-visible { outline: 3px solid #9268ad; outline-offset: 3px; }
+
+@media (max-width: 1020px) { .header { gap: 18px; } .desktopNav { gap: 15px; } .signin { display: none; } }
+@media (max-width: 860px) {
+  .header { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); top: 12px; width: calc(100% - 24px); min-height: 58px; padding: 6px 10px; border-radius: 12px; gap: 7px; }
+  .toggle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; justify-self: start; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #4c4253; }
+  .toggle:hover { background: #eee8f1; }
+  .logo { justify-self: center; }
+  .logo :global(.brand-wordmark) { font-size: 20px; }
+  .desktopNav, .desktopLabel { display: none; }
+  .mobileLabel { display: inline; }
+  .actions { justify-self: end; gap: 0; }
+  .start { min-height: 42px; padding: 9px 11px; gap: 6px; font-size: 11px; border-radius: 8px; }
+  .mobileNav:not([hidden]) { display: flex; flex-direction: column; position: absolute; top: calc(100% + 8px); left: 0; right: 0; padding: 9px; border: 1px solid #ded5e3; border-radius: 12px; background: #fffdf8; box-shadow: 0 14px 35px #40304722; }
+  .mobileNav a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 47px; padding: 11px 13px; border-radius: 7px; font-size: 13px; color: #4f4257; }
+  .mobileNav a:hover { background: #f1ebf5; }
+  .mobileNav a:last-child { border-top: 1px solid #e9e1ec; border-radius: 0 0 7px 7px; margin-top: 4px; padding-top: 14px; }
+}
+@media (max-width: 360px) { .header { padding-inline: 6px; gap: 3px; } .logo :global(.brand-wordmark) { font-size: 18px; gap: 4px; } .start { padding-inline: 9px; gap: 5px; } }
+@media (prefers-reduced-motion: reduce) { .start { transition: none; } }

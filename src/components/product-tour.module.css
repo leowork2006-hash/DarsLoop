@@ -17,3 +17,54 @@
 @keyframes browserLine{to{background-position:-200% 0}}@keyframes browserSweep{to{transform:translateX(500%)}}
 
 @media(prefers-reduced-motion:reduce){.chrome:before,.chrome:after{animation:none!important}.chrome:after{display:none}}
+
+/* V45: all six Home suggestions and the composer fit in one visible scene. */
+.app{height:650px}
+.homeScreen{overflow:hidden;padding-top:14px;padding-bottom:14px}
+.homeScene{gap:8px;justify-content:space-between}
+.homeWelcome{flex:0 0 auto;overflow:visible;padding:2px 0 0;width:100%}
+.homeWelcome>div:not(.homeShortcuts){flex:none;min-height:auto;overflow:visible;margin:0 auto;padding:0}
+.mascot{width:52px;height:52px}
+.homeWelcome>h3{font-size:24px;line-height:1.35;margin:8px 0 14px}
+.homeWelcome [data-tour="home-prompts"]{gap:7px}
+.homeWelcome [data-tour="home-prompts"]>button{min-height:43px;line-height:1.4}
+.homeWelcome [data-tour="home-prompts"]+button{min-height:34px;margin:3px auto 0;padding:4px 10px}
+.homeWelcome>.homeShortcuts{margin-top:5px;padding-bottom:0}
+.homeWelcome:has(button[aria-expanded=true])>.mascot,.homeWelcome:has(button[aria-expanded=true])>h3{display:none}
+.homeWelcome:has(button[aria-expanded=true]) [data-tour="home-prompts"]>button{font-size:12px;line-height:1.35}
+.homeShortcuts button,.homeShortcuts a{min-height:38px;padding:7px 11px}
+.homeComposer{margin-top:0;gap:6px;padding:11px 12px 8px}
+.homeComposer>input{min-height:35px}
+.homeCaption{margin:0;line-height:1.5}
+.homeConversation{flex:1;overflow:visible;padding:8px 4px 12px}
+.homeConversation .sceneTop{margin-bottom:16px}
+.homeConversation .assistantMessage{margin-top:18px}
+.homeConversation .assistantMessage p{line-height:1.75}
+@media(max-width:700px){
+  .app{height:650px}
+  .homeScreen{padding:12px 12px 13px}
+  .homeScene{gap:8px}
+  .homeWelcome{padding:0}
+  .mascot{width:44px;height:44px}
+  .homeWelcome>h3{font-size:22px;margin:6px 0 12px}
+  .homeWelcome [data-tour="home-prompts"]{gap:7px}
+  .homeWelcome [data-tour="home-prompts"]>button{min-height:45px;font-size:12px;line-height:1.4;padding:5px 7px 5px 5px}
+  .homeWelcome [data-tour="home-prompts"]>button>span:first-child{width:24px;height:24px}
+  .homeWelcome:has(button[aria-expanded=true]) [data-tour="home-prompts"]>button{font-size:11px;line-height:1.35}
+  .homeWelcome [data-tour="home-prompts"]+button{min-height:32px;padding:3px 10px}
+  .homeWelcome>.homeShortcuts{margin-top:5px;gap:5px}
+  .homeShortcuts button,.homeShortcuts a{min-height:38px;font-size:11px;padding:7px 8px}
+  .homeComposer{padding:10px 9px 7px;gap:6px}
+  .homeComposer>input{min-height:33px}
+  .homeCaption{font-size:10px;line-height:1.5;max-width:285px;align-self:center}
+  .homeConversation{padding:8px 0 10px}
+  .homeConversation .sceneTop{margin-bottom:14px}
+  .homeConversation .assistantMessage{margin-top:15px}
+  .homeConversation .assistantMessage p{font-size:12px;line-height:1.75}
+  .homeConversation .userMessage{font-size:12px;padding:10px 12px;line-height:1.6}
+}
+@media(max-width:360px){
+  .homeWelcome [data-tour="home-prompts"]>button{font-size:11px;min-height:45px}
+  .homeWelcome>h3{font-size:21px}
+  .homeShortcuts button,.homeShortcuts a{padding:7px 6px;gap:4px}
+}

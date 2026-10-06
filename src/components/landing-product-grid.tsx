@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Cards, Check, Headphones, LockKey, Microphone, Pause, Play, UploadSimple, ChatCircle } from "@phosphor-icons/react";
+import { ArrowRight, BookOpen, Cards, Check, Headphones, LockKey, Microphone, Pause, Play, ChatCircle } from "@phosphor-icons/react";
 import type { Lesson } from "@/lib/types";
 import { formatTime } from "@/lib/types";
 import { getStudyPlan } from "@/lib/study-plan";
@@ -75,10 +75,10 @@ export function LandingProductGrid({ lesson }: { lesson: Lesson }) {
 }
 
 const journey = [
-  { title: "Keep the original.", copy: "Record with permission, or add audio, video or a selectable-text PDF.", icon: UploadSimple },
-  { title: "Prepare the clear parts.", copy: "Available speech or page text is prepared. Unclear passages are flagged.", icon: Headphones },
-  { title: "Make room to practise.", copy: "Supported passages become notes, questions and flashcards.", icon: BookOpen },
-  { title: "Check the explanation.", copy: "Return to the source behind a point, then choose your next study step.", icon: Cards },
+  { title: "Keep the original.", copy: "Record with permission, or add audio, video or a selectable-text PDF.", art: "original" },
+  { title: "Prepare the clear parts.", copy: "Available speech or page text is prepared. Unclear passages are flagged.", art: "clear" },
+  { title: "Make room to practise.", copy: "Supported passages become notes, questions and flashcards.", art: "practice" },
+  { title: "Check the explanation.", copy: "Return to the source behind a point, then choose your next study step.", art: "source" },
 ] as const;
 const tools = [{id:"notes",label:"Notes",icon:BookOpen},{id:"ask",label:"Ask",icon:ChatCircle},{id:"quiz",label:"Quiz",icon:Check},{id:"cards",label:"Cards",icon:Cards}] as const;
 type Tool = typeof tools[number]["id"];
@@ -95,8 +95,9 @@ export function LandingLessonJourney({lesson}:{lesson:Lesson}) {
   const segment=lesson.segments.find(segment=>segment.id===passage?.segmentId);
   return <>
     <section id="how-it-works" className={styles.journey} aria-labelledby="journey-title" data-lesson-journey>
+      <img className={styles.journeyClouds} src="/art/hero-clouds-v40.webp" alt="" loading="lazy"/>
       <div className={styles.heading}><h2 id="journey-title">From a lesson<br/><em>to your next study session.</em></h2><p>One place for the material you bring and the practice that follows.</p></div>
-      <div className={styles.steps}>{journey.map(({title,copy,icon:Icon},index)=><article key={title}><div className={styles.stepArt}><span><Icon size={27}/></span><i aria-hidden="true">{String(index+1).padStart(2,"0")}</i></div><h3>{title}</h3><p>{copy}</p></article>)}</div>
+      <div className={styles.steps}>{journey.map(({title,copy,art})=><article key={title}><div className={styles.stepArt}><img src={`/art/lesson-${art}-v45.webp`} alt="" width={140} height={140} loading="lazy"/></div><h3>{title}</h3><p>{copy}</p></article>)}</div>
       <p className={styles.journeyNote}>Long lessons can take longer to prepare. Your lesson shows progress and any action needed.</p>
     </section>
     <section ref={loop.root} className={styles.connected} aria-labelledby="connected-title" data-source-diagram data-loop-tick={loop.tick} data-loop-running={loop.running} data-tool={selected} onPointerDown={loop.interact} onKeyDown={loop.interact}>

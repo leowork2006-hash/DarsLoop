@@ -1,0 +1,24 @@
+.preview { min-width: 0; }
+.preview > div > :global(.tab-intro) { display: none; }
+.preview [data-tour="lesson-practice"] { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; margin: 0; }
+.preview [data-tour="lesson-practice"] > article { background: #fffdf8; border: 1px solid #e3ded3; border-radius: 17px; padding: 26px 23px 23px; box-shadow: none; }
+.preview [data-tour="lesson-practice"] > article > div:first-child { width: 48px; height: 48px; border-radius: 12px; background: #e8ecdf; margin: 0 0 23px; }
+.preview [data-tour="lesson-practice"] > article:nth-child(2) > div:first-child { background: #e9e0ef; }
+.preview [data-tour="lesson-practice"] > article:nth-child(3) > div:first-child { background: #e3edef; }
+.preview [data-tour="lesson-practice"] > article > div:first-child svg { width: 24px; height: 24px; padding: 0; background: transparent; border: 0; box-shadow: none; transform: none; color: #72677b; }
+.preview [data-tour="lesson-practice"] h3 { font: 450 28px/1.4 "Bitter Variable",Georgia,serif; margin: 0 0 11px; letter-spacing: -.035em; }
+.preview [data-tour="lesson-practice"] p { font: 400 13px/1.85 "Inter Variable",sans-serif; color: #777168; margin: 0 0 23px; }
+.preview [data-tour="lesson-practice"] article > span { font-size: 10px; color: #989184; margin: auto 0 18px; }
+.preview [data-tour="lesson-practice"] article > button { margin: 0; width: 100%; min-height: 43px; padding: 10px 12px; border-radius: 8px; background: #f5f0f8; border: 1px solid #d7c8df; color: #675175; box-shadow: 0 2px 0 #e8dced; font: 550 12px/1.5 "Inter Variable",sans-serif; }
+.preview [data-tour="lesson-practice"] article > button:hover { background: #eadff1; }
+.preview [data-tour="lesson-practice"] article > button:focus-visible { outline: 2px solid #9775ad; outline-offset: 4px; }
+.preview :global(.editorial-preview-caption) { margin: 20px 0 0; font: 400 10px/1.8 "Inter Variable",sans-serif; text-align: center; color: #9a9288; }
+@media (max-width: 700px) {
+  .preview [data-tour="lesson-practice"] { grid-template-columns: 1fr; gap: 13px; }
+  .preview [data-tour="lesson-practice"] > article { display: grid; grid-template-columns: 47px 1fr; gap: 0 15px; padding: 21px; }
+  .preview [data-tour="lesson-practice"] > article > div:first-child { grid-row: span 2; width: 43px; height: 43px; margin: 2px 0 0; }
+  .preview [data-tour="lesson-practice"] h3 { font-size: 22px; margin: 0 0 6px; }
+  .preview [data-tour="lesson-practice"] p { font-size: 11px; margin: 0 0 14px; }
+  .preview [data-tour="lesson-practice"] article > span { grid-column: 2; margin: 0 0 14px; font-size: 9px; }
+  .preview [data-tour="lesson-practice"] article > button { grid-column: 2; font-size: 11px; }
+}

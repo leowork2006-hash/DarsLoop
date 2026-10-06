@@ -68,3 +68,7 @@
 @keyframes wordmarkBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @media(max-width:700px){.closing{width:calc(100% - 12px);min-height:470px;border-radius:17px}.footer{padding-top:30px}.footerLinks{gap:25px 18px;padding-bottom:22px}.footerBrand{margin:19px 0 22px}.footerBrand :global(.brand){font-size:clamp(44px,12vw,84px)}.footerBottom{padding-top:17px}}
 @media(prefers-reduced-motion:reduce){.footerBrand :global(.brand){animation:none}}
+
+/* V45: a quiet practice shelf using the actual practice interface. */
+.practice{padding:80px 0;background:#f4f3eb}.practiceInner{display:flex;flex-direction:column;gap:30px;width:calc(100% - 80px);max-width:1000px}.practiceInner>div{width:100%}.practiceCopy{text-align:center}.practiceCopy h2{margin:0 0 22px;font-size:clamp(35px,4vw,53px)}.practiceCopy>p{max-width:480px;margin:0 auto;color:#777168;font-size:14px}.exampleLink{display:inline-flex;align-items:center;gap:9px;font-size:12px;color:#806291;min-height:36px}.exampleLink:focus-visible{outline:2px solid #9775ad;outline-offset:4px}
+@media(max-width:700px){.practice{padding:58px 0}.practiceInner{width:calc(100% - 32px);gap:25px}.practiceCopy h2{font-size:35px}.practiceCopy>p{font-size:12px;max-width:315px}.clouds{object-position:28% center}.hero::after{background:linear-gradient(180deg,#fcfbf670,#fcfbf64a 40%,#fcfbf630 72%,transparent)}}
