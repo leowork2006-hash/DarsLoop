@@ -30,6 +30,8 @@ The integrated offline suite passed 520 tests in 62 files, TypeScript and the pr
 
 ## Evidence and disclosures
 
+A subsequent bounded ASR check reproduced a missing warning for one-word differences at explicit “X refers [here] to” definitions. The literal disagreement guard now covers those cues, with pronoun and duplicate-cue controls; no source spelling or timestamp is changed. The capture-cache revision prevents fresh jobs from reusing an older unchecked capture. Before release, a read-only cloud aggregate showed all eleven jobs finished and none queued/running/failed. The integrated offline suite passed 523 tests, TypeScript and the production build. No provider call, account creation or historical lesson reprocessing was performed. Shared recognizer mistakes remain possible.
+
 - [QA and remaining gaps](QA.md) distinguishes local tests, hosted checks and unproven behavior.
 - [Religious sources and demo limits](../RELIGIOUS-SOURCES.md) records the primary background references.
 - [Sources and tools](../SOURCES.md) and [third-party notices](../THIRD_PARTY_NOTICES.md) disclose external components and terms.

@@ -15,6 +15,21 @@ describe("audio disagreement boundary",()=>{
     const wrong="The Arabic word adapt is explained.";
     expect(compareTranscriptions([passage(wrong)],second(wrong),20)[0].flags).toEqual([]);
   });
+  it("flags literal definition-term substitutions even when only one word differs",()=>{
+    for(const [original,other] of [["Sawm refers here to fasting during Ramadan.","Psalm refers here to fasting during Ramadan."],["Hajj refers to pilgrimage to Makkah.","Hedge refers to pilgrimage to Makkah."],["Shahadah refers to the testimony of faith.","Shahada refers to the testimony of faith."]]){
+      const input=[passage(original)],snapshot=structuredClone(input);
+      const checked=compareTranscriptions(input,second(other),20)[0];
+      expect(checked.flags).toEqual(["Key wording differs between two transcriptions. Replay this moment."]);
+      expect(checked.text).toBe(original);expect(checked.start).toBe(20);expect(checked.end).toBe(25);expect(input).toEqual(snapshot);
+    }
+  });
+  it("does not infer a religious spelling when both recognizers agree or flag ordinary referring pronouns",()=>{
+    for(const same of ["Psalm refers here to fasting during Ramadan.","Hedge refers to pilgrimage to Makkah."]){
+      expect(compareTranscriptions([passage(same)],second(same),20)[0].flags).toEqual([]);
+    }
+    expect(compareTranscriptions([passage("This refers to the original lesson.")],second("It refers to the original lesson."),20)[0].flags).toEqual([]);
+    expect(compareTranscriptions([passage("The word adab refers to a class definition.")],second("Adab refers to a class definition."),20)[0].flags).toEqual([]);
+  });
   it("catches Arabic and Urdu negation and term changes without rewriting the source",()=>{
     for(const [original,other] of [["لم يكتب الطالب الجواب.","كتب الطالب الجواب."],["اگر واضح نہ ہو، مت لکھیں۔","اگر واضح ہو، لکھیں۔"],["كلمة الفاعل تعني من قام بالفعل.","كلمة الفعل تعني من قام بالفعل."],["لفظ مراجعت کی وضاحت سنیں۔","لفظ مراجعات کی وضاحت سنیں۔"]]){
       const result=compareTranscriptions([passage(original)],second(other),20)[0];

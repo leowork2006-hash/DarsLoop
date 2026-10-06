@@ -9,7 +9,17 @@ function unmatched(words:string[],other:string[]){
   const available=new Map<string,number>();for(const word of other)available.set(word,(available.get(word)||0)+1);
   return words.map(word=>{const count=available.get(word)||0;if(count){available.set(word,count-1);return false;}return true;});
 }
-function namedTerms(text:string){return [...text.matchAll(/(?:\b(?:word|term|called)|(?:^|\s)(?:كلمة|كلمه|مصطلح|لفظ|اصطلاح))\s+["“'«]?([\p{L}\p{M}-]+)/giu)].map(m=>wording(m[1])).sort();}
+const referringPronouns=new Set(["this","that","it","these","those","he","she","they","we","you","i","which","what","who"]);
+function namedTerms(text:string){
+  const terms=[...text.matchAll(/(?:\b(?:word|term|called)|(?:^|\s)(?:كلمة|كلمه|مصطلح|لفظ|اصطلاح))\s+["“'«]?([\p{L}\p{M}-]+)/giu)].map(m=>wording(m[1]));
+  // A literal definition cue can name a term before it, not only after
+  // "word/term/called". Compare the captured words; never supply a spelling
+  // from a glossary or infer which recognizer is right.
+  for(const match of text.matchAll(/(?:^|[\s("“'«])([\p{L}\p{M}-]+)["”'»]?\s+refers(?:\s+here)?\s+to\b/giu)){
+    const term=wording(match[1]);if(!referringPronouns.has(term)&&!terms.includes(term))terms.push(term);
+  }
+  return terms.sort();
+}
 export function compareTranscriptions(primary:Segment[],secondary:Speech[],offset:number) {
   // Recognizers split the same sentence differently. Compare connected timing
   // groups so a merged condition + negation is not mistaken for missing words.

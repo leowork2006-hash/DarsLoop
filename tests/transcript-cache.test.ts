@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { completeCheckpoint, reusableTranscript, transcriptContext, validCompleteCheckpoint, type TranscriptConfig } from "../src/lib/transcript-cache";
+import { completeCheckpoint, reusableTranscript, transcriptContext, validCompleteCheckpoint, TRANSCRIPT_CACHE_REVISION, type TranscriptConfig } from "../src/lib/transcript-cache";
 import type { Lesson } from "../src/lib/types";
 const dir=mkdtempSync(path.join(os.tmpdir(),"darsloop-cache-unit-")),audio=path.join(dir,"prepared"),otherAudio=path.join(dir,"changed");
 writeFileSync(audio,"authored prepared audio bytes");writeFileSync(otherAudio,"changed prepared audio bytes");
@@ -66,5 +66,13 @@ describe("owner-scoped complete original ASR reuse",()=>{
   it("invalidates the pre-recheck capture pipeline signature and accepts legacy segments without metadata",async()=>{
     const {source,context}=await fixture();expect(validCompleteCheckpoint(source,context)).toBe(true);
     const changed=await transcriptContext(source.ownerId,audio,{...config,revision:"original-asr-v2-600s-8s-flac-one-12s-recheck"},secret);expect(validCompleteCheckpoint(source,changed)).toBe(false);
+  });
+  it("does not reuse a pre-definition-guard capture for a fresh target or alter its saved words",async()=>{
+    const {source,target}=await fixture(),before="original-asr-v2-600s-8s-flac-one-12s-recheck";
+    const historical=await transcriptContext(source.ownerId,audio,{...config,revision:before},secret);
+    source.transcriptCache=completeCheckpoint(source,historical);const snapshot=structuredClone(source);
+    const current=await transcriptContext(source.ownerId,audio,{...config,revision:TRANSCRIPT_CACHE_REVISION},secret);
+    expect(TRANSCRIPT_CACHE_REVISION).not.toBe(before);expect(validCompleteCheckpoint(source,historical)).toBe(true);
+    expect(validCompleteCheckpoint(source,current)).toBe(false);expect(reusableTranscript(source,target,current)).toBeNull();expect(source).toEqual(snapshot);
   });
 });

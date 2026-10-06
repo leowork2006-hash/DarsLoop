@@ -1,6 +1,10 @@
 # Release status
 
-## Latest correction: V61
+## Latest correction: V62
+
+Fresh captures now flag recognizer disagreement at literal definitions such as “X refers to…”, including one-word substitutions that previously fell below the general disagreement threshold. The guard compares the captured words; it never chooses a religious spelling from memory. The capture-cache signature changes so fresh jobs cannot reuse a capture checked under the older rules. Existing completed lessons and the interface are retained. All 523 offline tests, TypeScript and the production build passed. No fresh provider request or account creation was performed in this pass; identical mistakes by both recognizers can still remain undetected.
+
+## Earlier correction: V61
 
 Narrow final safety and reliability corrections: early Arabic personal-validity referral, additional hadith-grading wording, invalid action-body rejection, readable connection errors and bounded upload-part recovery. Judge instructions match the current sign-in buttons and two note views. Layout and existing lessons are retained. The integrated offline suite passed 520 tests in 62 files, TypeScript and the production build. Current checks are finite; no new cloud account or fresh provider-processing test was performed in this pass. See the [development record](WORK-LOG.md) for the scope and remaining transcription limits.
 
