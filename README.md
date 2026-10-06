@@ -22,7 +22,7 @@ Download the repository ZIP (Code > Download ZIP), extract it and run these comm
 
 1. Open **Explore the app** on the landing page. Notes and transcripts are clearly labelled prepared fictional material.
 2. In **Ask this lesson**, ask “Is vaping halal?” The app refers rulings to a teacher.
-3. Ask “What should I do after missing a lesson?” Follow the source passage and play its audio.
+3. Ask “What are the five pillars named in this lesson?” Follow the source passage and play its audio.
 4. Ask about astronomy, which is outside the example. The app says it is not covered.
 5. Read the transcript, then try **Quiz**, **Flashcards**, **Catch me up** and **Teacher’s terms**.
 6. Sign in to find **Demo lesson · The five pillars of Islam** in My lessons. This is a prepared fictional lesson with audio, notes and practice; it can be deleted and will not be added again to that account.

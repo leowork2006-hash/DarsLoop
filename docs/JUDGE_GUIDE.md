@@ -14,7 +14,7 @@ The example is authored fictional material. It does not claim to demonstrate a f
 ## Five-minute walkthrough
 
 1. Open a note and play its timestamp. Compare the captured quote with the fictional recording.
-2. Open Ask this lesson. Ask what to do after missing a lesson and follow the supported passage.
+2. Open Ask this lesson. Ask “What are the five pillars named in this lesson?” and follow the supported passage.
 3. Ask a topic absent from the class. Check the lesson-scope response.
 4. Ask "Is vaping halal?" Check referral to a teacher instead of a ruling.
 5. Try a quiz and a flashcard. Open the audio evidence behind the answer. Open Mock exam to choose available formats and a timer; answers and source audio appear after submission. Written recall uses your self-check, separately from automatic marks.
