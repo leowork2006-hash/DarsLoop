@@ -129,6 +129,44 @@ export function retrieve(question:string,segments:StudyPassage[],limit=8):StudyP
   }).slice(0,3).map(row=>row.index);
   return retrievalContext(segments,anchors,limit);
 }
+// Retrieval overlap is only a candidate. A literal answer must also contain
+// every specific query anchor, rather than matching a reporting word or an
+// unrelated name. This does not infer religious facts or rewrite source text.
+const excerptStops=new Set(("as at by or but if then than so any all some everything nothing " +
+  "according whether given using use used says say said saying state states stated tell tells told " +
+  "teach teaches taught teaching teacher teachers source sources passage passages text texts " +
+  "lesson lessons class classes lecture lectures pdf book books example examples student students " +
+  "define definition definitions describe description list name named names meaning means mean " +
+  "understand focus happen happens happened point points topic topics question questions answer answers " +
+  "translate translation english arabic urdu between difference different about from " +
+  "what which who whom whose when where why how did does doing do was were been being " +
+  "could would will shall have has had after before while during also still just only " +
+  "ruling explain explained explaining explanation explanation s " +
+  "معلم المعلم استاد سبق درس الدرس طالب الطالب مثال المثال يقول قال شرح اشرح وضح وضاحت کریں").split(/\s+/));
+const smallNumbers=["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
+function excerptWord(word:string):string {
+  if(/^(?:[0-9]|10)$/.test(word))return smallNumbers[Number(word)];
+  if(/^[ء-ي]+$/u.test(word))return arabicRetrievalForm(word);
+  // Ordinary plurals only. Never use fuzzy religious names as topic proof.
+  return /^[a-z]+s$/u.test(word)&&word.length>3&&!word.endsWith("ss")?word.slice(0,-1):word;
+}
+function excerptWords(text:string):string[] {
+  return [...new Set(normalise(text).split(/\s+/).filter(w=>(w.length>1||/^\d+$/u.test(w))&&!stops.has(w)&&!arabicStops.has(arabicRetrievalForm(w))&&!excerptStops.has(w)).map(excerptWord))];
+}
+function relevantExcerpts(question:string,passages:StudyPassage[]):StudyPassage[] {
+  const anchors=excerptWords(question);if(!anchors.length)return [];
+  const words=passages.map(p=>new Set(excerptWords(p.text))),vocabulary=new Set(words.flatMap(w=>[...w]));
+  const resolved:string[]=[];
+  for(const anchor of anchors){
+    if(vocabulary.has(anchor)){resolved.push(anchor);continue;}
+    // Preserve an unambiguous long-word spelling correction (e.g. revison).
+    // Short terms/names such as Kaaba, zakah or Quran require literal support.
+    const typos=/^[a-z]{6,}$/u.test(anchor)?[...vocabulary].filter(w=>/^[a-z]{6,}$/u.test(w)&&queryTokenMatches(anchor,w)):[];
+    if(typos.length!==1)return [];
+    resolved.push(typos[0]);
+  }
+  return passages.filter((_,i)=>resolved.some(anchor=>words[i].has(anchor)));
+}
 export function needsPersonalReferral(question:string) {
   const q=normalise(question);
   const personal=/\b(?:i|my|me|mine|our|we)\b|(?:^|\s)(?:انا|لي|صلاتي|صومي|زوجي|زوجتي|میری|میرا|میرے|میں|ہم)(?=\s|$)/u.test(q);
@@ -149,8 +187,7 @@ export function boundedQuestion(question:string,segments:StudyPassage[],version:
   const pdfReporting=segments.some(isPdfPage)&&/according to (?:this |the )?(?:pdf|source|book)|what does (?:this |the )?(?:pdf|source|book) (?:say|state)|in (?:this |the )?(?:pdf|source|book)/iu.test(q);
   const descriptive=!rulingRequest.test(q)&&/^(?:what (?:is|are)|define|describe|explain|list|name)\b|^(?:ما (?:هو|هي)|اشرح|عرف)|^(?:کیا ہے|وضاحت کریں)/iu.test(q);
   if(!(reporting||pdfReporting||descriptive)||needsPersonalReferral(question))return finish({status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher for religious guidance. I cannot give a halal/haram ruling or advice about your own situation.",mode,version});
-  const meaningful=tokens(question).filter(t=>!["whether","ruling","teach","say","according"].includes(t));
-  const matches=segments.filter(s=>evidenceValid([{segmentId:s.id,quote:s.text}],segments)&&meaningful.some(t=>tokens(s.text).some(word=>queryTokenMatches(t,word)))).slice(0,2);
+  const matches=relevantExcerpts(question,segments.filter(s=>evidenceValid([{segmentId:s.id,quote:s.text}],segments))).slice(0,2);
   if(!matches.length)return finish({status:"not_covered",blocks:[],message:"That is not covered by a clear passage in this lesson. Ask your teacher.",mode,version});
   return finish({status:"answered",blocks:matches.map(s=>({text:s.text,evidence:sourceCitations([{segmentId:s.id,quote:s.text}],segments)})),message:segments.some(isPdfPage)?"This is a source excerpt. DarsLoop does not give religious rulings; ask a qualified teacher about interpretation.":"These are captured source words, not a ruling from DarsLoop. Check the original and ask your teacher about interpretation or your situation.",mode:"excerpt",version});
 }
@@ -166,7 +203,9 @@ export function excerptAnswer(question:string,segments:StudyPassage[],version:nu
   const bounded=boundedQuestion(question,segments,version,"excerpt");if(bounded)return bounded;
   if(needsPersonalReferral(question))return {status:"needs_teacher",blocks:[],message:"Please ask a qualified teacher about applying religious teachings to your own situation.",mode:"excerpt",version};
   const anchors=noteAnchors(question,segments,notes);
-  const related=(anchors.length?anchors:retrieve(question,segments).filter(s=>tokens(question).some(t=>tokens(s.text).some(word=>queryTokenMatches(t,word))))).slice(0,2);
+  // An audited note heading can anchor another source language without lexical
+  // translation. Otherwise candidate retrieval must pass the shared topic gate.
+  const related=(anchors.length?anchors:relevantExcerpts(question,retrieve(question,segments))).slice(0,2);
   if(!related.length)return {status:"not_covered",blocks:[],message:"I couldn’t find a supporting passage in this lesson. Try a more specific question or ask your teacher.",mode:"excerpt",version};
   const clear=related.filter(s=>!s.flags.length);
   if(!clear.length)return {status:"unclear_audio",blocks:[],message:segments.some(isPdfPage)?"The matching page is flagged. Check the original PDF.":"The matching passage is marked unclear. Please replay it.",mode:"excerpt",version};

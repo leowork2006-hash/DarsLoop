@@ -2,6 +2,14 @@
 
 Checked 6 October 2026. The public example is an original fictional introductory lesson, read by a local synthetic voice. Its prepared notes and questions are drawn only from its own script. It is not a teacher recording, a fresh ASR/AI run, an approved religious lesson, or a qualified scholarly review.
 
+## Organizer's safety standard
+
+[Al-Marji'iyya wal-Hazma al-'Ilmiyya wal-Bayanat, v. 1448/3/20.](https://islamicaich.org/files/HackathonFile/ZA1IoQnh5S1tuLFiBghyT7U2HYN6IpzNDg9vamHW.pdf) is the organizer's binding safety standard for outputs according to the solution's nature. Page 2 defines the content levels; page 5 sets source, abstention, referral, translation, AI-disclosure and privacy requirements; page 7 gives ten sample terminology entries.
+
+The demo introduces Level A subjects: the five pillars of Islam, as stable, documented knowledge. Questions outside its source receive a limit. Level D concerns fatwas and personal cases, rather than every off-lesson question: no independent ruling, general information only and qualified referral. DarsLoop uses a narrower lesson-only boundary and gives no outside religious advice. These design boundaries and tested cases do not establish complete compliance or scholarly approval.
+
+For authored English material, retain Tawhid (Oneness of God), Da'wah (Invitation to Islam), and Sharia (Islamic law and guidance), with context that preserves their meaning. These terms are not introduced in the current demo. Do not silently rewrite original source quotations or claim every future generated translation has passed a qualified dictionary review.
+
 ## References used to check basic definitions
 
 - [HadeethEnc: Islam is built on five, record 66512](https://hadeethenc.com/en/browse/hadith/66512): the publisher lists the five pillars, treats the two testimonies as one pillar, explains five daily prayers, zakah, fasting and pilgrimage. The publisher attributes its narration to Bukhari and Muslim. This is the publisher's attribution; DarsLoop performs no hadith grading. No sacred quotation or publisher translation is reproduced in the demo script.

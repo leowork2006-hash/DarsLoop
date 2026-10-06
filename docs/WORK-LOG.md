@@ -16,7 +16,7 @@ Refined Home, Upload, Study Plan, Review and private classes. Added durable proc
 
 ## 6 October
 
-Refined the landing page and phone layouts while preserving the product style. Replaced the general study-habits example with an original fictional five-pillars introduction and synthetic audio. Added multilingual refusal cases, no-clear-speech handling and clearer source/example labels. Updated only recognized, unchanged built-in demo lessons. Checked the separate published-hadith wording lookup and its source identity/language boundaries. The final focused pass extended advice/grading cues, clarified upload availability and improved small mobile source controls.
+Refined the landing page and phone layouts while preserving the product style. Replaced the general study-habits example with an original fictional five-pillars introduction and synthetic audio. Added multilingual refusal cases, no-clear-speech handling and clearer source/example labels. Updated only recognized, unchanged built-in demo lessons. Checked the separate published-hadith wording lookup and its source identity/language boundaries. The final focused pass extended advice/grading cues, clarified upload availability and improved small mobile source controls. A subsequent official-package audit confirmed version 1448/3/20, updated presentation citations and content-level wording, and found unrelated excerpts marked as answered. A shared topic-support check now withholds those unsupported excerpt answers; the prepared lesson and interface remain unchanged. This is a bounded relevance safeguard, not a complete religious-content classifier.
 
 ## Evidence and disclosures
 
