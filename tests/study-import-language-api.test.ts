@@ -19,6 +19,14 @@ const base={action:"start",bytes:100,title:"Fictional lesson",course:"Review",pe
 beforeEach(()=>{vi.stubEnv("DARSLOOP_ORIGIN","http://localhost:3000");f.cloud=true;f.user="student";f.create.mockReset().mockResolvedValue({id:"saved-import",parts:1});f.media.mockReset();f.pdf.mockReset().mockResolvedValue({id:"saved-pdf"});f.queue.mockReset();f.form.mockReset().mockImplementation(()=>{const form=new FormData();for(const [key,value] of Object.entries({title:"Fictional lesson",course:"Review",permitted:"true",synthetic:"true",studyLanguage:"ur",sourceKind:"audio"}))form.set(key,value);return form;});});
 afterAll(async()=>{await rm(f.dir,{force:true,recursive:true});vi.unstubAllEnvs();});
 describe("language and source options HTTP contract with mocked private storage",()=>{
+  it("rejects malformed JSON payload shapes without opening private storage",async()=>{
+    for(const input of [null,[],"start",true,7]){
+      const response=await imports.POST(request(input));
+      expect(response.status).toBe(400);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+    }
+    expect(f.create).not.toHaveBeenCalled();expect(f.queue).not.toHaveBeenCalled();
+  });
   it("persists validated language under authenticated ownership, with legacy Auto default",async()=>{
     for(const language of [undefined,"auto","ar","ur","en"]){const response=await imports.POST(request({...base,ownerId:"foreign",noteOptions:{...base.noteOptions,...(language?{language}:{})}}));expect(response.status).toBe(200);expect(response.headers.get("cache-control")).toBe("no-store");const [owner,values]=f.create.mock.calls.at(-1)!;expect(owner).toBe("student");expect(values.noteOptions.language).toBe(language||"auto");expect(values.spokenLanguage).toBe("en");expect(values).not.toHaveProperty("ownerId");}
   });

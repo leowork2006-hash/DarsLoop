@@ -22,7 +22,7 @@ Download the repository ZIP (Code > Download ZIP), extract it and run these comm
 
 ### Judge walkthrough
 
-1. Open **Explore the app** on the landing page. Notes and transcripts are clearly labelled prepared fictional material.
+1. Open the [fictional example](https://darsloop-production.up.railway.app/example), or choose **Explore the full lesson** in the landing page's practice section. The hero's **Start learning** and **Explore the app** buttons open sign-in. Example notes and transcripts are clearly labelled prepared fictional material.
 2. In **Ask this lesson**, ask “Is vaping halal?” The app refers rulings to a teacher.
 3. Ask “What are the five pillars named in this lesson?” Follow the source passage and play its audio.
 4. Ask about astronomy, which is outside the example. The app says it is not covered.
@@ -109,9 +109,9 @@ Groq remains the default. Operator-selected Deepgram and Speechmatics backups us
 
 ## Notes and full-screen practice
 
-Short summary, key points and detailed views reorganize the existing supported class material. Merely switching views does not generate anything. An owner can explicitly choose **Prepare detailed notes** to rebuild study material from the saved completed transcript or PDF pages. The original source and private personal notes stay unchanged; a failed upgrade preserves the existing study material. A successful upgrade replaces generated practice, so its new questions start fresh. Counts are supported items, not guaranteed minimums.
+The two note views are **Short summary** and **Detailed**; key points appear inside the summary. Merely switching views does not generate anything. An owner can explicitly choose **Prepare detailed notes** to rebuild study material from the saved completed transcript or PDF pages. The original source stays unchanged; a failed upgrade preserves the existing study material. A successful upgrade replaces generated practice, so its new questions start fresh. Counts are supported items, not guaranteed minimums.
 
-Long sources are divided into bounded chronological sections, with neighboring passages retained for qualifications. Each section receives literal-evidence and independent support checks; a failed section cannot become a complete replacement. **Your notes** is a private plain-text editor, stored separately by user/lesson/transcript version; edits never become teacher quotations or AI/practice source data. Apply all migrations before deploying this revision.
+Long sources are divided into bounded chronological sections, with neighboring passages retained for qualifications. Each section receives literal-evidence and independent support checks; a failed section cannot become a complete replacement. The current interface does not include a personal-note editor. Previously saved private personal notes remain separate from captured quotations and AI/practice source data. Apply all migrations before deploying this revision.
 
 Quiz, flashcards and mock exams open in a full-screen practice space with pausable motion and a reduced-motion option. Source audio remains available inside quiz/card feedback; mock exams show answers and sources after submission. Question counts reflect supported items actually present in the selected lesson.
 

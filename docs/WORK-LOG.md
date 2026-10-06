@@ -22,6 +22,12 @@ The final language check corrected an Urdu source-reporting phrase being mistake
 
 A further mobile and transcription pass corrected Study Plan dark-theme selectors, practice-dialog contrast and narrow-screen field/question sizes. The landing hero's secondary action now opens sign-in. General transcription disagreements are flagged, and a quota-admitted original-audio recheck can inspect one window of at most twelve seconds per ten-minute chunk. Replacement requires both recognizers to agree and retain the original words; the earlier capture is preserved. Eight bounded synthetic provider requests and recorded-response replay supported this approach, with mixed-language omissions still remaining. A fresh automatic end-to-end provider probe awaits explicit approval. Existing completed lessons are not silently rewritten. These results are not native-language accuracy certification.
 
+## 7 October
+
+The final rubric pass added early referral for Arabic personal worship-validity questions and further Arabic, Urdu and English hadith-grading wording. It corrected malformed action requests, readable connection/proxy errors and upload-part recovery after a lost acknowledgement or expired signed link. Judge instructions now match the current sign-in buttons and two note views. The accepted layout and existing lessons were retained.
+
+The integrated offline suite passed 520 tests in 62 files, TypeScript and the production build. Prepared quiz/card explanations and original audio replay, source labels, mobile navigation and the existing signed-in Study Plan's dark appearance were checked live. No new cloud account, fresh upload, transcription or AI request was made in this pass. Older uploaded topics still showed speech-recognition term errors; these saved lessons were not silently rewritten. These finite checks do not establish universal safety, native classroom accuracy, learning gains or future uptime.
+
 ## Evidence and disclosures
 
 - [QA and remaining gaps](QA.md) distinguishes local tests, hosted checks and unproven behavior.

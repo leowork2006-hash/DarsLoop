@@ -1,6 +1,10 @@
 # Release status
 
-## Latest correction: V49
+## Latest correction: V61
+
+Narrow final safety and reliability corrections: early Arabic personal-validity referral, additional hadith-grading wording, invalid action-body rejection, readable connection errors and bounded upload-part recovery. Judge instructions match the current sign-in buttons and two note views. Layout and existing lessons are retained. The integrated offline suite passed 520 tests in 62 files, TypeScript and the production build. Current checks are finite; no new cloud account or fresh provider-processing test was performed in this pass. See the [development record](WORK-LOG.md) for the scope and remaining transcription limits.
+
+## Earlier correction: V49
 
 Extended advice/grading routing cues with source-reporting negative controls. Clarified existing upload availability notices, saved-file queue labels, fictional-data consent and hero/FAQ wording. Example notes are labelled as examples. Small mobile source text is more readable; the accepted layout and artwork are retained. Added a [dated development record](WORK-LOG.md); setup instructions and the existing religious-source register remain available. Current verification and its limits are in [QA.md](QA.md).
 
@@ -27,7 +31,7 @@ Record permitted fictional/anonymized audio or upload supported audio/video up t
 
 Each signed-in workspace receives one complete prepared fictional demo. Deletion is remembered and demo activity is excluded from actual student Insights. Spoken-language selection is separate from the new Auto/Arabic/Urdu/English study-material selection. Arabic and Urdu text has bidirectional-aware layout; the interface is not fully translated. Source quotations remain exact, including when generated explanations change language.
 
-Teacher review is optional. The source-first question handoff is not an approval or authenticated correction backend. Chat generation failure can use a visibly labelled exact-passage fallback with existing scope/referral/version boundaries. Personal note edits stay separate from captured source and generated quiz answers. Notes → Detailed offers an owner-only saved-source upgrade, with chronological evidence checks and preserved personal notes. Eligible exact owned uploads can reuse a completed transcript without weakening its original flags.
+Teacher review is optional. The source-first question handoff is not an approval or authenticated correction backend. Chat generation failure can use a visibly labelled exact-passage fallback with existing scope/referral/version boundaries. The current interface has Short summary and Detailed note views, with key points inside the summary; it has no personal-note editor. Previously saved personal notes remain separate from captured source and generated quiz answers. Notes → Detailed offers an owner-only saved-source upgrade, with chronological evidence checks and preserved prior private data. Eligible exact owned uploads can reuse a completed transcript without weakening its original flags.
 
 Full-screen quiz, flashcards and lesson tests use supported saved material. Mixed lesson-test formats have real availability caps, raised previews and pausable motion. Written recall is self-checked separately from automatic marks. These are lesson exercises, not official syllabus exams.
 

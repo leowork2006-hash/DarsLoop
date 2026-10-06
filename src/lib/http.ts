@@ -18,6 +18,10 @@ export function fail(e:unknown) {return Response.json({error:e instanceof HttpEr
 export async function body(req:Request,max=10_000) {
  const reader=req.body?.getReader();if(!reader)throw new HttpError(400,"The request is not valid.");const chunks:Uint8Array[]=[];let size=0;
  while(true){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>max){await reader.cancel();throw new HttpError(413,"This request is too large.");}chunks.push(value);}
- try{return JSON.parse(Buffer.concat(chunks).toString("utf8"));}catch{throw new HttpError(400,"The request is not valid.");}
+ try{
+  const input=JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  if(input===null||typeof input!=="object"||Array.isArray(input))throw new Error("Invalid request shape");
+  return input;
+ }catch{throw new HttpError(400,"The request is not valid.");}
 }
 export function json(data:unknown,status=200) {return Response.json(data,{status,headers:{"Cache-Control":"no-store"}});}

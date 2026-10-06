@@ -39,10 +39,22 @@ export async function uploadLesson(audio:File,options:Options,signal:AbortSignal
       const offset=part.index*IMPORT_PART_BYTES,blob=audio.slice(offset,offset+IMPORT_PART_BYTES);
       if(!part.complete){
         if(!part.url)throw new Error("The upload link is unavailable.");
-        let error:unknown;
+        let error:unknown,url=part.url;
         for(let attempt=0;attempt<3;attempt++){
-          try{await uploadPart(part.url,blob,signal,bytes=>onProgress(Math.min(99,Math.floor((offset+bytes)/audio.size*100))));error=undefined;break;}
-          catch(e){error=e;if(signal.aborted)throw e;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,1000*(attempt+1)));}
+          try{await uploadPart(url,blob,signal,bytes=>onProgress(Math.min(99,Math.floor((offset+bytes)/audio.size*100))));error=undefined;break;}
+          catch(e){
+            error=e;if(signal.aborted)throw e;
+            if(attempt<2){
+              await new Promise(resolve=>setTimeout(resolve,1000*(attempt+1)));
+              // A dropped acknowledgement can follow a successful immutable
+              // write. Ask the owner-bound endpoint before attempting another
+              // PUT; it also refreshes expired links for unsaved pieces.
+              const refreshed=await api<{parts:{index:number;complete:boolean;url:string|null}[]}>("/api/imports",{method:"POST",body:JSON.stringify({action:"parts",id:session.id,start:part.index}),signal});
+              const saved=refreshed.parts.find(item=>item.index===part.index);
+              if(saved?.complete){error=undefined;break;}
+              if(saved?.url)url=saved.url;
+            }
+          }
         }
         if(error)throw error;
       }

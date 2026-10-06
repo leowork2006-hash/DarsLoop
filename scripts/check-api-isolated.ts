@@ -25,7 +25,7 @@ try{
  server=spawn(process.execPath,["node_modules/next/dist/bin/next","start","--hostname","127.0.0.1","--port",String(port)],{env,stdio:["ignore","pipe","pipe"]});
  for(const stream of [server.stdout,server.stderr])stream?.on("data",chunk=>{startupOutput=(startupOutput+String(chunk)).slice(-6000);});
  server.on("error",error=>{startupOutput+=String(error);});
- const deadline=Date.now()+20000;let ready=false;
+ const deadline=Date.now()+15000;let ready=false;
  while(Date.now()<deadline){
   if(server.exitCode!==null)break;
   try{const r=await fetch(origin+"/api/health",{signal:AbortSignal.timeout(1000)});if(r.ok){ready=true;break;}}catch{}
