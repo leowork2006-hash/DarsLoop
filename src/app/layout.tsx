@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/bitter";
+import "@fontsource-variable/bitter/wght-italic.css";
 import "@fontsource-variable/lora";
 import "@fontsource-variable/noto-sans-arabic";
 import "./globals.css";
@@ -27,5 +28,5 @@ import "./learning-reference.css";
 import "./theme.css";
 import "./mobile-workspace.css";
 import "./mobile-layout-refinements.css";
-export const metadata:Metadata={title:"DarsLoop — AI notes for Islamic classes",description:"Record your class. Get notes, ask questions, and revise with quizzes and flashcards. A student learning app for Islamic classes."};
+export const metadata:Metadata={title:"DarsLoop — AI notes and practice for Islamic classes",description:"Keep your class explanation close. Get notes, ask about your lesson, and practise with quizzes and flashcards. Built for students of Islamic knowledge."};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeScript}}/></head><body>{children}</body></html>;}
