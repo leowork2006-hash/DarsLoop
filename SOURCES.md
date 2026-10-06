@@ -107,3 +107,13 @@ One student’s private feedback motivated Arabic note choices, longer uploads a
 The optional token-hash email confirmation route is informed by Supabase's official [email-template guidance](https://supabase.com/docs/guides/auth/auth-email-templates) and [custom SMTP limits](https://supabase.com/docs/guides/auth/auth-smtp). Its prepared template is project-authored; it is not proof that SMTP delivery or the hosted template is configured. The default signup flow remains PKCE until the operator opts in after configuration.
 
 The generation admission helper uses Node's built-in [SQLite API](https://nodejs.org/api/sqlite.html) to coordinate requests from the current single container's web and worker processes. It is an application guard; the [Gemini project rate limits](https://ai.google.dev/gemini-api/docs/rate-limits) remain authoritative. No third-party data or credentials are stored in the admission database.
+
+## Landing hero and interactive tour — 6 October 2026
+
+`public/art/hero-clouds-v40.webp` is original lavender/ivory cloud imagery generated with Codex's built-in image tool. No particular image model/version is claimed. Supplied screenshots and the current [Kloudboard homepage](https://www.kloudboard.com/) informed the cloud composition, centered headline and automatic dashboard tour; their artwork, code, branding, customer claims and statistics are not bundled. The interactive tour is project-authored React/CSS using the existing fictional lesson, with locally prepared answers and unsaved sample practice. It invokes no live AI and plays example audio only after a manual click. [W3C pause guidance](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) and [MDN reduced motion guidance](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion) informed its motion controls.
+
+## Interactive landing sections — 6 October 2026
+
+The cream feature showcase and charcoal study routine are original HTML/CSS/React compositions. [StudyFetch](https://www.studyfetch.com/) was checked as a visual reference for tabbed feature presentation; none of its images, copy, adoption figures or reported grade improvements were reused. The controls use the existing authored fictional lesson: manual audio, prepared notes/answer, supported quiz and class passages. They do not make external AI requests.
+
+The routine links to original research on [classroom testing (Yang et al., 2021)](https://pubmed.ncbi.nlm.nih.gov/33683913/) and [learning techniques (Dunlosky et al., 2013)](https://pubmed.ncbi.nlm.nih.gov/26173288/). These support the general study-method rationale; they are not evidence of DarsLoop learning outcomes, native-language accuracy or a student pilot.
