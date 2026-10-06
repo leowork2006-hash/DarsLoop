@@ -30,7 +30,7 @@ export function LandingProductGrid({ lesson }: { lesson: Lesson }) {
   const asked = manualAsked?.tick===loop.tick ? manualAsked.value : loop.tick>=14 && loop.tick<42;
   const revealed = manualCard?.tick===loop.tick ? manualCard.value : loop.tick>=22 && loop.tick<43;
   const topic = manualTopic?.tick===loop.tick ? manualTopic.value : Math.floor(loop.tick/16);
-  const question = "How should I study after class?";
+  const question = "Does this lesson count the testimony as one pillar or two?";
   const typed = asked ? question : question.slice(0, Math.min(question.length, loop.tick*3));
   const play = async (from?: number) => {
     loop.interact();
@@ -108,7 +108,7 @@ export function LandingLessonJourney({lesson}:{lesson:Lesson}) {
         <div className={styles.branches} role="group" aria-label="Tools connected to the lesson">{tools.map(({id,label,icon:Icon})=><button key={id} aria-pressed={selected===id} onClick={()=>setManual({tick:loop.tick,tool:id})}><Icon size={17}/>{label}</button>)}</div>
         <div className={styles.diagramDetail} key={selected}>
           {selected==="notes" && <div className={product.summary}><span className={styles.miniLabel}><BookOpen size={14}/> Class notes</span><h4>{note?.heading}</h4><p>{note?.text}</p></div>}
-          {selected==="ask" && <div className={styles.connectedChat}><div className={styles.question}>What should I focus on while listening?</div><div className={styles.answer}><img src="/art/hoopoe-guide-v10.png" alt="" width={25} height={25}/><p>{note?.text}</p></div></div>}
+          {selected==="ask" && <div className={styles.connectedChat}><div className={styles.question}>What are the five pillars named in this lesson?</div><div className={styles.answer}><img src="/art/hoopoe-guide-v10.png" alt="" width={25} height={25}/><p>{note?.text}</p></div></div>}
           {selected==="quiz" && <div className={styles.quiz}><p className={product.question}>{item?.question}</p><div className={product.choices}>{item?.choices.map((choice,index)=><button className={revealed&&choice===item.answer?product.correct:""} key={choice} onClick={()=>setManualReveal({tick:loop.tick,value:true})}><span>{String.fromCharCode(65+index)}</span>{choice}{revealed&&choice===item.answer&&<Check size={15}/>}</button>)}</div><small>{revealed?"Prepared example answer shown":"A question from this lesson"}</small></div>}
           {selected==="cards" && <div className={`${product.flashcard} ${styles.connectedCard}`}><span className={styles.miniLabel}><Cards size={14}/> {revealed?"Answer":"Flashcard"}</span><h4>{revealed?item?.answer:item?.question}</h4><button className={styles.action} onClick={()=>setManualReveal({tick:loop.tick,value:!revealed})}>{revealed?"Try again":"Reveal answer"}<ArrowRight size={14}/></button></div>}
         </div>

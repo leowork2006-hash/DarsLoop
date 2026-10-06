@@ -7,7 +7,7 @@ import { removeImport } from "./imports";
 import { MAX_STORED_AUDIO_BYTES } from "../upload-options";
 import { safeLesson } from "../store";
 import { nextReview } from "../review-activity";
-import { demoArtifacts, demoScript, demoTitle, demoCourse } from "../demo";
+import { cloudDemoId, currentSeedDemo, DEMO_SEED_REVISION, needsDemoSeed, systemDemoFixture, validatedDemoSegments } from "../demo-seed";
 import type { ClassGroup, Lesson, Review, Segment } from "../types";
 import { MATERIAL_GENERATION_REVISION, detailedOptions, sourceReadyForMaterial } from "../material-sections";
 import { checkMaterialRequest, materialSourceSnapshot, MaterialQueueError, type DetailedQueueResult, type MaterialQueueCode } from "../material-queue";
@@ -37,12 +37,25 @@ export async function listLessons(user:string):Promise<Lesson[]>{
 export async function seedDemo(user:string){
  const client=adminClient(),account=await client.auth.admin.getUserById(user);
  if(account.error||!account.data.user)throw new Error("Account unavailable");
- if(account.data.user.user_metadata?.darsloop_example_added)return;
- const segments:Segment[]=JSON.parse(await readFile(path.join(process.cwd(),"fixtures/demo-five-pillars-timing.json"),"utf8"));if(segments.length!==demoScript.length||segments.some((s,i)=>s.text!==demoScript[i]||!Number.isFinite(s.start)||!Number.isFinite(s.end)||s.end<=s.start))throw new Error("Example audio manifest is invalid");
- const h=hash(`darsloop-demo:${user}`),id=`${h.slice(0,8)}-${h.slice(8,12)}-5${h.slice(13,16)}-8${h.slice(17,20)}-${h.slice(20,32)}`;
- const l:Lesson={id,ownerId:user,title:`Demo lesson · ${demoTitle}`,course:demoCourse,createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:"fixtures/demo-five-pillars.mp3",mime:"audio/mpeg"};
- checked(await client.from("lessons").upsert(row(l),{onConflict:"id",ignoreDuplicates:true}));
- const updated=await client.auth.admin.updateUserById(user,{user_metadata:{...account.data.user.user_metadata,darsloop_example_added:true}});
+ const metadata=account.data.user.user_metadata;
+ if(!needsDemoSeed(metadata))return;
+ const id=cloudDemoId(user);
+ const existing=checked(await client.from("lessons").select("payload").eq("id",id).eq("owner_id",user).maybeSingle())?.payload as Lesson|undefined;
+ const legacy=existing&&systemDemoFixture(existing,user)==="legacy"?existing:undefined;
+ if(legacy||(!existing&&metadata?.darsloop_example_added!==true)){
+  const segments=validatedDemoSegments(JSON.parse(await readFile(path.join(process.cwd(),"fixtures/demo-five-pillars-timing.json"),"utf8")));
+  const lesson=currentSeedDemo(user,id,segments,"fixtures/demo-five-pillars.mp3",legacy);
+  if(legacy){
+   const saved=checked(await client.from("lessons").update(row(lesson)).eq("id",id).eq("owner_id",user).eq("version",legacy.version).eq("payload",JSON.stringify(legacy)).select("payload").maybeSingle());
+   if(!saved){
+    const latest=checked(await client.from("lessons").select("payload").eq("id",id).eq("owner_id",user).maybeSingle())?.payload as Lesson|undefined;
+    // A concurrent upgrade or deletion is complete; a changed source must be retried.
+    if(latest&&systemDemoFixture(latest,user)!=="current")throw new Error("The example lesson changed. Reload to try again.");
+   }
+  }else checked(await client.from("lessons").upsert(row(lesson),{onConflict:"id",ignoreDuplicates:true}));
+ }
+ // Auth merges these keys; omit unrelated preferences to preserve concurrent edits.
+ const updated=await client.auth.admin.updateUserById(user,{user_metadata:{darsloop_example_added:true,darsloop_example_revision:DEMO_SEED_REVISION}});
  if(updated.error)throw new Error("Example preference could not be saved");
 }
 export async function countLessons(user:string){const r=await adminClient().from("lessons").select("id",{head:true,count:"exact"}).eq("owner_id",user);checked(r);return r.count||0;}

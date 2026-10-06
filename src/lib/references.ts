@@ -15,21 +15,28 @@ async function rpc(method:string,params:unknown,id:number) {
 }
 const hitSchema=z.object({id:z.string(),title:z.string(),url:z.string()});
 const recordSchema=z.object({id:z.string(),title:z.string(),url:z.string(),segments:z.array(z.object({kind:z.string(),text:z.string()})),metadata:z.object({source:z.string(),language:z.string(),grade:z.string().optional(),attribution:z.string().optional()})});
+// Common Urdu connecting words must not turn a different narration into a
+// wording match. This is a retrieval filter, not a meaning/authenticity judgment.
+const urduStops=new Set("کا کی کے کو سے میں پر ہے ہیں تھا تھی تھے اور یا یہ وہ اس ان ایک لیے لئے و دار مدار کہ جو جس نے ہم آپ بھی تو نہ کر ہو گا گی گے".split(" "));
+const referenceWords=(text:string)=>tokens(text).filter(word=>!urduStops.has(word));
 export function mapRecord(input:unknown,query:string):Candidate|null {
   const r=recordSchema.safeParse(input);if(!r.success)return null;const v=r.data;
   let url:URL;try{url=new URL(v.url);}catch{return null;}
-  if(url.protocol!=="https:"||url.hostname!=="hadeethenc.com"||url.username||url.password||!/^\/[a-z]{2,3}\/browse\/hadith\/\d+$/.test(url.pathname)||v.metadata.source!=="HadeethEnc"||!v.metadata.grade||!v.id.startsWith("hadith:"))return null;
+  const recordId=/^hadith:(\d+):([a-z]{2,3})$/.exec(v.id);
+  const page=/^\/([a-z]{2,3})\/browse\/hadith\/(\d+)$/.exec(url.pathname);
+  if(url.protocol!=="https:"||url.hostname!=="hadeethenc.com"||url.port||url.search||url.hash||url.username||url.password||!page||!recordId||recordId[1]!==page[2]||recordId[2]!==page[1]||v.metadata.language!==page[1]||v.metadata.source!=="HadeethEnc"||!v.metadata.grade?.trim())return null;
   const exact=v.segments.filter(s=>s.kind==="exact").map(s=>s.text).join("\n");if(!exact)return null;
-  const q=tokens(query),words=tokens(exact),overlap=q.filter(t=>words.includes(t));
+  const q=referenceWords(query),words=referenceWords(exact),overlap=q.filter(t=>words.includes(t));
   // Conservative lexical filter, not a calibrated probability or a scholarly decision.
-  if(q.length<3||overlap.length<3||overlap.length/q.length<0.5)return null;
+  if(q.length<2||overlap.length<2||overlap.length/q.length<0.65)return null;
   return {id:v.id,title:v.title,url:v.url,text:exact,language:v.metadata.language,grade:v.metadata.grade,gradePublisher:v.metadata.source,collectionAttribution:v.metadata.attribution||"",retrievedAt:new Date().toISOString(),matchBasis:"wording",recordHash:createHash("sha256").update(JSON.stringify(input)).digest("hex")};
 }
 export function isCategoryOnly(hit:{url:string},rendering:string) {
   const items=rendering.split(/(?:^|\n)\d+\.\s/).slice(1);
   const item=items.find(part=>part.includes(hit.url));
-  // An absent match-basis marker cannot silently become a wording match.
-  return !item||/\[in category:/i.test(item);
+  // Current provider wording hits are tagged [hadith]; category hits also
+  // carry [in category: ...]. Fetched exact text must still pass mapRecord.
+  return !item||/\[in category:/i.test(item)||!/^\[(?:hadith|wording)\]/i.test(item.trim());
 }
 export async function findCandidates(query:string,language:"ar"|"en"|"ur") {
   if(tokens(query).length<3)return [];

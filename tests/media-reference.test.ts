@@ -22,6 +22,14 @@ describe("separate source suggestions",()=>{
     expect(mapRecord(record,"three completely unrelated tokens")).toBeNull();
     expect(mapRecord({...record,url:"https://hadeethenc.com.evil.invalid/ar/browse/hadith/4560"},query)).toBeNull();
   });
+  it("does not mistake shared Urdu connecting words for the requested narration",()=>{
+    const wording="اعمال کا دار و مدار نیتوں پر ہے";
+    const urdu={...record,id:"hadith:4560:ur",url:"https://hadeethenc.com/ur/browse/hadith/4560",metadata:{...record.metadata,language:"ur"}};
+    expect(mapRecord({...urdu,segments:[{kind:"exact",text:wording}]},wording)).not.toBeNull();
+    // Authored negative fixture: shares connecting words, not the intention term.
+    expect(mapRecord({...urdu,segments:[{kind:"exact",text:"اس کا دار و مدار اعمال پر ہے"}]},wording)).toBeNull();
+    expect(mapRecord({...urdu,segments:[{kind:"exact",text:"اس کی بات پر ہے"}]},"اس کی بات پر ہے")).toBeNull();
+  });
   it("filters topic-only hits without contaminating adjacent wording hits",()=>{
     const text="1. [in category: Learning] A\nhttps://example.org/1\n2. [wording] B\nhttps://example.org/2\n";
     expect(isCategoryOnly({url:"https://example.org/1"},text)).toBe(true);

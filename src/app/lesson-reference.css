@@ -216,6 +216,8 @@
 .is-reference-lesson .lesson-summary summary small{font-size:10px;font-weight:400;color:#a0988d}
 .example-shell.is-reference-lesson{--ink:var(--ref-ink);--muted:#85827b;--font-body:'Inter Variable','Noto Sans Arabic Variable',sans-serif;--font-editorial:'Bitter Variable',Georgia,serif;min-height:100dvh;background:var(--ref-paper);font-family:var(--font-body)}
 .example-shell.is-reference-lesson .example-header{background:var(--ref-paper);border-color:#e4e1d9}
+.example-shell.is-reference-lesson .example-header .brand-wordmark{font-family:"Inter Variable",sans-serif;font-weight:700;letter-spacing:-.045em;gap:5px;line-height:1}
+.example-shell.is-reference-lesson .example-header .brand-wordmark .brand-ai{font:inherit;letter-spacing:inherit;align-self:center;opacity:1;margin:0;background:none}
 .example-shell.is-reference-lesson .example-intro{background:var(--ref-soft);border-color:#e4e1d9;color:#777168;font-size:12px}
 .example-shell.is-reference-lesson .example-content{max-width:1150px;padding-bottom:155px}
 .example-shell.is-reference-lesson .player{background:#faf9f5;border-color:#e4e1d9;color:#646059;font-family:var(--font-body)}

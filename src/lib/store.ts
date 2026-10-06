@@ -4,10 +4,10 @@ import { DatabaseSync } from "node:sqlite";
 import { randomUUID, createHash, randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { demoArtifacts, demoScript, demoTitle, demoCourse } from "./demo";
+import { currentSeedDemo, DEMO_SEED_REVISION, systemDemoFixture, validatedDemoSegments } from "./demo-seed";
 import { evidenceValid, instructionLike, safePractice } from "./evidence";
 import { nextReview } from "./review-activity";
-import type { ClassGroup, Lesson, Review, Segment } from "./types";
+import type { ClassGroup, Lesson, Review } from "./types";
 import { detailedQueueChange, MaterialQueueError, type DetailedQueueResult } from "./material-queue";
 import { supportedOverview } from "./material-overview";
 import { noteRecallCards } from "./note-recall";
@@ -47,16 +47,27 @@ export function sessionUser(token:string|undefined) {
   return row?.user_id||null;
 }
 export function seedDemo(userId:string) {
-  if(db().prepare("SELECT user_id FROM workspace_flags WHERE user_id=?").get(userId))return;
-  const existing=db().prepare("SELECT id FROM lessons WHERE owner_id=? AND json_extract(payload,'$.demo')=1 LIMIT 1").get(userId);
-  if(existing){db().prepare("INSERT OR IGNORE INTO workspace_flags VALUES(?,1)").run(userId);return;}
-  let segments:Segment[];
-  try {segments=JSON.parse(readFileSync(path.join(process.cwd(),"fixtures/demo-five-pillars-timing.json"),"utf8"));}
-  catch {throw new Error("Run npm run demo:audio before starting the app.");}
-  if(segments.length!==demoScript.length||segments.some((s,i)=>!Number.isFinite(s.start)||!Number.isFinite(s.end)||s.start<0||s.end<=s.start||s.text!==demoScript[i]))throw new Error("Example audio manifest does not match the script.");
-  const lesson:Lesson={id:randomUUID(),ownerId:userId,title:`Demo lesson · ${demoTitle}`,course:demoCourse,createdAt:new Date().toISOString(),duration:segments.at(-1)!.end,version:1,status:"ready",stage:"Prepared example",error:null,demo:true,segments,artifacts:demoArtifacts(segments),audioPath:path.join(process.cwd(),"fixtures/demo-five-pillars.mp3"),mime:"audio/mpeg"};
+  const flag=db().prepare("SELECT example_seeded FROM workspace_flags WHERE user_id=?").get(userId) as {example_seeded:number}|undefined;
+  if(flag&&flag.example_seeded>=DEMO_SEED_REVISION)return;
   db().exec("BEGIN IMMEDIATE");
-  try{if(!db().prepare("SELECT user_id FROM workspace_flags WHERE user_id=?").get(userId)){insertLesson(lesson);db().prepare("INSERT INTO workspace_flags VALUES(?,1)").run(userId);}db().exec("COMMIT");}catch(e){db().exec("ROLLBACK");throw e;}
+  try {
+    const currentFlag=db().prepare("SELECT example_seeded FROM workspace_flags WHERE user_id=?").get(userId) as {example_seeded:number}|undefined;
+    if(!currentFlag||currentFlag.example_seeded<DEMO_SEED_REVISION){
+      const rows=db().prepare("SELECT payload FROM lessons WHERE owner_id=? AND json_extract(payload,'$.demo')=1").all(userId) as {payload:string}[];
+      const demos=rows.map(r=>JSON.parse(r.payload) as Lesson);
+      const legacy=demos.find(l=>systemDemoFixture(l,userId)==="legacy");
+      if(legacy||(!currentFlag&&demos.length===0)){
+        let manifest:unknown;
+        try {manifest=JSON.parse(readFileSync(path.join(process.cwd(),"fixtures/demo-five-pillars-timing.json"),"utf8"));}
+        catch {throw new Error("Run npm run demo:audio before starting the app.");}
+        const lesson=currentSeedDemo(userId,legacy?.id??randomUUID(),validatedDemoSegments(manifest),path.join(process.cwd(),"fixtures/demo-five-pillars.mp3"),legacy);
+        if(legacy)updateLesson(lesson,legacy.version);else insertLesson(lesson);
+      }
+      // An old marker without a demo means the student deleted it. Preserve that choice.
+      db().prepare("INSERT INTO workspace_flags VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET example_seeded=excluded.example_seeded").run(userId,DEMO_SEED_REVISION);
+    }
+    db().exec("COMMIT");
+  } catch(e) {db().exec("ROLLBACK");throw e;}
 }
 export function insertLesson(l:Lesson) {db().prepare("INSERT INTO lessons VALUES(?,?,?,?)").run(l.id,l.ownerId,l.version,JSON.stringify(l));}
 export function rawLesson(id:string):Lesson|null {const row=db().prepare("SELECT payload FROM lessons WHERE id=?").get(id) as {payload:string}|undefined;return row?JSON.parse(row.payload):null;}

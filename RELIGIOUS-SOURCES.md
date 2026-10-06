@@ -15,7 +15,7 @@ A timestamp/page citation demonstrates correspondence to captured material, not 
 
 ## Synthetic media and licences
 
-The current fixture is `fixtures/demo-five-pillars-script.txt`, with generated timestamps and original synthetic audio. It uses local eSpeak NG and FFmpeg at natural timing without stretching. No engine, voice-model code or third-party teacher recording is bundled. The tools' licences are distinct from project-created original script/output; see [eSpeak licence](https://espeak.sourceforge.net/license.html) and `THIRD_PARTY_NOTICES.md`. Earlier study-habits fixtures are retained only so pre-existing prepared demos remain playable.
+The current fixture is `fixtures/demo-five-pillars-script.txt`, with generated timestamps and original synthetic audio. It uses local eSpeak NG and FFmpeg at natural timing without stretching. No engine, voice-model code or third-party teacher recording is bundled. The tools' licences are distinct from project-created original script/output; see [eSpeak licence](https://espeak.sourceforge.net/license.html) and `THIRD_PARTY_NOTICES.md`. Earlier study-habits fixtures remain for legacy compatibility. Unchanged system demos update once; personal or edited lessons are preserved.
 
 ## Verification scope
 

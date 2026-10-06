@@ -1,6 +1,12 @@
 # Release status
 
-## Latest correction:V31
+## Latest correction: V48
+
+Existing unchanged built-in demos update once to the fictional five-pillars lesson. Edited and personal lessons are preserved, deletion is remembered, and source versions prevent old practice or shares from applying to the replacement content. The example logo matches the product; two landing questions now match their displayed answers. The example's References tab links the background sources and explains their limits. The landing layout and illustrations are retained.
+
+References remains an optional lookup of possible published hadith wording, separate from class answers. Current source identity, language, grade attribution and category filtering are checked; Urdu connecting words cannot alone establish a match. Actual read-only Arabic, English and Urdu searches and an isolated product-form journey passed for one known narration. These checks do not make DarsLoop a hadith grader or prove every lookup. See [QA.md](QA.md) for test scope and remaining gaps.
+
+## Earlier correction: V31
 
 Mobile/sidebar/player sizing and chat alignment are corrected. Review expands to Quiz, Flashcards and Mock exam. Chat survives tab switches, has Clear chat and a source/notes + menu, carries source-bound follow-up context, and asks for the response language used in the question. Whole-lesson explanations use chronological source coverage; unsupported points remain withheld and coverage limits disclosed. Prepared notes can provide a labelled fallback without regenerating material. Private audio delivery now accepts the same48MB bound as prepared imports and preserves timestamp click gestures for an already mounted player.
 

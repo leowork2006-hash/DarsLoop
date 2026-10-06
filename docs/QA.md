@@ -1,5 +1,13 @@
 # Verification and known limits
 
+## Demo consistency and References — 6 October 2026 (V48)
+
+The complete suite passed **398 tests across 55 files**; TypeScript and the production build passed. Recognized unchanged system demos now update once to the fictional five-pillars lesson. Source identity and creation time remain stable, source version increases, and personal lessons, existing reviews, concurrent edits and remembered deletion are preserved. Mocked cloud and isolated SQLite cases cover these boundaries.
+
+References was checked with actual read-only public provider calls for one known narration in Arabic, English and Urdu. Each returned the intended HadeethEnc records with publisher grades and canonical source links. An initial Urdu lookup also returned an unrelated narration; a narrower distinctive-word filter removed it, with a regression test. This is a bounded wording-search check, not exhaustive retrieval, native-language validation or scholarly verification.
+
+An isolated production-build browser journey used an authored public-wording page fixture, the actual References form, application route and live public provider. It returned the two expected records. Desktop and 390px result views were inspected without document overflow. No PDF extraction, audio transcription, AI generation or new hosted signup was involved. Auth/access, exact captured wording, flagged passages, stale versions, source budgets, category hits, source identity and provider-failure behavior have separate mocked checks. The public example now exposes its checked background sources without fabricating a hadith lookup or approval.
+
 ## Long Arabic processing and search correction — 6 October 2026 (V39)
 
 The complete unit suite passed **327 tests across 49 files**, and the final production build/TypeScript passed. Two Arabic retrieval fixtures reproduced the old failures before the fix: a late review passage was missed, and generic classroom wording was retrieved for an unrelated question. The correction removes Arabic retrieval boilerplate, matches conservative word forms, weights distinctive topics, and bounds source context. Literal quotations, support audits and teacher-referral boundaries remain enforced.
