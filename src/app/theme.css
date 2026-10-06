@@ -29,7 +29,7 @@ html[data-theme=dark] :is(.practice-feedback.feedback-revisit,.quiz-choices butt
 html[data-theme=dark] :is(.flashcard-answer,.review-card-recall,.review-card-recall.is-revealed,.source-card,.note-section,.captured-quote,.assistant-message>div,.student-message,.term-panel,.recording-hero,.recording-consent,.account-settings-preference,.review-session-question){background:var(--ref-card)!important;color:var(--ref-text)!important;border-color:var(--ref-line)!important}
 html[data-theme=dark] :is(.practice-card,.review-result-item,.review-result-item summary,.review-session-results,.sources-workspace .source-form){background:var(--ref-card)!important;border-color:var(--ref-line)!important;color:var(--ref-text)!important}
 html[data-theme=dark] :is(.source-record-note,.practice-footnote,.practice-feedback .small-text,.muted,.small-text,.lesson-meta,.composer-caption,.lesson-tabs button,.chat-scope,.review-session-lesson,.recording-intro,.welcome-intro,.breadcrumb){color:var(--ref-muted)!important}
-html[data-theme=dark] :is(.lesson-view,.review-reference-page,.plan-reference-page,.teacher-dictionary,.modal,.welcome-modal) :is(h1,h2,h3,h4,.practice-card h3,.flashcard-answer>p,.correct-answer-text,.answer-block>p){color:var(--ref-text)!important}
+html[data-theme=dark] :is(.lesson-view,.review-reference-page,.plan-reference,.teacher-dictionary,.modal,.welcome-modal) :is(h1,h2,h3,h4,.practice-card h3,.flashcard-answer>p,.correct-answer-text,.answer-block>p){color:var(--ref-text)!important}
 html[data-theme=dark] .landing{background:var(--ref-paper);color:var(--ref-text)}
 html[data-theme=dark] .landing :is(.hero,.final-cta,.section-wrap,.feature-strip,.site-header,.site-footer){background:var(--ref-paper);color:var(--ref-text)}
 html[data-theme=dark] .landing .hero-halo{opacity:.08}
@@ -39,7 +39,7 @@ html[data-theme=dark] :is(.tour-popover,.modal-inner) :is(h2,p){color:var(--ref-
 
 html[data-theme=dark] .is-reference-home .home-shortcuts button{background:var(--ref-soft);color:var(--ref-text);border-color:var(--ref-line)}
 html[data-theme=dark] :is(.uncertainty-label,.uncertain-passage,.recording-warning,.upload-consent){background:#3b3021;color:#e7d2ae;border-color:#6b593c}
-html[data-theme=dark] .plan-ref-topic-dot{background:var(--ref-card);color:var(--ref-primary-text)}
+html[data-theme=dark] .plan-ref-topic-dot{background:var(--ref-card);color:var(--ref-text)}
 
 html[data-theme=dark] .workspace-shell.is-reference-shell .reference-breadcrumb .breadcrumb-current{color:var(--ref-text)}
 html[data-theme=dark] :is(.workspace-shell.is-reference-shell,.example-shell.is-reference-lesson) .player{background:var(--ref-card)!important;border-color:var(--ref-line)!important;color:var(--ref-text)!important}
@@ -130,6 +130,79 @@ html[data-theme=dark] .recording-modal .is-recording .recording-state{color:var(
 html[data-theme=dark] .recording-modal .recording-backup-warning{background:#3b3021;color:#e7d2ae}
 html[data-theme=dark] :is(.is-reference-shell,.reference-signin,.modal) .inline-error{background:#402b28;border-color:#78514b;color:#efbeb4!important}
 html[data-theme=dark] .reference-signin .account-reference-form .apple-signin img{filter:invert(1)}
+
+/* These reference pages contain light-only colors below the shared tokens. */
+html[data-theme=dark] .plan-reference{
+  --pr-ink:var(--ref-ink);--pr-muted:var(--ref-muted);--pr-line:var(--ref-line);
+  --pr-cream:var(--ref-soft);--pr-violet:var(--ref-accent);--pr-violet-soft:var(--ref-lavender);
+}
+html[data-theme=dark] .plan-reference :is(.plan-ref-summary,.plan-ref-unit,.plan-ref-next,.plan-empty){border-color:var(--ref-line);box-shadow:0 2px 0 var(--ref-shadow)}
+html[data-theme=dark] .plan-reference :is(.plan-ref-summary>span,.plan-ref-topic-list,.plan-ref-unit-source,.plan-ref-next-source,.plan-ref-activity small){border-color:var(--ref-line)}
+html[data-theme=dark] .plan-reference :is(.plan-heading p,.plan-ref-kicker,.plan-ref-unit-kicker,.plan-ref-unit-title>small,.plan-ref-open-lesson,.plan-ref-checkpoint small,.plan-ref-topic-listen,.plan-ref-unit-source,.plan-ref-next p,.plan-ref-next-source,.plan-ref-activity p,.plan-ref-activity small,.plan-empty p,.plan-ref-select){color:var(--ref-muted)}
+html[data-theme=dark] .plan-reference :is(.plan-ref-summary>span,.plan-controls>strong,.plan-ref-unit-chevron){color:var(--ref-body)}
+html[data-theme=dark] .plan-reference :is(.plan-ref-summary strong,.plan-timeline-label,.plan-ref-unit-title>strong,.plan-ref-topic-main>span:first-child,.plan-ref-activity p strong){color:var(--ref-text)}
+html[data-theme=dark] .plan-reference .plan-how{background:var(--ref-lavender);border-color:var(--ref-lavender-deep);box-shadow:0 3px 0 var(--ref-shadow)}
+html[data-theme=dark] .plan-reference .plan-how p{color:var(--ref-body)}
+html[data-theme=dark] .plan-reference :is(.plan-how button,.plan-ref-banner-copy .plan-ref-kicker,.plan-ref-preview-label,.plan-ref-next .plan-ref-kicker,.plan-ref-next-source bdi){color:var(--ref-accent)}
+html[data-theme=dark] .plan-reference .plan-ref-banner-preview{background:var(--ref-lavender-deep);border-color:var(--ref-line)}
+html[data-theme=dark] .plan-reference .plan-ref-preview-row{color:var(--ref-body);border-color:var(--ref-line);box-shadow:0 2px 0 var(--ref-shadow)}
+html[data-theme=dark] .plan-reference :is(.plan-controls,.plan-ref-activity){background:var(--ref-soft);border-color:var(--ref-line)}
+html[data-theme=dark] .plan-reference .plan-ref-filter{background:var(--ref-paper)}
+html[data-theme=dark] .plan-reference .plan-ref-filter button{color:var(--ref-muted)}
+html[data-theme=dark] .plan-reference .plan-ref-filter button[aria-pressed=true]{color:var(--ref-text);background:var(--ref-card);border-color:var(--ref-accent);box-shadow:none}
+html[data-theme=dark] .plan-reference .plan-ref-help-button{color:var(--ref-text);border-color:var(--ref-line);box-shadow:0 2px 0 var(--ref-shadow)}
+html[data-theme=dark] .plan-reference :is(.plan-ref-help-button,.plan-ref-open-lesson,.plan-ref-topic-listen,.plan-ref-unit-source button):hover{color:var(--ref-text);background:var(--ref-soft)}
+html[data-theme=dark] .plan-reference .plan-ref-select select{box-shadow:0 1px 0 var(--ref-shadow)}
+html[data-theme=dark] .plan-reference .plan-ref-select svg{color:var(--ref-muted)}
+html[data-theme=dark] .plan-reference :is(.plan-timeline-label>span,.plan-ref-checkpoint-icon,.plan-ref-empty-icon){background:var(--ref-lavender-deep);color:var(--ref-accent);border-color:var(--ref-line)}
+html[data-theme=dark] .plan-reference :is(.plan-timeline:before,.plan-ref-activity-bar){background:var(--ref-line)}
+html[data-theme=dark] .plan-reference .plan-ref-unit:before{border-color:var(--ref-line)}
+html[data-theme=dark] .plan-reference .plan-ref-unit.is-open:before{background:var(--ref-lavender-deep);border-color:var(--ref-accent)}
+html[data-theme=dark] .plan-reference .plan-ref-checkpoint{background:var(--ref-lavender);color:var(--ref-text);border-color:var(--ref-lavender-deep)}
+html[data-theme=dark] .plan-reference .plan-ref-checkpoint:hover{background:var(--ref-lavender-deep);border-color:var(--ref-accent)}
+html[data-theme=dark] .plan-reference .plan-ref-topic-main:hover>span:first-child{color:var(--ref-accent)}
+html[data-theme=dark] .plan-reference .plan-ref-topic-status{color:var(--ref-muted);background:var(--ref-soft);border-color:var(--ref-line)}
+html[data-theme=dark] .plan-reference :is(.plan-ref-topic-status.due,.plan-ref-topic-status.practised,.plan-ref-topic-status.in_progress){color:var(--ref-accent);background:var(--ref-lavender);border-color:var(--ref-lavender-deep)}
+html[data-theme=dark] .plan-reference .plan-ref-topic-dot.practised{background:var(--ref-accent);border-color:var(--ref-accent);color:var(--ref-primary-text)}
+html[data-theme=dark] .plan-reference .plan-ref-topic-dot.due{background:var(--ref-lavender-deep);border-color:var(--ref-accent)}
+html[data-theme=dark] .plan-reference .plan-ref-unit-source button{background:var(--ref-soft);color:var(--ref-body)}
+html[data-theme=dark] :is(.plan-ref-topic-modal,.plan-ref-how-modal){background:var(--ref-paper);color:var(--ref-text);border-color:var(--ref-line)}
+html[data-theme=dark] :is(.plan-ref-topic-modal,.plan-ref-how-modal) :is(.plan-ref-modal-note,.plan-ref-modal-intro>span:last-child,.plan-ref-modal-safety,.plan-ref-no-practice,.plan-ref-how-body>p,.plan-ref-how-card small){color:var(--ref-muted)}
+html[data-theme=dark] :is(.plan-ref-topic-modal,.plan-ref-how-modal) :is(.plan-ref-modal-source,.plan-ref-how-card){background:var(--ref-lavender);border-color:var(--ref-lavender-deep);color:var(--ref-accent)}
+html[data-theme=dark] :is(.plan-ref-topic-modal,.plan-ref-how-modal) :is(.plan-ref-modal-source strong,.plan-ref-how-card strong,.plan-ref-modal-actions>button strong){color:var(--ref-text)}
+html[data-theme=dark] .plan-ref-topic-modal :is(.plan-ref-modal-source small,.plan-ref-modal-source bdi){color:var(--ref-accent)}
+html[data-theme=dark] :is(.plan-ref-topic-modal,.plan-ref-how-modal) :is(.plan-ref-modal-actions>button,.plan-ref-modal-source>span:first-child,.plan-ref-how-footer>div:last-child button){border-color:var(--ref-line);color:var(--ref-body);box-shadow:0 2px 0 var(--ref-shadow)}
+html[data-theme=dark] .plan-ref-topic-modal :is(.plan-ref-modal-source,.plan-ref-modal-actions>button):hover{background:var(--ref-lavender-deep);border-color:var(--ref-accent)}
+html[data-theme=dark] :is(.plan-ref-modal-safety,.plan-ref-how-footer){border-color:var(--ref-line)}
+html[data-theme=dark] .plan-ref-how-dots button{background:var(--ref-line)}
+html[data-theme=dark] .plan-ref-how-dots button[aria-current=step]{background:var(--ref-accent)}
+
+/* Secondary text, source passages and selected controls retain contrast. */
+html[data-theme=dark] .is-reference-library :is(.lessons-results-heading,.lessons-results-heading>p,.lessons-card-course,.lessons-card-contents,.lessons-card-stage,.lessons-card-footer,.lessons-note-preview>span,.lessons-note-preview>p){color:var(--ref-muted)}
+html[data-theme=dark] .is-reference-library :is(.lessons-results-heading strong,.lessons-class-link strong,.lessons-note-preview>strong,.lessons-view-toggle>button[aria-pressed=true]){color:var(--ref-text)}
+html[data-theme=dark] .is-reference-library .lessons-audio-duration{color:var(--ref-body);background:var(--ref-card)}
+html[data-theme=dark] .is-reference-library .lessons-status{color:var(--ref-muted);background:var(--ref-soft)}
+html[data-theme=dark] .is-reference-library .lessons-status-ready{color:#a5cead;background:#243b2a}
+html[data-theme=dark] .is-reference-library .lessons-status-failed{color:#e1bbaa;background:#402f22}
+html[data-theme=dark] .is-reference-library .lessons-status-example{color:var(--ref-accent);background:var(--ref-lavender)}
+html[data-theme=dark] .is-reference-library .lessons-button-dark:hover{color:var(--ref-primary-text);background:#dcd5c9;border-color:#dcd5c9}
+html[data-theme=dark] .is-reference-review :is(.review-selected-lesson strong,.review-card-recall.is-revealed,.review-drill-feedback h4,.review-selected-lesson){color:var(--ref-text)}
+html[data-theme=dark] .is-reference-review :is(.review-source-passage blockquote,.review-source-time,.review-drill-feedback>p){color:var(--ref-body)}
+html[data-theme=dark] .is-reference-review :is(.review-item-meta,.review-page-note,.review-session-lesson>span,.review-test-note){color:var(--ref-muted)}
+html[data-theme=dark] .is-reference-review .review-question-nav button.is-answered{color:var(--ref-text);background:var(--ref-lavender)}
+html[data-theme=dark] :is(.review-session-track,.practice-progress,.lesson-practice-mode){background:var(--ref-soft);border-color:var(--ref-line)}
+html[data-theme=dark] .is-reference-lesson :is(.lesson-test-start,.practice-finished){background:var(--ref-card);border-color:var(--ref-line);box-shadow:0 4px 0 var(--ref-shadow)}
+html[data-theme=dark] .is-reference-lesson .quiz-choices button>span:first-child{background:var(--ref-soft);color:var(--ref-muted);border-color:var(--ref-line)}
+html[data-theme=dark] .is-reference-lesson .lesson-practice-mode button[aria-pressed=true]{background:var(--ref-lavender)!important;color:var(--ref-text)!important;border-color:var(--ref-accent)!important}
+html[data-theme=dark] .is-reference-lesson :is(.lesson-test-start,.practice-finished) :is(p,small){color:var(--ref-muted)}
+html[data-theme=dark] :is(.classes-invitation,.classes-intro-icon){background:var(--ref-lavender);border-color:var(--ref-lavender-deep);color:var(--ref-accent)}
+html[data-theme=dark] :is(.classes-invitation-heading strong,.classes-choose-lessons strong){color:var(--ref-text)}
+html[data-theme=dark] :is(.classes-action-notice,.classes-invitation-heading p,.classes-invitation-note,.classes-role-badge,.classes-reference-note){color:var(--ref-muted)}
+html[data-theme=dark] :is(.classes-content-heading h2>span,.classes-empty-icon){background:var(--ref-soft)}
+html[data-theme=dark] :is(.classes-card-heading,.classes-shared-row+.classes-shared-row,.lessons-card-footer,.dictionary-entries footer,.exam-week-days button){border-color:var(--ref-line)}
+html[data-theme=dark] .recording-modal :is(.recording-options .field>span,.recording-screen-option>span){color:var(--ref-muted)}
+html[data-theme=dark] .recording-modal .modal-header>.icon-button:hover{background:var(--ref-soft)}
+html[data-theme=dark] .account-settings-modal .modal-header>.icon-button:hover{background:var(--ref-soft)}
 
 /* Shared compact audio layout and clearance for every workspace page. */
 .workspace-shell.is-reference-shell {

@@ -6,7 +6,7 @@ import type { TranscriptionProvider } from "./transcription";
 import type { Lesson, Segment } from "./types";
 
 // Bump when request parameters, chunking, timing, word grouping or flag rules change.
-export const TRANSCRIPT_CACHE_REVISION="original-asr-v1-600s-8s-flac";
+export const TRANSCRIPT_CACHE_REVISION="original-asr-v2-600s-8s-flac-one-12s-recheck";
 export type TranscriptConfig={revision:string;provider:TranscriptionProvider;model:string;checker?:string;language:SpokenLanguage;policy:string;region?:string};
 export type TranscriptContext={key:string;config:TranscriptConfig};
 export type TranscriptCache=TranscriptContext&{version:number;duration:number;complete?:{transcriptHash:string;chunks:number;capturedAt:string;reused?:true}};
@@ -44,10 +44,14 @@ function segmentsValid(segments:Segment[],duration:number){
         last=w.start;
       }
     }
+    if(s.captureOriginal!==undefined){
+      const original=s.captureOriginal;
+      if(!original||typeof original!=="object"||"captureOriginal" in original||!segmentsValid([{...original,id:"original-capture"}],duration))return false;
+    }
   }
   return true;
 }
-const transcriptDigest=(segments:Segment[])=>digest(segments.map(s=>[s.id,s.start,s.end,s.text,s.flags,s.words?.map(w=>[w.start,w.end,w.text,w.language||null,w.confidence??null])||null]));
+const transcriptDigest=(segments:Segment[])=>digest(segments.map(s=>[s.id,s.start,s.end,s.text,s.flags,s.words?.map(w=>[w.start,w.end,w.text,w.language||null,w.confidence??null])||null,...(s.captureOriginal?[s.captureOriginal]:[])]));
 export function captureCheckpoint(l:Lesson,context:TranscriptContext):TranscriptCache{
   return {...context,version:l.version,duration:l.duration};
 }
@@ -68,7 +72,7 @@ export function validCompleteCheckpoint(l:Lesson,context:TranscriptContext){
 export function reusableTranscript(source:Lesson,target:Lesson,context:TranscriptContext):Pick<Lesson,"segments"|"processedChunks"|"transcriptionComplete"|"transcriptCache"|"providers">|null{
   if(!target.ownerId||!Number.isInteger(target.version)||target.version<1||target.demo||target.shared||target.transcriptionComplete||!Array.isArray(target.segments)||target.segments.length||target.processedChunks||source.ownerId!==target.ownerId||source.id===target.id||source.demo||source.shared||source.sourceKind==="pdf"||target.sourceKind==="pdf"||source.status!=="ready"||source.error!==null||source.version<1||source.duration!==target.duration||!validCompleteCheckpoint(source,context))return null;
   // Rebase IDs to the target version. Text, timings, words and every flag stay literal.
-  const segments=source.segments.map((s,index)=>({...s,id:`v${target.version}-cached-s${index}`,flags:[...s.flags],...(s.words?{words:s.words.map(w=>({...w}))}:{})}));
+  const segments=source.segments.map((s,index)=>({...s,id:`v${target.version}-cached-s${index}`,flags:[...s.flags],...(s.words?{words:s.words.map(w=>({...w}))}:{}),...(s.captureOriginal?{captureOriginal:{...s.captureOriginal,flags:[...s.captureOriginal.flags],...(s.captureOriginal.words?{words:s.captureOriginal.words.map(word=>({...word}))}:{})}}:{})}));
   const original=source.transcriptCache!.complete!;
   return {segments,processedChunks:original.chunks,transcriptionComplete:true,providers:{...source.providers!},transcriptCache:{...captureCheckpoint(target,context),complete:{transcriptHash:transcriptDigest(segments),chunks:original.chunks,capturedAt:original.capturedAt,reused:true}}};
 }

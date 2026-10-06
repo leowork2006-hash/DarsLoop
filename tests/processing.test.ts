@@ -83,6 +83,22 @@ describe("durable processing with injected mock providers",()=>{
     expect(providers.createArtifacts).toHaveBeenCalledTimes(1);expect(s.rawLesson(l.id)?.transcriptionComplete).toBe(true);expect(s.rawLesson(l.id)?.segments.map(x=>x.text)).toEqual(base.segments.map(x=>x.text));expect(s.rawLesson(l.id)?.artifacts).toBeNull();
     expect(s.rawLesson(l.id)?.status).toBe("ready");expect(s.rawLesson(l.id)?.error).toBe("Study material used a different language.");expect(s.db().prepare("SELECT status FROM jobs WHERE id=?").get(job.id)).toEqual({status:"done"});
   });
+  it("runs at most one admitted original-audio recheck, changes only that window and saves original capture",async()=>{
+    const l=queuedAudio({duration:23,spokenLanguage:"ar"}),capture=[{start:3,end:5.3,text:"الفاعل هو من قام بالفعل"},{start:5.3,end:9.92,text:"لا تحفظ الكلمة وحدها"},{start:9.92,end:23,text:"ارجع إلى الدرس واستمع مرة أخرى واسأل المعلم بعد الشرح"}],recovered={segments:[{start:0,end:2.5,text:"In English, we call this the doer."},{start:3.2,end:4.62,text:"لا تحفظ الكلمة وحدها"}]};
+    const events:string[]=[],providers={recheck:true,reserve:vi.fn(async span=>{events.push(`reserve:${span}`);return null;}),audioChunk:vi.fn(async(_a:string,_b:string,start:number,span:number)=>{events.push(`capture:${start}:${span}`);return Buffer.from(start===0?"full":"recheck");}),transcribe:vi.fn(async(bytes:Buffer,_model?:string,language?:string)=>{events.push(`primary:${language}`);return bytes.toString()==="full"?{segments:capture}:recovered;}),crossCheck:vi.fn(async(bytes:Buffer,language?:string)=>{events.push(`checker:${language}`);return bytes.toString()==="full"?{segments:capture}:recovered;}),createArtifacts:vi.fn(async()=>({overview:"",notes:[],terms:[],practice:[]}))};
+    await processLesson(s.claimJob()!,providers);const ready=s.rawLesson(l.id)!;
+    expect(providers.reserve).toHaveBeenCalledTimes(2);expect(providers.audioChunk).toHaveBeenCalledTimes(2);expect(providers.transcribe).toHaveBeenCalledTimes(2);expect(providers.crossCheck).toHaveBeenCalledTimes(2);
+    expect(events).toEqual(["reserve:23","capture:0:23","primary:ar","checker:ar",`reserve:${9.92-5.3}`,`capture:5.3:${9.92-5.3}`,"primary:auto","checker:auto"]);
+    expect(ready.segments.map(segment=>segment.text)).toEqual([capture[0].text,...recovered.segments.map(segment=>segment.text),capture[2].text]);expect(ready.segments[1].captureOriginal).toEqual({...capture[1],flags:[]});expect(ready.segments[0]).toMatchObject(capture[0]);expect(ready.segments.at(-1)).toMatchObject(capture[2]);expect(ready.transcriptionComplete).toBe(true);
+    expect(s.publicLesson(ready).segments[1].captureOriginal).toEqual(ready.segments[1].captureOriginal);
+  });
+  it("keeps usable primary capture when optional recheck capacity or transport fails",async()=>{
+    for(const failure of ["capacity","transport"]){
+      const l=queuedAudio({duration:10}),capture=[{start:0,end:5,text:"Read the saved notes"},{start:5,end:10,text:"Return to the original class explanation after reading"}];let calls=0;
+      const providers={recheck:true,reserve:vi.fn(async()=>++calls===2&&failure==="capacity"?Date.now()+1000:null),audioChunk:vi.fn(async(_a:string,_b:string,start:number,span:number)=>Buffer.from(span===10?"full":"recheck")),transcribe:vi.fn(async(bytes:Buffer)=>{if(bytes.toString()==="recheck")throw new Error("Authored recheck outage");return {segments:capture};}),crossCheck:vi.fn(async()=>({segments:capture})),createArtifacts:vi.fn(async()=>({overview:"",notes:[],terms:[],practice:[]}))};
+      await processLesson(s.claimJob()!,providers);const ready=s.rawLesson(l.id)!;expect(ready.status).toBe("ready");expect(ready.segments.map(segment=>segment.text)).toEqual(capture.map(segment=>segment.text));expect(ready.segments.every(segment=>!segment.flags.length)).toBe(true);expect(providers.transcribe).toHaveBeenCalledTimes(failure==="capacity"?1:2);
+    }
+  });
 
 });
 

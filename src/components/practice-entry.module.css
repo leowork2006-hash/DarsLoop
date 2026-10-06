@@ -9,4 +9,18 @@
 .card p { font-size: 13px; line-height: 1.8; color: var(--muted); margin: 0 7px 18px; }
 .count { font-size: 11px; color: var(--muted); margin: auto 7px 18px; }
 .card button { align-self: flex-start; margin-inline: 7px; }
-@media(max-width:760px) { .grid { grid-template-columns: 1fr; gap: 18px; } .art { height: 100px; } }
+@media(max-width:760px) {
+  .grid { grid-template-columns:1fr; gap:18px; }
+  .art { height:100px; }
+  .card h3 { font-size:23px; line-height:1.4; }
+  .card p { font-size:12px; line-height:1.7; }
+  .card button { max-width:calc(100% - 14px); white-space:normal; }
+}
+@media(max-width:380px) { .card h3 { font-size:22px; } }
+:global(html[data-theme="dark"]) .card { background:var(--ref-card); color:var(--ref-text); border-color:var(--ref-line); box-shadow:0 4px 0 var(--ref-shadow); }
+:global(html[data-theme="dark"]) .card h3 { color:var(--ref-text); }
+:global(html[data-theme="dark"]) :is(.card p,.count) { color:var(--ref-muted); }
+:global(html[data-theme="dark"]) .art { background:var(--ref-tint-green); color:var(--ref-text); }
+:global(html[data-theme="dark"]) .art[data-tone="lilac"] { background:var(--ref-lavender-deep); }
+:global(html[data-theme="dark"]) .art[data-tone="blue"] { background:#233d40; }
+:global(html[data-theme="dark"]) .art svg { background:var(--ref-card); border-color:var(--ref-line); box-shadow:4px 5px 0 var(--ref-shadow); }

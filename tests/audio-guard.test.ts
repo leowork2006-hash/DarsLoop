@@ -40,4 +40,20 @@ describe("audio disagreement boundary",()=>{
     const a:Artifacts={overview:"",notes:[],terms:[{term:"adapt",definition:"As transcribed",evidence:[]}],practice:[base,{...base,id:"b",question:"What is the word adapt?"},{...base,id:"c",question:"How can adapt help us revise the lesson?"}]};
     expect(safePractice(a).map(p=>p.id)).toEqual(["a","c"]);
   });
+  it("flags the actual authored Urdu missing Review passage without excluding its matching neighbour",()=>{
+    const captured=[{...passage("ریویو دی ایکزیمپل بیفور آنسرنگ"),start:13.2,end:16.16},{...passage("اگر کوئی لفظ واضح نہیں تو اندازہ نہ لگائیں"),id:"next",start:16.16,end:19.12}];
+    const snapshot=structuredClone(captured),checked=compareTranscriptions(captured,[{start:13.2,end:19.1,text:"اگر کوئی لفظ واضح نہیں تو اندازہ نہ لگائیں"}],0);
+    expect(checked[0].flags).toEqual(["Wording differs between two transcriptions. Replay this moment."]);expect(checked[1].flags).toEqual([]);
+    expect(captured).toEqual(snapshot);expect(checked.map(({flags,...source})=>source)).toEqual(snapshot.map(({flags,...source})=>source));
+  });
+  it("ignores punctuation/diacritics and equivalent merged wording while catching a whole omitted sentence",()=>{
+    const captured=[{...passage("Check the original example."),start:0,end:2},{...passage("Return to your class notes."),id:"next",start:2,end:4}];
+    expect(compareTranscriptions(captured,[{start:0,end:4,text:"Check the original example; return to your class notes!"}],0).every(segment=>!segment.flags.length)).toBe(true);
+    expect(compareTranscriptions(captured,[{start:0,end:4,text:"Check the original example."}],0).map(segment=>segment.flags.length)).toEqual([0,1]);
+    expect(compareTranscriptions([passage("كَلِمَةُ الدَّرْسِ هنا")],second("كلمة الدرس هنا"),20)[0].flags).toEqual([]);
+  });
+  it("flags substantial checker-only speech but allows an isolated ordinary spelling difference",()=>{
+    expect(compareTranscriptions([passage("Read the saved notes.")],second("Read the saved notes then replay the original example."),20)[0].flags).toHaveLength(1);
+    expect(compareTranscriptions([passage("Read the saved notes.")],second("Read the saved note."),20)[0].flags).toEqual([]);
+  });
 });

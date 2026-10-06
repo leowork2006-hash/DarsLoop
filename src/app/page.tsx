@@ -34,7 +34,7 @@ export default function Landing() {
           <h1 id="hero-title" className={styles.title}>AI notes &amp; practice<br/><em>for Islamic classes.</em></h1>
           <p className={styles.lead}>Stay with the explanation. Read clear notes, ask about your lesson and practise what was covered.</p>
           <p className={styles.private}>Answers stay within your lesson, with passages you can check. Ask a qualified teacher for religious guidance.</p>
-          <div className={styles.actions}><Link href="/signin" className={styles.primary}>Start learning <ArrowRight size={18}/></Link><Link href="/example" className={styles.secondary}><Play size={14} fill="currentColor"/> Explore the app</Link></div>
+          <div className={styles.actions}><Link href="/signin" className={styles.primary}>Start learning <ArrowRight size={18}/></Link><Link href="/signin" className={styles.secondary}><Play size={14} fill="currentColor"/> Explore the app</Link></div>
           <p className={styles.private}><LockKeyhole size={13}/> Your lessons are private until you share them.</p>
         </div>
         <div id="product" className={styles.stage}><ProductTour lesson={lesson}/></div>

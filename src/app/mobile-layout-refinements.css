@@ -79,3 +79,88 @@
   .plan-reference .plan-ref-control-right { grid-template-columns: minmax(0,1fr); }
   .is-reference-upload .audio-format-chips { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+
+/* Native fields remain 16px on phones; surrounding copy stays compact. */
+@media (max-width:800px) {
+  .workspace-shell.is-reference-shell .workspace-main,
+  .workspace-shell.is-reference-shell .modal { font-size:13px; }
+  .workspace-shell.is-reference-shell :is(.workspace-main,.modal) :is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),select,textarea) {
+    min-width:0; max-width:100%; font-size:16px; line-height:1.5;
+  }
+  .workspace-shell.is-reference-shell :is(.workspace-main,.modal) :is(input,textarea)::placeholder { font-size:14px; line-height:1.5; }
+  .workspace-shell.is-reference-shell .modal .field { min-width:0; font-size:12px; line-height:1.5; }
+  .workspace-shell.is-reference-shell .modal .field :is(input:not([type=checkbox],[type=radio]),select) { min-height:44px; }
+  .workspace-shell.is-reference-shell .modal .modal-header { align-items:center; gap:10px; }
+  .workspace-shell.is-reference-shell .modal .modal-header h2 { min-width:0; font-size:22px; line-height:1.4; overflow-wrap:anywhere; }
+  .workspace-shell.is-reference-shell .modal .modal-header>.icon-button { flex-shrink:0; width:44px; height:44px; min-width:44px; min-height:44px; }
+
+  .workspace-shell.is-reference-shell .recording-modal .modal-inner { padding:18px 16px; }
+  .workspace-shell.is-reference-shell .recording-modal .field { gap:6px; margin-block:14px; }
+  .recording-modal .recording-options summary { flex-wrap:wrap; gap:4px 8px; min-height:44px; font-size:12px; }
+  .recording-modal .recording-options summary span { margin-inline-start:0; font-size:11px; line-height:1.5; }
+  .recording-modal :is(.recording-consent label,.recording-check,.recording-screen-option label) { font-size:12px; line-height:1.6; }
+  .recording-modal :is(.recording-notice,.recording-backup-warning,.recording-screen-option p) { font-size:12px; line-height:1.6; }
+  .recording-modal :is(.recording-footer,.recording-footer>div,.recording-close-choice>div) { min-width:0; gap:8px; }
+  .recording-modal .recording-button { min-width:0; max-width:100%; min-height:44px; padding:10px 12px; font-size:12px; white-space:normal; }
+
+  .plan-reference :is(.plan-head-actions,.plan-ref-control-right,.plan-ref-select,.plan-ref-select>span) { min-width:0; }
+  .plan-reference .plan-head-actions { gap:8px; }
+  .plan-reference :is(.plan-ref-help-button,.plan-ref-add-button) { min-width:0; min-height:44px; font-size:12px; white-space:normal; }
+  .plan-reference .plan-ref-select>span { margin-inline-start:0; }
+  .plan-reference .plan-ref-summary>span { font-size:11px; line-height:1.4; }
+  .plan-reference :is(.plan-ref-unit-kicker,.plan-ref-unit-title>small,.plan-ref-checkpoint small,.plan-ref-topic-status,.plan-ref-unit-source,.plan-ref-next-source,.plan-ref-activity small) { font-size:11px; line-height:1.5; }
+  .plan-reference :is(.plan-ref-unit-title>strong,.plan-ref-checkpoint strong,.plan-ref-topic-main>span:first-child) { font-size:13px; line-height:1.5; }
+  .plan-reference .plan-ref-topic { flex-wrap:wrap; gap:0 6px; padding-block:4px; }
+  .plan-reference .plan-ref-topic-main { flex-wrap:wrap; gap:4px 6px; }
+  .plan-reference .plan-ref-topic-main>span:first-child { flex-basis:100%; }
+  .plan-reference .plan-ref-topic-listen { min-height:44px; font-size:11px; }
+  .plan-reference .plan-ref-unit-source { flex-wrap:wrap; gap:5px; }
+  .plan-reference .plan-ref-unit-source button { min-width:0; max-width:100%; min-height:36px; font-size:11px; }
+  .plan-reference :is(.plan-ref-next p,.plan-ref-activity p,.plan-empty p) { font-size:12px; line-height:1.6; }
+  .plan-reference .plan-ref-next>button { min-height:44px; font-size:12px; }
+
+  .workspace-shell.is-reference-library .lessons-filter-controls { grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; }
+  .workspace-shell.is-reference-library .lessons-filter-controls>label { min-width:0; }
+  .workspace-shell.is-reference-library .lessons-filter-controls select { max-width:100%; min-height:44px; font-size:16px; }
+  .workspace-shell.is-reference-library .lessons-view-toggle { grid-column:1/-1; justify-self:end; }
+  .workspace-shell.is-reference-library .lessons-view-toggle>button { width:44px; min-width:44px; }
+  .workspace-shell.is-reference-library .lessons-page-tabs { gap:12px; }
+  .workspace-shell.is-reference-library .lessons-page-tabs>button { min-width:0; white-space:normal; font-size:12px; line-height:1.5; text-align:center; }
+
+  .is-reference-review .review-filter-fields { width:100%; min-width:0; }
+  .is-reference-review .review-filter-fields select { flex:1; min-width:0; max-width:100%; min-height:44px; font-size:16px; }
+  .is-reference-review .review-kind-controls { flex-wrap:wrap; }
+  .is-reference-review .review-kind-controls button { flex:1; min-width:0; min-height:44px; font-size:12px; white-space:normal; }
+  .is-reference-review .review-session-modal .review-session-question h3,
+  .is-reference-lesson .practice-card h3 { font-size:20px; line-height:1.5; }
+  .is-reference-review .review-answer-choices button { font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+  .is-reference-review .review-session-footer { align-items:stretch; }
+  .is-reference-review .review-test-actions { width:100%; margin-inline-start:0; }
+  .is-reference-review .review-test-actions .review-button { flex:1; min-width:0; min-height:44px; white-space:normal; }
+  .is-reference-lesson .practice-card-top { align-items:flex-start; flex-wrap:wrap; gap:6px 12px; }
+  .is-reference-lesson .practice-card-top .mini-label { font-size:10px; line-height:1.5; }
+
+  .classes-reference-page :is(.classes-reference-heading,.classes-create-form,.classes-card-heading,.classes-shared-row) { min-width:0; }
+  .classes-reference-page :is(.classes-create-form>div,.classes-create-form>label,.classes-card-title,.classes-lesson-open) { min-width:0; }
+  .classes-reference-page :is(.classes-card-actions,.classes-lesson-actions) { max-width:100%; flex-wrap:wrap; }
+  .classes-reference-modal .classes-invitation-copy { flex-wrap:wrap; }
+  .classes-reference-modal .classes-invitation-copy>label { flex-basis:100%; }
+  .classes-reference-page .classes-invitation-copy input { font-size:16px; }
+  .account-settings-modal :is(.account-settings-tabs,.account-settings-details>div) { min-width:0; }
+  .account-settings-modal .account-settings-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .account-settings-modal .account-settings-tabs button { min-width:0; min-height:44px; font-size:12px; white-space:normal; text-align:center; }
+  .account-settings-modal :is(.account-settings-details dt,.account-settings-details dd) { min-width:0; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+  .account-settings-modal .account-settings-details dt { gap:6px; }
+  .account-settings-modal .account-settings-details dt svg { flex-shrink:0; }
+  .account-settings-modal .account-settings-details dd { text-align:end; }
+  .account-settings-modal .account-theme h3 { font-size:20px; }
+}
+@media (max-width:350px) {
+  .workspace-shell.is-reference-library .lessons-filter-controls { grid-template-columns:minmax(0,1fr); }
+  .workspace-shell.is-reference-library .lessons-view-toggle { grid-column:1; }
+  .recording-modal .recording-footer>div { flex-wrap:wrap; }
+  .recording-modal .recording-footer>div>* { flex:1 1 100%; }
+  .plan-reference .plan-ref-checkpoint-icon { width:24px; height:24px; }
+  .plan-reference .plan-ref-unit-content { padding-inline-start:14px; }
+  .is-reference-review .review-filter-fields select { flex-basis:100%; }
+}

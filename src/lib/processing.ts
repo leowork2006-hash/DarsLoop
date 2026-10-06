@@ -13,6 +13,7 @@ import { pdfBytes, pdfExists, storePdf, removePdf } from "./pdf-storage";
 import { sourcePassages, validSourcePassage } from "./source-passages";
 import { instructionLike, segmentFlags } from "./evidence";
 import { compareTranscriptions } from "./audio-guard";
+import { recheckTranscription } from "./transcription-repair";
 import { resolveNoteOptions } from "./note-options";
 import { cloudMode } from "./supabase/config";
 import { TRANSCRIPT_CACHE_REVISION, transcriptContext, checkpointMatches, captureCheckpoint, completeCheckpoint, validCompleteCheckpoint, validCaptureProgress, reusableTranscript, type TranscriptContext } from "./transcript-cache";
@@ -35,7 +36,7 @@ export function timedSegments(result:Awaited<ReturnType<typeof transcribe>>,chun
     return [{id:`v${version}-c${chunk.index}-s${j}`,start,end,text:s.text.trim(),flags:[...segmentFlags(s,s.text),...(s.words?.some(w=>w.confidence!==undefined&&w.confidence<0.65)?["Low word confidence: replay this passage"]:[])],...(s.words?{words:s.words.map(w=>({...w,start:chunk.start+w.start,end:chunk.start+w.end}))}:{})}];
   });
 }
-type ProcessingProviders={transcribe:typeof transcribe;createArtifacts:typeof createArtifacts;audioChunk:typeof audioChunk;crossCheck?:(bytes:Buffer,language?:SpokenLanguage)=>ReturnType<typeof transcribe>;reserve?:(span:number)=>Promise<number|null>;provider?:TranscriptionProvider;model?:string;concurrency?:number;cacheRevision?:string;cacheSecret?:string;checkerModel?:string;region?:string};
+type ProcessingProviders={transcribe:typeof transcribe;createArtifacts:typeof createArtifacts;audioChunk:typeof audioChunk;crossCheck?:(bytes:Buffer,language?:SpokenLanguage)=>ReturnType<typeof transcribe>;reserve?:(span:number)=>Promise<number|null>;recheck?:boolean;provider?:TranscriptionProvider;model?:string;concurrency?:number;cacheRevision?:string;cacheSecret?:string;checkerModel?:string;region?:string};
 function requireUsableAudioSource(segments:Segment[]) {
   const captured=segments.filter(segment=>segment.text.trim());
   if(!captured.length||captured.every(segment=>segment.flags.includes("Possible silence or unclear speech")))throw new ProviderError("no_speech","No usable speech was found. Try a clearer recording.");
@@ -46,7 +47,7 @@ export function productionProviders(provider:TranscriptionProvider):ProcessingPr
   const width=Number(process.env.TRANSCRIPTION_CONCURRENCY||2);
   return {audioChunk,createArtifacts,provider,model,cacheRevision:TRANSCRIPT_CACHE_REVISION,...(provider==="speechmatics"?{region:process.env.SPEECHMATICS_REGION||"eu1"}:{}),concurrency:Number.isInteger(width)?Math.max(1,Math.min(2,width)):2,
     transcribe:provider==="groq"?(b,_m,l)=>transcribe(b,model,l):provider==="deepgram"?transcribeDeepgram:transcribeSpeechmatics,
-    ...(provider==="groq"?{checkerModel:"whisper-large-v3-turbo",crossCheck:(bytes:Buffer,language?:SpokenLanguage)=>transcribe(bytes,"whisper-large-v3-turbo",language),reserve:(span:number)=>reserveAudio([...new Set([model,"whisper-large-v3-turbo"])],span)}:{})};
+    ...(provider==="groq"?{recheck:model!=="whisper-large-v3-turbo",checkerModel:"whisper-large-v3-turbo",crossCheck:(bytes:Buffer,language?:SpokenLanguage)=>transcribe(bytes,"whisper-large-v3-turbo",language),reserve:(span:number)=>reserveAudio([...new Set([model,"whisper-large-v3-turbo"])],span)}:{})};
 }
 export async function processLesson(job:{id:string;lesson_id:string;lease:string},injected?:ProcessingProviders) {
   const initialLesson=await rawLesson(job.lesson_id);if(!initialLesson)return;
@@ -161,7 +162,14 @@ export async function processLesson(job:{id:string;lesson_id:string;lease:string
           const heard=await Promise.allSettled([providers.transcribe(bytes,undefined,language),...(providers.crossCheck?[providers.crossCheck(bytes,language)]:[])]);
           const rejected=heard.find(r=>r.status==="rejected");if(rejected?.status==="rejected")throw rejected.reason;
           let segments=timedSegments((heard[0] as PromiseFulfilledResult<Awaited<ReturnType<typeof transcribe>>>).value,chunk,duration,version);
-          if(providers.crossCheck){const secondary=(heard[1] as PromiseFulfilledResult<Awaited<ReturnType<typeof transcribe>>>).value;timedSegments(secondary,chunk,duration,version);segments=compareTranscriptions(segments,secondary.segments,chunk.start);}
+          if(providers.crossCheck){
+            const secondary=(heard[1] as PromiseFulfilledResult<Awaited<ReturnType<typeof transcribe>>>).value;timedSegments(secondary,chunk,duration,version);segments=compareTranscriptions(segments,secondary.segments,chunk.start);
+            if(providers.recheck&&providers.reserve){
+              const checked=await recheckTranscription(segments,{start:chunk.start,end:chunk.end},{reserve:providers.reserve,capture:(start,span)=>providers.audioChunk(original,path.join(temp,`${chunk.index}-recheck.flac`),start,span),primary:bytes=>providers.transcribe(bytes,undefined,"auto"),checker:bytes=>providers.crossCheck!(bytes,"auto")});
+              segments=checked.segments;
+              console.log(JSON.stringify({event:"transcription-recheck",chunk:chunk.index,status:checked.status,...(checked.candidate?{reason:checked.candidate.reason,seconds:checked.candidate.span}:{})}));
+            }
+          }
           return segments;
         }));
         for(let i=0;i<results.length;i++){

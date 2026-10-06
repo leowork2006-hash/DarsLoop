@@ -20,6 +20,8 @@ Refined the landing page and phone layouts while preserving the product style. R
 
 The final language check corrected an Urdu source-reporting phrase being mistaken for a personal question. Small authored Arabic and Urdu answer/audit checks passed. Short mixed-language speech checks still exposed shared omissions and term errors; agreement between transcribers is not proof of complete capture or native-language quality.
 
+A further mobile and transcription pass corrected Study Plan dark-theme selectors, practice-dialog contrast and narrow-screen field/question sizes. The landing hero's secondary action now opens sign-in. General transcription disagreements are flagged, and a quota-admitted original-audio recheck can inspect one window of at most twelve seconds per ten-minute chunk. Replacement requires both recognizers to agree and retain the original words; the earlier capture is preserved. Eight bounded synthetic provider requests and recorded-response replay supported this approach, with mixed-language omissions still remaining. A fresh automatic end-to-end provider probe awaits explicit approval. Existing completed lessons are not silently rewritten. These results are not native-language accuracy certification.
+
 ## Evidence and disclosures
 
 - [QA and remaining gaps](QA.md) distinguishes local tests, hosted checks and unproven behavior.
