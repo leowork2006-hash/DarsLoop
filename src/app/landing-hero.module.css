@@ -38,3 +38,8 @@
 }
 @media (max-width: 360px) { .hero { padding-inline: 12px; } .site .title { font-size: 36px; } .primary,.secondary { padding-inline: 13px; gap: 7px; } .overline { font-size: 9px; } }
 @media (prefers-reduced-motion: reduce) { .primary, .secondary { transition: none; } }
+
+/* Rounded navigation, adapted to the current DarsLoop brand. */
+.site .header{height:76px;width:calc(100% - 72px);max-width:1320px;padding:12px 24px;margin:16px auto;border:1px solid #e4dce8;border-radius:100px;background:#fffdf8;box-shadow:0 2px 8px #5b3f6605}.header :global(.editorial-button.small){border-radius:100px}.hero{padding-top:42px}
+@media(max-width:760px){.site .header{height:64px;width:calc(100% - 24px);padding:9px 12px;margin:12px auto;gap:10px}.header :global(.brand){font-size:21px}.header :global(.editorial-button.small){padding-inline:12px;font-size:11px}.hero{padding-top:28px}}
+@media(max-width:360px){.header :global(.brand){font-size:20px}.site .header{padding-inline:11px}}

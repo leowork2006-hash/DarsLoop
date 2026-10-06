@@ -117,3 +117,10 @@ The generation admission helper uses Node's built-in [SQLite API](https://nodejs
 The cream feature showcase and charcoal study routine are original HTML/CSS/React compositions. [StudyFetch](https://www.studyfetch.com/) was checked as a visual reference for tabbed feature presentation; none of its images, copy, adoption figures or reported grade improvements were reused. The controls use the existing authored fictional lesson: manual audio, prepared notes/answer, supported quiz and class passages. They do not make external AI requests.
 
 The routine links to original research on [classroom testing (Yang et al., 2021)](https://pubmed.ncbi.nlm.nih.gov/33683913/) and [learning techniques (Dunlosky et al., 2013)](https://pubmed.ncbi.nlm.nih.gov/26173288/). These support the general study-method rationale; they are not evidence of DarsLoop learning outcomes, native-language accuracy or a student pilot.
+
+
+## Scroll narrative and full workspace preview — 6 October 2026 (V41)
+
+The plain-text scroll section, Alimiyyah audience sticker, cohort ticker and rounded navigation are original project-authored React/CSS. Supplied screenshots are visual references only: no finance wording, institution logos, adoption figures or competitor assets are included. “Built for Alimiyyah students” states the intended audience, not accreditation or curriculum coverage. [MDN requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame), [W3C interaction-animation guidance](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html) and [W3C pause guidance](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) informed scroll updates, reduced motion and the Pause motion control.
+
+The expanded local tour follows current DarsLoop workspace styles and shared Home suggestions: Home, My lessons, Summary/Detailed notes, class chat, Review, Quiz, Flashcards and Study plan. It uses only the authored fictional lesson and prepared responses; it does not save student progress or call external AI. The full example link opens the actual public product workflow.

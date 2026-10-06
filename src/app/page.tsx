@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, AudioLines, BookOpen, ChevronDown, LockKeyhole, Play, Users } from "lucide-react";
 import { Brand, Mark } from "@/components/brand";
+import { LandingNarrative } from "@/components/landing-narrative";
 import { ProductTour } from "@/components/product-tour";
 import { LandingFeatureShowcase, LandingStudyLoop } from "@/components/landing-feature-sections";
 import { PracticePreview } from "@/components/practice-preview";
@@ -38,7 +39,7 @@ export default function Landing() {
           <ProductTour lesson={lesson}/>
         </div>
       </section>
-      <div className="editorial-audience editorial-container"><span>Learning has many places.</span><div><span>Alimiyyah</span><i/><span>Halaqahs</span><i/><span>Arabic classes</span><i/><span>Online lessons</span></div></div>
+      <LandingNarrative/>
       <LandingFeatureShowcase lesson={lesson}/>
       <section id="practice" className="editorial-practice">
         <div className="editorial-container editorial-practice-layout">
